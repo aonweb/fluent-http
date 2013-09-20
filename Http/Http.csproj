@@ -41,7 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Builder.cs" />
+    <Compile Include="HttpCallBuilder.cs" />
+    <Compile Include="HttpClientWrapper.cs" />
+    <Compile Include="IHttpClient.cs" />
+    <Compile Include="IHttpClientBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
