@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Http\HttpClientBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderTests.cs" />
+    <Compile Include="Http\InterfaceDefinitionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

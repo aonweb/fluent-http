@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AonWeb.Fluent.Http.Exceptions;
+
 namespace AonWeb.Fluent.Http
 {
-   
-    public class HttpCallBuilder<TResult> : HttpCallBuilder
+
+    public class HttpCallBuilder<TResult>
     {
         private readonly HttpCallBuilderSettings _settings;
 
@@ -106,7 +109,7 @@ namespace AonWeb.Fluent.Http
         private readonly HttpCallBuilderSettings _settings;
 
         public HttpCallBuilder()
-            :this(new HttpCallBuilderSettings(), new HttpClientBuilder()) { }
+            : this(new HttpCallBuilderSettings(), new HttpClientBuilder()) { }
 
         public HttpCallBuilder(IHttpClientBuilder clientBuilder)
             : this(new HttpCallBuilderSettings(), clientBuilder) { }
@@ -153,9 +156,17 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
-        public HttpCallBuilder WithClientConfiguration(Action<IHttpClient> configuration)
+        public HttpCallBuilder ConfigureClient(Action<IHttpClient> configuration)
         {
-            _clientBuilder.WithConfiguration(configuration);
+            _clientBuilder.Configure(configuration);
+
+            return this;
+        }
+
+        public HttpCallBuilder ConfigureClient(Action<IHttpClientBuilder> configuration)
+        {
+            if (configuration != null)
+                configuration(_clientBuilder);
 
             return this;
         }
@@ -167,24 +178,97 @@ namespace AonWeb.Fluent.Http
 
         public HttpResponseMessage Result()
         {
-            return ResultAsync().Result;
+            return ResultAsync(_settings.TokenSource.Token).Result;
         }
 
-        public Task<HttpResponseMessage> ResultAsync()
+        private async Task<HttpResponseMessage> ResultAsync(CancellationToken token)
         {
-            return ResultAsync(_settings.TokenSource.Token);
+            HttpResponseMessage response;
+
+            if (TryGetFromCache(out response))
+                return response;
+
+            var r = await ResultAsyncImpl(token, 0);
+
+            HandleResponse(r);
+
+            return r;
         }
 
-        public Task<HttpResponseMessage> ResultAsync(CancellationToken token)
+        private async Task<HttpResponseMessage> ResultAsyncImpl(CancellationToken token, int redirectCount)
         {
-            using (var client = _clientBuilder.Create())
+           using (var client = _clientBuilder.Create())
             {
                 using (var message = new HttpRequestMessage(_settings.Method, _settings.Uri))
                 {
-                    return client.SendAsync(message, _settings.CompletionOption, token);
-                } 
-            }
+                    var r = await client.SendAsync(message, _settings.CompletionOption, token);
+
+                    if (_clientBuilder.Settings.AllowAutoRedirect && IsRedirect(r))
+                    {
+                        if (redirectCount > _clientBuilder.Settings.MaxAutomaticRedirections)
+                            throw new MaximumAutomaticRedirectsException(string.Format(SR.MaxAutoRedirectsErrorFormat, redirectCount, _settings.Uri));
+
+                        var ctx = HandleRedirection(r);
+
+                        _settings.Uri = ctx.RedirectionUri;
+
+                        return await ResultAsyncImpl(token, redirectCount + 1);
+                    }
+                }
+            } 
         }
+
+        private HttpRedirectionContext HandleRedirection(HttpResponseMessage response)
+        {
+            var newUri = GetRedirectUri(_settings.Uri, response);
+
+            var ctx = new HttpRedirectionContext
+            {
+                StatusCode = response.StatusCode,
+                RequestMessage = response.RequestMessage,
+                RedirectionUri = newUri,
+                CurrentUri = uri
+            };
+
+            if (_settings.RedirectHandler != null)
+                _settings.RedirectHandler(ctx);
+
+            return ctx;
+        }
+
+        private bool TryGetFromCache(out HttpResponseMessage response)
+        {
+            response = null;
+
+            //TODO: implement caching
+            //if (!_settings.ShouldGetFromCache())
+            //    return false;
+
+            return false;
+        }
+
+        private static bool IsRedirect(HttpResponseMessage response)
+        {
+            return response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.MovedPermanently;
+        }
+
+        private static Uri GetRedirectUri(Uri originalUri, HttpResponseMessage response)
+        {
+            var locationUri = response.Headers.Location;
+
+            if (locationUri.IsAbsoluteUri)
+                return locationUri;
+
+            return new Uri(originalUri.GetLeftPart(UriPartial.Authority) + locationUri.PathAndQuery);
+        }
+    }
+
+    public class HttpRedirectionContext
+    {
+        public HttpStatusCode StatusCode { get; set; }
+        public HttpRequestMessage RequestMessage { get; set; }
+        public Uri RedirectionUri { get; set; }
+        public Uri CurrentUri { get; set; }
     }
 
     public class HttpCallBuilderSettings
@@ -200,5 +284,6 @@ namespace AonWeb.Fluent.Http
         public HttpMethod Method { get; set; }
         public HttpCompletionOption CompletionOption { get; set; }
         public CancellationTokenSource TokenSource { get; set; }
+        public Action<HttpRedirectionContext> RedirectHandler { get; set; }
     }
 }
