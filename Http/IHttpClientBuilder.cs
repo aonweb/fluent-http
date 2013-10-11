@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Cache;
@@ -18,8 +17,6 @@ namespace AonWeb.Fluent.Http
         IHttpClientBuilder WithHeaders(string name, string value);
         IHttpClientBuilder WithHeaders(string name, IEnumerable<string> values);
         IHttpClientBuilder WithTimeout(TimeSpan timeout);
-        IHttpClientBuilder WithAutoRedirect();
-        IHttpClientBuilder WithAutoRedirect(int maxAutomaticRedirections);
         IHttpClientBuilder WithDecompressionMethods(DecompressionMethods options);
         IHttpClientBuilder WithClientCertificateOptions(ClientCertificateOption options);
         IHttpClientBuilder WithUseCookies();
@@ -27,29 +24,28 @@ namespace AonWeb.Fluent.Http
         IHttpClientBuilder WithCredentials(ICredentials credentials);
         IHttpClientBuilder WithMaxBufferSize(long bufferSize);
         IHttpClientBuilder WithProxy(IWebProxy proxy);
+        IHttpClientBuilder WithCachePolicy(RequestCacheLevel cacheLevel);
+        IHttpClientBuilder WithCachePolicy(RequestCachePolicy cachePolicy);
     }
 
     public class HttpClientSettings
     {
         public HttpClientSettings()
         {
-            AllowAutoRedirect = true;
-            MaxAutomaticRedirections = 5;
             CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
         }
 
         public Action<IHttpClient> ClientConfiguration { get; internal set; }
         public Action<HttpRequestHeaders> HeaderConfiguration { get; internal set; }
-        public bool AllowAutoRedirect { get; internal set; }
         public DecompressionMethods? AutomaticDecompression { get; internal set; }
         public ClientCertificateOption? ClientCertificateOptions { get; internal set; }
         public CookieContainer CookieContainer { get; internal set; }
         public ICredentials Credentials { get; internal set; }
-        public int MaxAutomaticRedirections { get; internal set; }
         public long? MaxRequestContentBufferSize { get; internal set; }
         public IWebProxy Proxy { get; internal set; }
         public TimeSpan? Timeout { get; internal set; }
         public RequestCachePolicy  CachePolicy { get; internal set; }
+
     }
 
     public class HttpClientBuilder : IHttpClientBuilder
@@ -93,21 +89,6 @@ namespace AonWeb.Fluent.Http
         public IHttpClientBuilder WithTimeout(TimeSpan timeout)
         {
             _settings.Timeout = timeout;
-
-            return this;
-        }
-
-        public IHttpClientBuilder WithAutoRedirect()
-        {
-            return WithAutoRedirect(-1);
-        }
-
-        public IHttpClientBuilder WithAutoRedirect(int maxAutomaticRedirections)
-        {
-            _settings.AllowAutoRedirect = true;
-
-            if (maxAutomaticRedirections > 0)
-                _settings.MaxAutomaticRedirections = maxAutomaticRedirections;
 
             return this;
         }
@@ -159,6 +140,18 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
+        public IHttpClientBuilder WithCachePolicy(RequestCacheLevel cacheLevel)
+        {
+            return WithCachePolicy(new RequestCachePolicy(cacheLevel));
+        }
+
+        public IHttpClientBuilder WithCachePolicy(RequestCachePolicy cachePolicy)
+        {
+            _settings.CachePolicy = cachePolicy;
+
+            return this;
+        }
+
         public IHttpClient Create()
         {
             var handler = CreateHandler();
@@ -185,6 +178,7 @@ namespace AonWeb.Fluent.Http
 
             //this will be handled by the consuming code
             handler.AllowAutoRedirect = false;
+            handler.CachePolicy = _settings.CachePolicy;
 
             if (_settings.AutomaticDecompression.HasValue)
                 handler.AutomaticDecompression = _settings.AutomaticDecompression.Value;
@@ -213,6 +207,7 @@ namespace AonWeb.Fluent.Http
                 handler.Proxy = _settings.Proxy;
                 handler.UseProxy = true;
             }
+
             return handler;
         }
     }

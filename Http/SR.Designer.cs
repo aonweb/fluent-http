@@ -61,6 +61,24 @@ namespace AonWeb.Fluent.Http {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Method can not be null or empty.
+        /// </summary>
+        internal static string ArgumentMethodNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentMethodNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uri can not be null or empty.
+        /// </summary>
+        internal static string ArgumentUriNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentUriNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The maximum allowed number redirects ({0}) was reached. Last uri: &apos;{1}&apos;.
         /// </summary>
         internal static string MaxAutoRedirectsErrorFormat {

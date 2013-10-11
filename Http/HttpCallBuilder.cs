@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -106,24 +108,35 @@ namespace AonWeb.Fluent.Http
     public class HttpCallBuilder
     {
         private readonly IHttpClientBuilder _clientBuilder;
+        private readonly RedirectionHandler _redirectionHandler;
         private readonly HttpCallBuilderSettings _settings;
 
+
         public HttpCallBuilder()
-            : this(new HttpCallBuilderSettings(), new HttpClientBuilder()) { }
+            : this(new HttpCallBuilderSettings(), new HttpClientBuilder(), new RedirectionHandler()) { }
 
         public HttpCallBuilder(IHttpClientBuilder clientBuilder)
-            : this(new HttpCallBuilderSettings(), clientBuilder) { }
+            : this(new HttpCallBuilderSettings(), clientBuilder, new RedirectionHandler()) { }
 
-        internal HttpCallBuilder(HttpCallBuilderSettings settings, IHttpClientBuilder clientBuilder)
+        internal HttpCallBuilder(HttpCallBuilderSettings settings, IHttpClientBuilder clientBuilder, RedirectionHandler redirectionHandler)
         {
             _settings = settings;
             _clientBuilder = clientBuilder;
+            _redirectionHandler = redirectionHandler;
+        }
+
+        internal HttpCallBuilderSettings Settings
+        {
+            get
+            {
+                return _settings;
+            }
         }
 
         public HttpCallBuilder WithUri(string uri)
         {
             if (string.IsNullOrEmpty(uri))
-                throw new ArgumentException("uri can not be null or empty", "uri");
+                throw new ArgumentException(SR.ArgumentUriNullOrEmpty, "uri");
 
             return WithUri(new Uri(uri));
         }
@@ -138,10 +151,22 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
+        public HttpCallBuilder WithQueryString(string name, string value)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return this;
+
+            //TODO: should be delay execution to allow uri to set after?
+
+            _settings.Uri = Utils.AppendToQueryString(_settings.Uri, name, value);
+
+            return this;
+        }
+
         public HttpCallBuilder WithMethod(string method)
         {
             if (string.IsNullOrEmpty(method))
-                throw new ArgumentException("method can not be null or empty", "method");
+                throw new ArgumentException(SR.ArgumentMethodNullOrEmpty, "method");
 
             return WithMethod(new HttpMethod(method));
         }
@@ -152,6 +177,49 @@ namespace AonWeb.Fluent.Http
                 throw new ArgumentNullException("method");
 
             _settings.Method = method;
+
+            return this;
+        }
+
+        public HttpCallBuilder WithContent(string content)
+        {
+
+            return WithContent(content, null, null);
+        }
+
+        public HttpCallBuilder WithContent(string content, Encoding encoding)
+        {
+
+            return WithContent(content, encoding, null);
+        }
+
+        public HttpCallBuilder WithContent(string content, Encoding encoding, string mediaType)
+        {
+
+            return WithContent(() => content, encoding, mediaType);
+        }
+
+        public HttpCallBuilder WithContent(Func<string> contentFunc)
+        {
+            return WithContent(contentFunc, null, null);
+        }
+
+        public HttpCallBuilder WithContent(Func<string> contentFunc, Encoding encoding)
+        {
+            return WithContent(contentFunc, encoding, null);
+        }
+
+        public HttpCallBuilder WithContent(Func<string> contentFunc, Encoding encoding, string mediaType)
+        {
+            return WithContent(() => new StringContent(contentFunc(), encoding, mediaType));
+        }
+
+        public HttpCallBuilder WithContent(Func<HttpContent> contentFunc)
+        {
+            if (contentFunc == null)
+                throw new ArgumentNullException("contentFunc");
+
+            _settings.Content = contentFunc;
 
             return this;
         }
@@ -171,6 +239,28 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
+        public HttpCallBuilder ConfigureRedirection(Action<RedirectionHandler> configuration)
+        {
+            if (configuration != null)
+                configuration(_redirectionHandler);
+
+            return this;
+        }
+
+        public HttpCallBuilder WithRedirectionHandler(Action<HttpRedirectionContext> handler)
+        {
+            _redirectionHandler.WithRedirectionHandler(handler);
+
+            return this;
+        }
+
+        public HttpCallBuilder WithNoCache()
+        {
+            _clientBuilder.WithCachePolicy(RequestCacheLevel.NoCacheNoStore);
+
+            return this;
+        }
+
         public HttpCallBuilder<TResult> WithResultOfType<TResult>()
         {
             return new HttpCallBuilder<TResult>(_settings);
@@ -178,97 +268,39 @@ namespace AonWeb.Fluent.Http
 
         public HttpResponseMessage Result()
         {
-            return ResultAsync(_settings.TokenSource.Token).Result;
+            return ResultAsync().Result;
         }
 
-        private async Task<HttpResponseMessage> ResultAsync(CancellationToken token)
+        public async Task<HttpResponseMessage> ResultAsync()
         {
-            HttpResponseMessage response;
-
-            if (TryGetFromCache(out response))
-                return response;
-
-            var r = await ResultAsyncImpl(token, 0);
-
-            HandleResponse(r);
-
-            return r;
+            return await ResultAsync(_settings.TokenSource.Token);
         }
 
-        private async Task<HttpResponseMessage> ResultAsyncImpl(CancellationToken token, int redirectCount)
+        private async Task<HttpResponseMessage> ResultAsync(CancellationToken token, int redirectCount = 0)
         {
-           using (var client = _clientBuilder.Create())
+            _settings.Validate();
+
+            using (var client = _clientBuilder.Create())
             {
                 using (var message = new HttpRequestMessage(_settings.Method, _settings.Uri))
                 {
-                    var r = await client.SendAsync(message, _settings.CompletionOption, token);
+                    if (_settings.Content != null)
+                        message.Content = _settings.Content();
 
-                    if (_clientBuilder.Settings.AllowAutoRedirect && IsRedirect(r))
+                    var response = await client.SendAsync(message, _settings.CompletionOption, token);
+
+                    var ctx = _redirectionHandler.HandleRedirection(this, response, redirectCount);
+
+                    if (ctx != null)
                     {
-                        if (redirectCount > _clientBuilder.Settings.MaxAutomaticRedirections)
-                            throw new MaximumAutomaticRedirectsException(string.Format(SR.MaxAutoRedirectsErrorFormat, redirectCount, _settings.Uri));
-
-                        var ctx = HandleRedirection(r);
-
-                        _settings.Uri = ctx.RedirectionUri;
-
-                        return await ResultAsyncImpl(token, redirectCount + 1);
+                        WithUri(ctx.RedirectionUri);
+                        response = await ResultAsync(token, redirectCount + 1);
                     }
+
+                    return response;
                 }
-            } 
+            }
         }
-
-        private HttpRedirectionContext HandleRedirection(HttpResponseMessage response)
-        {
-            var newUri = GetRedirectUri(_settings.Uri, response);
-
-            var ctx = new HttpRedirectionContext
-            {
-                StatusCode = response.StatusCode,
-                RequestMessage = response.RequestMessage,
-                RedirectionUri = newUri,
-                CurrentUri = uri
-            };
-
-            if (_settings.RedirectHandler != null)
-                _settings.RedirectHandler(ctx);
-
-            return ctx;
-        }
-
-        private bool TryGetFromCache(out HttpResponseMessage response)
-        {
-            response = null;
-
-            //TODO: implement caching
-            //if (!_settings.ShouldGetFromCache())
-            //    return false;
-
-            return false;
-        }
-
-        private static bool IsRedirect(HttpResponseMessage response)
-        {
-            return response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.MovedPermanently;
-        }
-
-        private static Uri GetRedirectUri(Uri originalUri, HttpResponseMessage response)
-        {
-            var locationUri = response.Headers.Location;
-
-            if (locationUri.IsAbsoluteUri)
-                return locationUri;
-
-            return new Uri(originalUri.GetLeftPart(UriPartial.Authority) + locationUri.PathAndQuery);
-        }
-    }
-
-    public class HttpRedirectionContext
-    {
-        public HttpStatusCode StatusCode { get; set; }
-        public HttpRequestMessage RequestMessage { get; set; }
-        public Uri RedirectionUri { get; set; }
-        public Uri CurrentUri { get; set; }
     }
 
     public class HttpCallBuilderSettings
@@ -281,9 +313,16 @@ namespace AonWeb.Fluent.Http
         }
 
         public Uri Uri { get; set; }
+        public NameValueCollection QueryString { get; set; }
         public HttpMethod Method { get; set; }
         public HttpCompletionOption CompletionOption { get; set; }
         public CancellationTokenSource TokenSource { get; set; }
-        public Action<HttpRedirectionContext> RedirectHandler { get; set; }
+        public Func<HttpContent> Content { get; set; }
+
+        public void Validate()
+        {
+            if (Uri == null)
+                throw new InvalidOperationException("Uri not set");
+        }
     }
 }
