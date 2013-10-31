@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net.Http;
+using System.Threading;
 using AonWeb.Fluent.Http;
 using Moq;
 using NUnit.Framework;
@@ -20,58 +22,196 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.NotNull(builder);
         }
 
-        [Test]
-        public void WithUri_When_Expect()
-        {
+        #region WithUri
 
+        [Test]
+        public void WithUri_WhenValidString_ExpectResultUsesUri()
+        {
+            //arrange
+            var uri = TestUriString;
+            var builder = CreateBuilder().WithUri(uri);
+
+            //act
+            builder.ResultAsync();
+
+            //assert
+            _client.VerifyRequest(r => r.RequestUri.OriginalString == uri);
         }
 
         [Test]
-        public void WithUri_When_Expect1()
+        [ExpectedException(typeof(UriFormatException))]
+        public void WithUri_WhenInvalidString_ExpectException()
         {
+            //arrange
+            var uri = "blah blah";
+            var builder = CreateBuilder();
 
+            //act
+            builder.WithUri(uri);
         }
 
         [Test]
-        public void WithMethod_When_Expect()
+        [ExpectedException(typeof(ArgumentException))]
+        public void WithUri_WhenNullString_ExpectException()
         {
+            //arrange
+            string uri = null;
+            var builder = CreateBuilder();
 
+            //act
+            builder.WithUri(uri);
         }
 
         [Test]
-        public void WithMethod_When_Expect1()
+        [ExpectedException(typeof(ArgumentException))]
+        public void WithUri_WhenEmptyString_ExpectException()
         {
+            //arrange
+            var uri = string.Empty;
+            var builder = CreateBuilder();
 
+            //act
+            builder.WithUri(uri);
         }
 
         [Test]
-        public void WithConfiguration_When_Expect()
+        public void WithUri_WhenValidUri_ExpectResultUsesUri()
         {
+            //arrange
+            var uri = new Uri(TestUriString);
+            var builder = CreateBuilder().WithUri(uri);
 
+            //act
+            builder.ResultAsync();
+
+            //assert
+            _client.VerifyRequest(r => r.RequestUri == uri);
         }
 
         [Test]
-        public void WithResultOfType_When_Expect()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void WithUri_WhenNullUri_ExpectException()
         {
+            //arrange
+            Uri uri = null;
+            var builder = CreateBuilder().WithUri(uri);
 
+            //act
+            builder.Result();
         }
 
         [Test]
-        public void Result_When_Expect()
+        public void WithUri_WhenCalledMultipleTimes_ExpectLastWins()
         {
+            //arrange
+            var uri1 = "http://yahoo.com";
+            var uri2 = TestUriString;
+            var builder = CreateBuilder().WithUri(uri1).WithUri(uri2);
 
+            //act
+            builder.ResultAsync();
+
+            //assert
+            _client.VerifyRequest(r => r.RequestUri.OriginalString == uri2);
+        }
+
+        #endregion
+
+        #region WithMethod
+
+        [Test]
+        public void WithMethod_WhenValidString_ExpectResultUsesMethod()
+        {
+            //arrange
+            var method = "GET";
+            var builder = CreateBuilder().WithMethod(method);
+
+            //act
+            builder.ResultAsync();
+
+            //assert
+            _client.VerifyRequest(r => r.Method.Method == method);
         }
 
         [Test]
-        public void ResultAsync_When_Expect()
+        [ExpectedException(typeof(ArgumentException))]
+        public void WithMethod_WhenNullString_ExpectException()
         {
+            //arrange
+            string method = null;
+            var builder = CreateBuilder();
 
+            //act
+            builder.WithMethod(method);
         }
 
         [Test]
-        public void ResultAsync_When_Expect1()
+        [ExpectedException(typeof(ArgumentException))]
+        public void WithMethod_WhenEmptyString_ExpectException()
         {
+            //arrange
+            var method = string.Empty;
+            var builder = CreateBuilder();
 
+            //act
+            builder.WithMethod(method);
+        }
+
+        [Test]
+        public void WithMethod_WhenValidMethod_ExpectResultUsesMethod()
+        {
+            //arrange
+            var method = HttpMethod.Get;
+            var builder = CreateBuilder().WithMethod(method);
+
+            //act
+            builder.ResultAsync();
+
+            //assert
+            _client.VerifyRequest(r => r.Method == method);
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void WithMethod_WhenNullMethod_ExpectException()
+        {
+            //arrange
+            HttpMethod method = null;
+            var builder = CreateBuilder().WithMethod(method);
+
+            //act
+            builder.Result();
+        }
+
+        [Test]
+        public void WithMethod_WhenCalledMultipleTimes_ExpectLastWins()
+        {
+            //arrange
+            var method1 = "POST";
+            var method2 = "GET";
+            var builder = CreateBuilder().WithMethod(method1).WithMethod(method2);
+
+            //act
+            builder.ResultAsync();
+
+            //assert
+            _client.VerifyRequest(r => r.Method.Method == method2);
+        }
+
+        #endregion
+
+        [Test]
+        public void WithConfiguration_WhenAction_ExpectClientFactoryCalled()
+        {
+            Action<IHttpClient> config = client => { };
+
+            var builder = CreateBuilder();
+
+            //act
+            builder.ConfigureClient(config).ResultAsync();
+
+            //assert
+            _factory.Verify(f => f.Configure(It.Is<Action<IHttpClient>>(a => a == config)), Times.Once);
         }
 
         private HttpCallBuilder CreateBuilder()

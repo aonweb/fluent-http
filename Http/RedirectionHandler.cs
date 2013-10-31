@@ -27,7 +27,15 @@ namespace AonWeb.Fluent.Http
         public Uri CurrentUri { get; set; }
     }
 
-    public class RedirectionHandler
+    public interface IRedirectionHandler
+    {
+        IRedirectionHandler WithAutoRedirect();
+        IRedirectionHandler WithAutoRedirect(int maxAutomaticRedirections);
+        IRedirectionHandler WithRedirectionHandler(Action<HttpRedirectionContext> handler);
+        HttpRedirectionContext HandleRedirection(HttpCallBuilder builder, HttpResponseMessage response, int redirectCount = 0);
+    }
+
+    public class RedirectionHandler : IRedirectionHandler
     {
 
         private readonly RedirectionSettings _settings;
@@ -40,12 +48,12 @@ namespace AonWeb.Fluent.Http
             _settings = settings;
         }
 
-        public RedirectionHandler WithAutoRedirect()
+        public IRedirectionHandler WithAutoRedirect()
         {
             return WithAutoRedirect(-1);
         }
 
-        public RedirectionHandler WithAutoRedirect(int maxAutomaticRedirections)
+        public IRedirectionHandler WithAutoRedirect(int maxAutomaticRedirections)
         {
             _settings.AllowAutoRedirect = true;
 
@@ -55,7 +63,7 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
-        public RedirectionHandler WithRedirectionHandler(Action<HttpRedirectionContext> handler)
+        public IRedirectionHandler WithRedirectionHandler(Action<HttpRedirectionContext> handler)
         {
             _settings.RedirectHandler = Utils.MergeAction(_settings.RedirectHandler, handler);
 
