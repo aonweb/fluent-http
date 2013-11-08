@@ -81,6 +81,7 @@ namespace AonWeb.Fluent.Http
 
                 var newUri = GetRedirectUri(uri, response);
 
+                //TODO: is there any additional data a consumer would need in the HttpRedirectionContext to reason about
                 var ctx = new HttpRedirectionContext
                 {
                     StatusCode = response.StatusCode,

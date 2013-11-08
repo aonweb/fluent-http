@@ -124,7 +124,7 @@ namespace AonWeb.Fluent.Tests.Http
         {
             //arrange
             var method = "GET";
-            var builder = CreateBuilder().WithMethod(method);
+            var builder = CreateBuilder().WithUri(TestUriString).WithMethod(method);
 
             //act
             builder.ResultAsync();
@@ -162,7 +162,7 @@ namespace AonWeb.Fluent.Tests.Http
         {
             //arrange
             var method = HttpMethod.Get;
-            var builder = CreateBuilder().WithMethod(method);
+            var builder = CreateBuilder().WithUri(TestUriString).WithMethod(method);
 
             //act
             builder.ResultAsync();
@@ -189,7 +189,7 @@ namespace AonWeb.Fluent.Tests.Http
             //arrange
             var method1 = "POST";
             var method2 = "GET";
-            var builder = CreateBuilder().WithMethod(method1).WithMethod(method2);
+            var builder = CreateBuilder().WithUri(TestUriString).WithMethod(method1).WithMethod(method2);
 
             //act
             builder.ResultAsync();

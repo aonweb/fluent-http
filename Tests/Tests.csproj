@@ -55,10 +55,12 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="AssertExceptions.cs" />
+    <Compile Include="AssertExtensions.cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderTests.cs" />
     <Compile Include="Http\InterfaceDefinitionTests.cs" />
+    <Compile Include="Http\RedirectionHandlerTests.cs" />
+    <Compile Include="Http\UtilsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

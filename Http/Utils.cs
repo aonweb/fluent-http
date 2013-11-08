@@ -48,7 +48,7 @@ namespace AonWeb.Fluent.Http
 
             var builder = new UriBuilder(uri)
             {
-                Query = "?" + values.ToString()
+                Query = values.ToString()
             };
 
             return builder.Uri;

@@ -7,7 +7,7 @@ using Moq;
 
 namespace AonWeb.Fluent.Tests
 {
-    public static class AssertExceptions
+    public static class AssertExtensions
     {
         public static void VerifyRequest(this Mock<IHttpClient> mock, Expression<Func<HttpRequestMessage, bool>> messagePredicate)
         {
@@ -18,7 +18,5 @@ namespace AonWeb.Fluent.Tests
         {
             mock.Verify(m => m.SendAsync(It.Is<HttpRequestMessage>(messagePredicate), It.IsAny<HttpCompletionOption>(), It.IsAny<CancellationToken>()), times);
         }
-
-
     }
 }
