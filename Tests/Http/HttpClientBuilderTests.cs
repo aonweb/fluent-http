@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AonWeb.Fluent.Http;
+using AonWeb.Fluent.Http.Client;
 using NUnit.Framework;
 namespace AonWeb.Fluent.Tests.Http
 {

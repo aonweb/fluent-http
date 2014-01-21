@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading;
 using AonWeb.Fluent.Http;
+using AonWeb.Fluent.Http.Client;
 using Moq;
 using NUnit.Framework;
 

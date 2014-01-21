@@ -1,131 +1,279 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using AonWeb.Fluent.HAL.Representations;
 using AonWeb.Fluent.Http;
+using AonWeb.Fluent.Http.Client;
+using AonWeb.Fluent.Http.Handlers;
+using AonWeb.Fluent.Http.Serialization;
 
 namespace AonWeb.Fluent.HAL
 {
-    public class HalCallBuilder<TResult, TContent, TError> : IHttpCallBuilder<TResult, TContent, TError>
+    public interface IHalCallBuilder<TResult, in TContent, TError>
+        where TResult : IHalResource
+        where TContent : IHalRequest
+        where TError : IHalResource
     {
-        public IHttpCallBuilder<TResult, TContent, TError> WithUri(string uri)
-        {
-            throw new NotImplementedException();
+        IHalCallBuilder<TResult, TContent, TError> WithLink(string link);
+        IHalCallBuilder<TResult, TContent, TError> WithLink(Uri link);
+        IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key);
+        IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key, string tokenKey, object tokenValue);
+        IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key, IDictionary<string, object> tokens);
+        IHalCallBuilder<TResult, TContent, TError> WithQueryString(string name, string value);
+        IHalCallBuilder<TResult, TContent, TError> WithMethod(string method);
+        IHalCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method);
+        IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content);
+        IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding);
+        IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType);
+        IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc);
+        IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding);
+        IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding, string mediaType);
+        IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(TResult result);
+        IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFunc);
+
+        TResult Result();
+        Task<TResult> ResultAsync();
+
+        IHalCallBuilder<TResult, TContent, TError> CancelRequest();
+
+        // conversion methods
+        IAdvancedHalCallBuilder<TResult, TContent, TError> Advanced { get; }
+
+        IHalCallBuilder<T, TContent, TError> WithResultOfType<T>()
+            where T : IHalResource;
+        IHalCallBuilder<TResult, T, TError> WithContentOfType<T>()
+            where T : IHalRequest;
+        IHalCallBuilder<TResult, TContent, T> WithErrorsOfType<T>()
+            where T : IHalResource;
+    }
+
+    public interface IAdvancedHalCallBuilder<TResult, in TContent, TError> : IHalCallBuilder<TResult, TContent, TError>
+        where TResult : IHalResource
+        where TContent : IHalRequest
+        where TError : IHalResource
+    {
+        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClient> configuration);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureRedirect(Action<IRedirectHandler> configuration);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithRedirectHandler(Action<HttpRedirectContext> handler);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureErrorHandling(Action<IErrorHandler<TError>> configuration);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithErrorHandler(Action<HttpErrorContext<TError>> handler);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithExceptionHandler(Action<HttpExceptionContext> handler);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithNoCache();
+    }
+
+
+    public class HalCallBuilder<TResult, TContent, TError> : IAdvancedHalCallBuilder<TResult, TContent, TError>
+        where TResult : IHalResource
+        where TContent : IHalRequest
+        where TError : IHalResource
+    {
+        private readonly IHttpCallBuilder<TResult, TContent, TError> _innerBuilder;
+
+        public HalCallBuilder()
+            : this(new HttpCallBuilder<TResult, TContent, TError>()) { }
+
+        internal HalCallBuilder(IHttpCallBuilder<TResult, TContent, TError> builder)
+        { 
+            _innerBuilder = builder;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithUri(Uri uri)
+        public IHalCallBuilder<TResult, TContent, TError> WithLink(string link)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithUri(link);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithQueryString(string name, string value)
+        public IHalCallBuilder<TResult, TContent, TError> WithLink(Uri link)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithUri(link);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithMethod(string method)
+        public IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key)
         {
-            throw new NotImplementedException();
+            return WithLink(resource.GetLink(key));
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method)
+        public IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key, string tokenKey, object tokenValue)
         {
-            throw new NotImplementedException();
+            return WithLink(resource.GetLink(key,tokenKey, tokenValue));
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content)
+        public IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key, IDictionary<string, object> tokens)
         {
-            throw new NotImplementedException();
+            return WithLink(resource.GetLink(key, tokens));
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding)
+        public IHalCallBuilder<TResult, TContent, TError> WithQueryString(string name, string value)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithQueryString(name, value);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType)
+        public IHalCallBuilder<TResult, TContent, TError> WithMethod(string method)
         {
-            throw new NotImplementedException();
+            _innerBuilder. WithMethod(method);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc)
+        public IHalCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithMethod(method);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding)
+        public IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithContent(content);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding, string mediaType)
+        public IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithContent( content,  encoding);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClient> configuration)
+        public IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithContent( content,  encoding,  mediaType);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
+        public IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithContent(contentFunc);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureRedirection(Action<IRedirectionHandler> configuration)
+        public IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding)
         {
-            throw new NotImplementedException();
+            _innerBuilder. WithContent(contentFunc, encoding);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithRedirectionHandler(Action<HttpRedirectionContext> handler)
+        public IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding, string mediaType)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithContent(contentFunc,  encoding,  mediaType);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureErrorHandling(Action<IErrorHandler<TError>> configuration)
+        public IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(TResult result)
         {
-            throw new NotImplementedException();
+            _innerBuilder.WithDefaultResult( result);
+
+            return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithErrorHandler(Action<HttpErrorContext<TError>> handler)
+        public IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFunc)
         {
-            throw new NotImplementedException();
-        }
+            _innerBuilder.WithDefaultResult(resultFunc);
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithNoCache()
-        {
-            throw new NotImplementedException();
+            return this;
         }
 
         public TResult Result()
         {
-            throw new NotImplementedException();
+            return _innerBuilder.Result();
         }
 
-        public Task<TResult> ResultAsync()
+        public async Task<TResult> ResultAsync()
         {
-            throw new NotImplementedException();
+            return await _innerBuilder.ResultAsync();
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> CancelRequest()
+        public IHalCallBuilder<TResult, TContent, TError> CancelRequest()
         {
-            throw new NotImplementedException();
+            _innerBuilder.CancelRequest();
+
+            return this;
         }
 
-        public IHttpCallBuilder<T, TContent, TError> WithResultOfType<T>()
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> Advanced { get { return this; } }
+
+        public IHalCallBuilder<T, TContent, TError> WithResultOfType<T>() where T : IHalResource
         {
-            throw new NotImplementedException();
+            return new HalCallBuilder<T, TContent, TError>(_innerBuilder.WithResultOfType<T>());
         }
 
-        public IHttpCallBuilder<TResult, T, TError> WithContentOfType<T>()
+        public IHalCallBuilder<TResult, T, TError> WithContentOfType<T>() where T : IHalRequest
         {
-            throw new NotImplementedException();
+            return new HalCallBuilder<TResult, T, TError>(_innerBuilder.WithContentOfType<T>());
         }
 
-        public IHttpCallBuilder<TResult, TContent, T> WithErrorsOfType<T>()
+        public IHalCallBuilder<TResult, TContent, T> WithErrorsOfType<T>() where T : IHalResource
         {
-            throw new NotImplementedException();
+            return new HalCallBuilder<TResult, TContent, T>(_innerBuilder.WithErrorsOfType<T>());
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClient> configuration)
+        {
+            _innerBuilder.Advanced.ConfigureClient(configuration);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
+        {
+            _innerBuilder.Advanced.ConfigureClient(configuration);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureRedirect(Action<IRedirectHandler> configuration)
+        {
+            _innerBuilder.Advanced.ConfigureRedirect(configuration);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithRedirectHandler(Action<HttpRedirectContext> handler)
+        {
+            _innerBuilder.Advanced.WithRedirectHandler(handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureErrorHandling(Action<IErrorHandler<TError>> configuration)
+        {
+            _innerBuilder.Advanced.ConfigureErrorHandling(configuration);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithErrorHandler(Action<HttpErrorContext<TError>> handler)
+        {
+            _innerBuilder.Advanced.WithErrorHandler(handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithExceptionHandler(Action<HttpExceptionContext> handler)
+        {
+            _innerBuilder.Advanced.WithExceptionHandler(handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithNoCache()
+        {
+            _innerBuilder.Advanced.WithNoCache();
+
+            return this;
         }
     }
 }

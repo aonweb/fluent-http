@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AonWeb.Fluent.Http
+namespace AonWeb.Fluent.Http.Client
 {
     public class HttpClientWrapper : IHttpClient
     {

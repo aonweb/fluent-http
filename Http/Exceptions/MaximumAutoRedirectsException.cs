@@ -7,17 +7,17 @@ namespace AonWeb.Fluent.Http.Exceptions
     /// <summary>
     /// The exception that is thrown when the maximum number of automatically handled redirect responses from a request is reached.
     /// </summary>
-    public class MaximumAutomaticRedirectsException : Exception
+    public class MaximumAutoRedirectsException : Exception
     {
-        public MaximumAutomaticRedirectsException() { }
+        public MaximumAutoRedirectsException() { }
 
-        public MaximumAutomaticRedirectsException(string message)
+        public MaximumAutoRedirectsException(string message)
             : base(message) {  }
 
-        public MaximumAutomaticRedirectsException(string message, Exception exception) :
+        public MaximumAutoRedirectsException(string message, Exception exception) :
             base(message, exception) { }
 
-        protected MaximumAutomaticRedirectsException(SerializationInfo info, StreamingContext context) :
+        protected MaximumAutoRedirectsException(SerializationInfo info, StreamingContext context) :
             base(info, context) { }      
     }
 }

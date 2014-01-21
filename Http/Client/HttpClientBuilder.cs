@@ -1,53 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-namespace AonWeb.Fluent.Http
+namespace AonWeb.Fluent.Http.Client
 {
-    public interface IHttpClientBuilder
-    {
-        HttpClientSettings Settings { get; }
-
-        IHttpClient Create();
-        IHttpClientBuilder Configure(Action<IHttpClient> configuration);
-        IHttpClientBuilder WithHeaders(Action<HttpRequestHeaders> configuration);
-        IHttpClientBuilder WithHeaders(string name, string value);
-        IHttpClientBuilder WithHeaders(string name, IEnumerable<string> values);
-        IHttpClientBuilder WithTimeout(TimeSpan timeout);
-        IHttpClientBuilder WithDecompressionMethods(DecompressionMethods options);
-        IHttpClientBuilder WithClientCertificateOptions(ClientCertificateOption options);
-        IHttpClientBuilder WithUseCookies();
-        IHttpClientBuilder WithUseCookies(CookieContainer container);
-        IHttpClientBuilder WithCredentials(ICredentials credentials);
-        IHttpClientBuilder WithMaxBufferSize(long bufferSize);
-        IHttpClientBuilder WithProxy(IWebProxy proxy);
-        IHttpClientBuilder WithCachePolicy(RequestCacheLevel cacheLevel);
-        IHttpClientBuilder WithCachePolicy(RequestCachePolicy cachePolicy);
-    }
-
-    public class HttpClientSettings
-    {
-        public HttpClientSettings()
-        {
-            CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
-        }
-
-        public Action<IHttpClient> ClientConfiguration { get; internal set; }
-        public Action<HttpRequestHeaders> HeaderConfiguration { get; internal set; }
-        public DecompressionMethods? AutomaticDecompression { get; internal set; }
-        public ClientCertificateOption? ClientCertificateOptions { get; internal set; }
-        public CookieContainer CookieContainer { get; internal set; }
-        public ICredentials Credentials { get; internal set; }
-        public long? MaxRequestContentBufferSize { get; internal set; }
-        public IWebProxy Proxy { get; internal set; }
-        public TimeSpan? Timeout { get; internal set; }
-        public RequestCachePolicy  CachePolicy { get; internal set; }
-
-    }
-
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly HttpClientSettings _settings;
@@ -154,6 +113,7 @@ namespace AonWeb.Fluent.Http
 
         public IHttpClient Create()
         {
+            // should we pool these client or handler
             var handler = CreateHandler();
 
             var client = new HttpClient(handler);
