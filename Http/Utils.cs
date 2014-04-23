@@ -7,6 +7,11 @@ namespace AonWeb.Fluent.Http
 {
     public static class Utils
     {
+        public static T As<T>(this object @this)
+        {
+            return (T) @this;
+        }
+
         public static Action<T> MergeAction<T>(Action<T> action1, Action<T> action2)
         {
             if (action1 == null && action2 == null)

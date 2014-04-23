@@ -276,6 +276,8 @@ namespace AonWeb.Fluent.Http
             _clientBuilder = clientBuilder;
             _retryHandler = retryHandler;
             _redirectionHandler = redirectionHandler;
+
+            _settings.AddHandlers(_retryHandler, _redirectionHandler);
         }
 
         public IAdvancedHttpCallBuilder Advanced
@@ -471,41 +473,47 @@ namespace AonWeb.Fluent.Http
 
         public async Task<HttpResponseMessage> ResultAsync()
         {
-            return await ResultAsync(_settings.TokenSource.Token);
+            return await ResultAsync(new HttpCallContext(_settings));
         }
 
-        internal async Task<HttpResponseMessage> ResultAsync(CancellationToken token, int retryCount = 0, int redirectCount = 0)
+        internal async Task<HttpResponseMessage> ResultAsync(HttpCallContext context)
         {
-            _settings.Validate();
+            context.Validate();
 
             using (var client = _clientBuilder.Create())
             {
-                using (var message = new HttpRequestMessage(_settings.Method, _settings.Uri))
+                using (var message = new HttpRequestMessage(context.Method, context.Uri))
                 {
-                    if (_settings.Content != null)
-                        message.Content = _settings.Content();
+                    if (context.Content != null)
+                        message.Content = context.Content();
 
-                    var response = await client.SendAsync(message, _settings.CompletionOption, token);
+                    foreach (var handler in context.Handlers)
+                        handler.Sending(context);
 
-                    var retryCtx = _retryHandler.HandleRetry(this, response, retryCount);
+                    context.Response = await client.SendAsync(message, context.CompletionOption, context.TokenSource.Token);
 
-                    if (retryCtx != null && retryCtx.ShouldRetry)
-                    {
-                        if (retryCtx.RetryAfter > 0)
-                            await Task.Delay(retryCtx.RetryAfter, token);
+                    foreach (var handler in context.Handlers)
+                        handler.Sent(context);
 
-                        response = await ResultAsync(token, retryCount + 1, redirectCount);
-                    }
+                    //var retryCtx = _retryHandler.HandleRetry(this, response, retryCount);
 
-                    var redirectCtx = _redirectionHandler.HandleRedirect(this, response, redirectCount);
+                    //if (retryCtx != null && retryCtx.ShouldRetry)
+                    //{
+                    //    if (retryCtx.RetryAfter > 0)
+                    //        await Task.Delay(retryCtx.RetryAfter, token);
 
-                    if (redirectCtx != null)
-                    {
-                        WithUri(redirectCtx.RedirectUri);
-                        response = await ResultAsync(token, retryCount, redirectCount + 1);
-                    }
+                    //    response = await ResultAsync(token, retryCount + 1, redirectCount);
+                    //}
 
-                    return response;
+                    //var redirectCtx = _redirectionHandler.HandleRedirect(this, response, redirectCount);
+
+                    //if (redirectCtx != null)
+                    //{
+                    //    WithUri(redirectCtx.RedirectUri);
+                    //    response = await ResultAsync(token, retryCount, redirectCount + 1);
+                    //}
+
+                    return context.Response;
                 }
             }
         }
