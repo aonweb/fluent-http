@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp", "AonWeb.FluentHttp\AonWeb.FluentHttp.csproj", "{2996F912-482D-42C4-A315-CBAFF83C899E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Tests", "AonWeb.FluentHttpTests\AonWeb.FluentHttp.Tests.csproj", "{98B8E645-C37A-428A-8CBD-46CED422764B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{7BAED64B-B6C5-4FFD-AE70-630BFC63FFDC}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.HAL", "AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj", "{1901429B-AB31-45AF-A071-7F9A985C3CBD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2996F912-482D-42C4-A315-CBAFF83C899E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2996F912-482D-42C4-A315-CBAFF83C899E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2996F912-482D-42C4-A315-CBAFF83C899E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2996F912-482D-42C4-A315-CBAFF83C899E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98B8E645-C37A-428A-8CBD-46CED422764B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98B8E645-C37A-428A-8CBD-46CED422764B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98B8E645-C37A-428A-8CBD-46CED422764B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98B8E645-C37A-428A-8CBD-46CED422764B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1901429B-AB31-45AF-A071-7F9A985C3CBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1901429B-AB31-45AF-A071-7F9A985C3CBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1901429B-AB31-45AF-A071-7F9A985C3CBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1901429B-AB31-45AF-A071-7F9A985C3CBD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
