@@ -2,7 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AonWeb.Fluent.Http.Serialization
+namespace AonWeb.FluentHttp.Serialization
 {
     public interface ISerializer<T>
     {

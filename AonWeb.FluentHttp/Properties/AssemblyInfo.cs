@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AonWeb.Fluent.Http")]
+[assembly: AssemblyTitle("AonWeb.FluentHttp")]
 [assembly: AssemblyDescription("Fluent HttpClient")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AonWeb")]
-[assembly: AssemblyProduct("AonWeb.Fluent.Http")]
+[assembly: AssemblyProduct("AonWeb.FluentHttp")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 
-namespace AonWeb.Fluent.Http.Handlers
+using AonWeb.FluentHttp.Exceptions;
+
+namespace AonWeb.FluentHttp.Handlers
 {
-    public class ErrorHandlerSettings<TError>
+    public class DefaultSuccessfulResponseValidator
     {
-        public ErrorHandlerSettings()
+        // TODO: allow this to be configurable
+        static DefaultSuccessfulResponseValidator()
         {
             ValidStatusCodes = new HashSet<HttpStatusCode>
             { 
@@ -20,10 +24,24 @@ namespace AonWeb.Fluent.Http.Handlers
             };
         }
 
-        public Action<HttpErrorContext<TError>> ErrorHandler { get; set; }
-        public Action<HttpExceptionContext> ExceptionHandler { get; set; }
+        public static bool IsSuccessfulResponse(HttpResponseMessage response)
+        {
+            return ValidStatusCodes.Contains(response.StatusCode);
+        }
 
-        // TODO: allow this to be configurable
-        public HashSet<HttpStatusCode> ValidStatusCodes { get; private set; }
+        public static HashSet<HttpStatusCode> ValidStatusCodes { get; private set; }
+    }
+
+    public class DefaultExceptionFactory<TError>
+    {
+        public static Exception CreateException(HttpErrorContext context)
+        {
+            return new HttpCallException(context.StatusCode);
+        }
+
+        public static Exception CreateException<TResult, TContent>(HttpErrorContext<TResult, TContent, TError> context )
+        {
+            return new HttpErrorException<TError>(context.Error, context.StatusCode);
+        }
     }
 }

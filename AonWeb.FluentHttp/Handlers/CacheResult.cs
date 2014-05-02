@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AonWeb.Fluent.Http.Cache
+namespace AonWeb.FluentHttp.Cache
 {
     public interface ICachedHttpResult
     {

@@ -1,21 +1,19 @@
 ﻿using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Text;
 
-namespace AonWeb.Fluent.Http.Serialization
+namespace AonWeb.FluentHttp.Serialization
 {
     // TODO: static SerializationProvider to set settings
 
-    public class SerializerFactory<T> : ISerializerFactory<T>
+    public class SerializerFactory : ISerializerFactory
     {
-        public ISerializer<T> GetSerializer(HttpResponseMessage response)
+        public ISerializer<T> GetSerializer<T>(HttpResponseMessage response)
         {
             var mediaType = response.Content.Headers.ContentType.MediaType;
 
-            return GetSerializer( mediaType);
+            return GetSerializer<T>(mediaType);
         }
 
-        public ISerializer<T> GetSerializer(string mediaType)
+        public ISerializer<T> GetSerializer<T>(string mediaType)
         {
             //TODO: more serializers
             //ProtoBuf, Message Pack, XML

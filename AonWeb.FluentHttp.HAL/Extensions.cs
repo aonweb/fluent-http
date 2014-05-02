@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using AonWeb.Fluent.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Representations;
 
-namespace AonWeb.Fluent.HAL
+namespace AonWeb.FluentHttp.HAL
 {
     public static class Extensions
     {

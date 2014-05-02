@@ -1,10 +1,7 @@
 ﻿using System.Net.Http;
-
-using AonWeb.Fluent.Http;
-
 using NUnit.Framework;
 
-namespace AonWeb.Fluent.Tests.Http
+namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
     public class InterfaceDefinitionTests

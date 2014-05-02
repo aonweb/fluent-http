@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using AonWeb.Fluent.Http;
 using NUnit.Framework;
-namespace AonWeb.Fluent.Tests.Http
+
+namespace AonWeb.FluentHttp.Tests.Http
 {
-    [TestFixture()]
+    [TestFixture]
     public class UtilsTests
     {
-        [Test()]
+        [Test]
         public void MergeAction_WhenCalled_ExpectMerge()
         {
             var action1Called = new DateTime?();
@@ -28,7 +24,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.NotNull(action2Called, "Action 2 was not called");
         }
 
-        [Test()]
+        [Test]
         public void MergeAction_WhenCalled_ExpectCorrectOrder()
         {
             var action1Called = new DateTime?();
@@ -43,7 +39,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.Less(action1Called, action2Called);
         }
 
-        [Test()]
+        [Test]
         public void MergeAction_WhenCalledWithNulls_ExpectNoException()
         {
             var actual = Utils.MergeAction<int>(null, null);
@@ -53,7 +49,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.Pass();
         }
 
-        [Test()]
+        [Test]
         public void MergeAction_WhenCalledWithFirstNull_ExpectNoException()
         {
             Action<int> action = i => { };
@@ -65,7 +61,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.Pass();
         }
 
-        [Test()]
+        [Test]
         public void MergeAction_WhenCalledWithSecondNull_ExpectNoException()
         {
             Action<int> action = i => { };
@@ -77,7 +73,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.Pass();
         }
 
-        [Test()]
+        [Test]
         [TestCase("http://somedomain.com", "q", "1", "http://somedomain.com?q=1")]
         [TestCase("http://somedomain.com", "q", "1 and 2", "http://somedomain.com?q=1+and+2")]
         [TestCase("http://somedomain.com", "q", null, "http://somedomain.com?q=")]
@@ -93,7 +89,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.AreEqual(expectedUri, actualUri);
         }
 
-        [Test()]
+        [Test]
         public void AppendToQueryString_WithMultipleKeys_ExpectCorrectOutput()
         {
             var uri = new Uri("http://www.somedomain.com?q1=1");
@@ -104,7 +100,7 @@ namespace AonWeb.Fluent.Tests.Http
 
             Assert.AreEqual(expected, actual);
         }
-        [Test()]
+        [Test]
         public void AppendToQueryString_WithNullValues_ExpectSameUri()
         {
             var expected = new Uri("http://www.somedomain.com");
@@ -114,7 +110,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.AreEqual(expected, actual);
         }
 
-        [Test()]
+        [Test]
         public void AppendToQueryString_WithNoValues_ExpectSameUri()
         {
             var expected = new Uri("http://www.somedomain.com");
@@ -124,7 +120,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.AreEqual(expected, actual);
         }
 
-        [Test()]
+        [Test]
         public void AppendToQueryString_WhenValueAlreadyExists_ExpectValueReplaced()
         {
             var uri = new Uri("http://www.somedomain.com?q=1");
@@ -135,7 +131,7 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.AreEqual(expected, actual);
         }
 
-        [Test()]
+        [Test]
         [ExpectedException(typeof(ArgumentNullException))]
         public void AppendToQueryString_WithUriNull_ExpectException()
         {

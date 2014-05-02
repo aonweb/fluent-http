@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using AonWeb.Fluent.Http.Cache;
+using AonWeb.FluentHttp.Cache;
 
-namespace AonWeb.Fluent.HAL.Representations
+namespace AonWeb.FluentHttp.HAL.Representations
 {
     public class HalManifest : HalResource, ICachedHttpResult
     {

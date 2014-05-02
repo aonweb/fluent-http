@@ -1,9 +1,9 @@
 ﻿using System;
-using AonWeb.Fluent.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Representations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AonWeb.Fluent.HAL.Serialization
+namespace AonWeb.FluentHttp.HAL.Serialization
 {
     public class HyperMediaLinksConverter : JsonConverter
     {

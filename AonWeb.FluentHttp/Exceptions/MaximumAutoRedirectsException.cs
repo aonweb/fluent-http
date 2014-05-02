@@ -2,22 +2,23 @@
 using System.Net;
 using System.Runtime.Serialization;
 
-namespace AonWeb.Fluent.Http.Exceptions
+namespace AonWeb.FluentHttp.Exceptions
 {
     /// <summary>
     /// The exception that is thrown when the maximum number of automatically handled redirect responses from a request is reached.
     /// </summary>
-    public class MaximumAutoRedirectsException : Exception
+    public class MaximumAutoRedirectsException : HttpCallException
     {
-        public MaximumAutoRedirectsException() { }
+        public MaximumAutoRedirectsException(HttpStatusCode statusCode)
+            : base(statusCode) { }
 
-        public MaximumAutoRedirectsException(string message)
-            : base(message) {  }
+        public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message)
+            : base(statusCode, message) { }
 
-        public MaximumAutoRedirectsException(string message, Exception exception) :
-            base(message, exception) { }
+        public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message, Exception exception) :
+            base(statusCode, message, exception) { }
 
         protected MaximumAutoRedirectsException(SerializationInfo info, StreamingContext context) :
-            base(info, context) { }      
+            base(info, context) { }
     }
 }

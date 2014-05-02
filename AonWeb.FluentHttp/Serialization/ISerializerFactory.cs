@@ -1,11 +1,11 @@
 ﻿using System.Net.Http;
 using System.Text;
 
-namespace AonWeb.Fluent.Http.Serialization
+namespace AonWeb.FluentHttp.Serialization
 {
-    public interface ISerializerFactory<T>
+    public interface ISerializerFactory
     {
-        ISerializer<T> GetSerializer(HttpResponseMessage response);
-        ISerializer<T> GetSerializer(string mediaType);
+        ISerializer<T> GetSerializer<T>(HttpResponseMessage response);
+        ISerializer<T> GetSerializer<T>(string mediaType);
     }
 }

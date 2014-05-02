@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Web;
 
-namespace AonWeb.Fluent.Http
+namespace AonWeb.FluentHttp
 {
     public static class Utils
     {

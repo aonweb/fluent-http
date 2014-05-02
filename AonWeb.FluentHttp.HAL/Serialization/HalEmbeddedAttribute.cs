@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AonWeb.Fluent.HAL.Serialization
+namespace AonWeb.FluentHttp.HAL.Serialization
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class HalEmbeddedAttribute : Attribute

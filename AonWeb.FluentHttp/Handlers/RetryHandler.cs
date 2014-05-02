@@ -1,85 +1,111 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 
-namespace AonWeb.Fluent.Http.Handlers
+namespace AonWeb.FluentHttp.Handlers
 {
-    public class RetryHandler : IRetryHandler
+    public class RetryHandler : IHttpCallHandler<HttpCallContext>
     {
 
-        private readonly RetrySettings _settings;
+        private const int DefaultMaxAutoRetries = 2;
+        private const int DefaultRetryAfter = 100;
+        private const int DefaultMaxRetryAfter = 5000;
+
+        // TODO: allow this to be configurable?
+        private static readonly HashSet<HttpStatusCode> RetryStatusCodes = new HashSet<HttpStatusCode> { HttpStatusCode.ServiceUnavailable };
 
         public RetryHandler()
-            : this(new RetrySettings()) { }
-
-        internal RetryHandler(RetrySettings settings)
         {
-            _settings = settings;
+            AllowAutoRetry = true;
+            MaxAutoRetries = DefaultMaxAutoRetries;
+            RetryAfter = DefaultRetryAfter;
+            MaxRetryAfter = DefaultMaxRetryAfter;
         }
 
-        public IRetryHandler WithAutoRetry()
+        public HttpCallHandlerType HandlerType { get { return HttpCallHandlerType.Sent; } }
+        public HttpCallHandlerPriority Priority { get { return HttpCallHandlerPriority.High; } }
+
+        private bool AllowAutoRetry { get; set; }
+        private int MaxAutoRetries { get; set; }
+        private int RetryAfter { get; set; }
+        private int MaxRetryAfter { get; set; }
+        private Action<HttpRetryContext> OnRetry { get; set; }
+
+        public RetryHandler WithAutoRetry()
         {
             return WithAutoRetry(-1, -1);
         }
 
-        public IRetryHandler WithAutoRetry(int maxAutoRetries, int retryAfter)
+        public RetryHandler WithAutoRetry(int maxAutoRetries, int retryAfter)
         {
-            _settings.AllowAutoRetry = true;
+            AllowAutoRetry = true;
 
             if (maxAutoRetries >= 0)
-                _settings.MaxAutoRetries = maxAutoRetries;
+                MaxAutoRetries = maxAutoRetries;
 
             if (retryAfter >= 0)
-                _settings.RetryAfter = retryAfter;
+                RetryAfter = retryAfter;
 
             return this;
         }
 
-        public IRetryHandler WithHandler(Action<HttpRetryContext> handler)
+        public RetryHandler WithCallback(Action<HttpRetryContext> callback)
         {
-            _settings.RetryHandler = Utils.MergeAction(_settings.RetryHandler, handler);
+            OnRetry = Utils.MergeAction(OnRetry, callback);
 
             return this;
         }
 
-        public HttpRetryContext HandleRetry(HttpCallBuilder builder, HttpResponseMessage response, int retryCount = 0)
+        public async Task Handle(HttpCallContext context)
         {
             // TODO: probably need to implement the circuit breaker pattern here.
 
-            if (_settings.AllowAutoRetry && ShouldRetry(response))
+            if (AllowAutoRetry && ShouldRetry(context.Response))
             {
-                var uri = builder.Settings.Uri;
+                var uri = context.Uri;
 
-                if (retryCount > _settings.MaxAutoRetries)
-                    return null;
+                var retryCount = context.Items["RetryCount"].As<int?>().GetValueOrDefault();
 
-                var retryAfter = GetRetryAfter(response);
+                if (retryCount > MaxAutoRetries)
+                    return;
+
+                var retryAfter = GetRetryAfter(context.Response);
 
                 var ctx = new HttpRetryContext
                 {
-                    StatusCode = response.StatusCode,
-                    RequestMessage = response.RequestMessage,
+                    StatusCode = context.Response.StatusCode,
+                    RequestMessage = context.Response.RequestMessage,
                     Uri = uri,
                     ShouldRetry = retryAfter.HasValue,
-                    RetryAfter = retryAfter ?? _settings.RetryAfter
+                    RetryAfter = retryAfter ?? RetryAfter
                 };
 
-                if (_settings.RetryHandler != null)
-                    _settings.RetryHandler(ctx);
+                if (OnRetry != null)
+                    OnRetry(ctx);
 
                 if (!ctx.ShouldRetry)
-                    return null;
+                    return;
 
-                return ctx;
+                
+                if (ctx.RetryAfter > 0)
+                    await Task.Delay(ctx.RetryAfter, context.TokenSource.Token);
+
+                context.Items["RetryCount"] = retryCount + 1;
+                context.Response = await context.Builder.ResultAsync();
             }
+        }
 
-            return null;
+        private static bool ShouldRetry(HttpResponseMessage response)
+        {
+            return RetryStatusCodes.Contains(response.StatusCode);
         }
 
         private int? GetRetryAfter(HttpResponseMessage response)
         {
             if (response.StatusCode != HttpStatusCode.ServiceUnavailable)
-                return _settings.RetryAfter;
+                return RetryAfter;
 
             var retryAfterHeader = response.Headers.RetryAfter;
 
@@ -95,16 +121,11 @@ namespace AonWeb.Fluent.Http.Handlers
                     tempMs = (int)retryAfterHeader.Delta.Value.TotalMilliseconds;
                 }
 
-                if (tempMs > 0 && tempMs < _settings.MaxRetryAfter)
+                if (tempMs > 0 && tempMs < MaxRetryAfter)
                     return tempMs;
             }
 
             return null;
-        }
-
-        private bool ShouldRetry(HttpResponseMessage response)
-        {
-            return _settings.RetryStatusCodes.Contains(response.StatusCode);
-        }
+        } 
     }
 }

@@ -5,7 +5,7 @@ using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-namespace AonWeb.Fluent.Http.Client
+namespace AonWeb.FluentHttp.Client
 {
     public class HttpClientBuilder : IHttpClientBuilder
     {

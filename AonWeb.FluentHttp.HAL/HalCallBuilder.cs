@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using AonWeb.Fluent.HAL.Representations;
-using AonWeb.Fluent.Http;
-using AonWeb.Fluent.Http.Client;
-using AonWeb.Fluent.Http.Handlers;
-using AonWeb.Fluent.Http.Serialization;
+using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp;
+using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Serialization;
 
-namespace AonWeb.Fluent.HAL
+namespace AonWeb.FluentHttp.HAL
 {
     public interface IHalCallBuilder<TResult, in TContent, TError>
         where TResult : IHalResource
@@ -40,13 +40,6 @@ namespace AonWeb.Fluent.HAL
 
         // conversion methods
         IAdvancedHalCallBuilder<TResult, TContent, TError> Advanced { get; }
-
-        IHalCallBuilder<T, TContent, TError> WithResultOfType<T>()
-            where T : IHalResource;
-        IHalCallBuilder<TResult, T, TError> WithContentOfType<T>()
-            where T : IHalRequest;
-        IHalCallBuilder<TResult, TContent, T> WithErrorsOfType<T>()
-            where T : IHalResource;
     }
 
     public interface IAdvancedHalCallBuilder<TResult, in TContent, TError> : IHalCallBuilder<TResult, TContent, TError>
@@ -56,11 +49,6 @@ namespace AonWeb.Fluent.HAL
     {
         IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClient> configuration);
         IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureRedirect(Action<IRedirectHandler> configuration);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithRedirectHandler(Action<HttpRedirectContext> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureErrorHandling(Action<IErrorHandler<TError>> configuration);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithErrorHandler(Action<HttpErrorContext<TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithExceptionHandler(Action<HttpExceptionContext> handler);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithNoCache();
     }
 
@@ -205,21 +193,6 @@ namespace AonWeb.Fluent.HAL
 
         public IAdvancedHalCallBuilder<TResult, TContent, TError> Advanced { get { return this; } }
 
-        public IHalCallBuilder<T, TContent, TError> WithResultOfType<T>() where T : IHalResource
-        {
-            return new HalCallBuilder<T, TContent, TError>(_innerBuilder.WithResultOfType<T>());
-        }
-
-        public IHalCallBuilder<TResult, T, TError> WithContentOfType<T>() where T : IHalRequest
-        {
-            return new HalCallBuilder<TResult, T, TError>(_innerBuilder.WithContentOfType<T>());
-        }
-
-        public IHalCallBuilder<TResult, TContent, T> WithErrorsOfType<T>() where T : IHalResource
-        {
-            return new HalCallBuilder<TResult, TContent, T>(_innerBuilder.WithErrorsOfType<T>());
-        }
-
         public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClient> configuration)
         {
             _innerBuilder.Advanced.ConfigureClient(configuration);
@@ -230,41 +203,6 @@ namespace AonWeb.Fluent.HAL
         public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
         {
             _innerBuilder.Advanced.ConfigureClient(configuration);
-
-            return this;
-        }
-
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureRedirect(Action<IRedirectHandler> configuration)
-        {
-            _innerBuilder.Advanced.ConfigureRedirect(configuration);
-
-            return this;
-        }
-
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithRedirectHandler(Action<HttpRedirectContext> handler)
-        {
-            _innerBuilder.Advanced.WithRedirectHandler(handler);
-
-            return this;
-        }
-
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureErrorHandling(Action<IErrorHandler<TError>> configuration)
-        {
-            _innerBuilder.Advanced.ConfigureErrorHandling(configuration);
-
-            return this;
-        }
-
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithErrorHandler(Action<HttpErrorContext<TError>> handler)
-        {
-            _innerBuilder.Advanced.WithErrorHandler(handler);
-
-            return this;
-        }
-
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithExceptionHandler(Action<HttpExceptionContext> handler)
-        {
-            _innerBuilder.Advanced.WithExceptionHandler(handler);
 
             return this;
         }

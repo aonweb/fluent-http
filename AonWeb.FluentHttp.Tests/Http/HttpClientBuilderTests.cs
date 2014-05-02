@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AonWeb.Fluent.Http;
-using AonWeb.Fluent.Http.Client;
+using AonWeb.FluentHttp.Client;
 using NUnit.Framework;
-namespace AonWeb.Fluent.Tests.Http
+namespace AonWeb.FluentHttp.Tests.Http
 {
-    [TestFixture()]
+    [TestFixture]
     public class HttpClientBuilderTests
     {
-        [Test()]
+        [Test]
         public void CanConstruct()
         {
             var builder = CreateBuilder();
@@ -81,55 +76,55 @@ namespace AonWeb.Fluent.Tests.Http
             Assert.Pass();
         }
 
-        [Test()]
+        [Test]
         public void WithAutoRedirect_When_Expect()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void WithAutoRedirect_When_Expect1()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void WithDecompression_When_Expect()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void WithClientCertificateOptions_When_Expect()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void WithCookieContainer_When_Expect()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void WithCredentials_When_Expect()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void WithMaxBuffer_When_Expect()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void WithProxy_When_Expect()
         {
 
         }
 
-        [Test()]
+        [Test]
         public void Create_When_Expect()
         {
 

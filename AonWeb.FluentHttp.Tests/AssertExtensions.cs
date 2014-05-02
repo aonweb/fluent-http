@@ -2,11 +2,10 @@
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Threading;
-using AonWeb.Fluent.Http;
-using AonWeb.Fluent.Http.Client;
+using AonWeb.FluentHttp.Client;
 using Moq;
 
-namespace AonWeb.Fluent.Tests
+namespace AonWeb.FluentHttp.Tests
 {
     public static class AssertExtensions
     {

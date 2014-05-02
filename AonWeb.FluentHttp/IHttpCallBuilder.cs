@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AonWeb.Fluent.Http
+namespace AonWeb.FluentHttp
 {
     public interface IHttpCallBuilder
     {
@@ -25,15 +25,9 @@ namespace AonWeb.Fluent.Http
         IHttpCallBuilder CancelRequest();
 
         IAdvancedHttpCallBuilder Advanced { get; }
-
-        //// conversion methods
-        IHttpCallBuilder<T, string, string> WithResultOfType<T>();
-        IHttpCallBuilder<HttpResponseMessage, T, string> WithContentOfType<T>();
-        IHttpCallBuilder<HttpResponseMessage, string, T> WithErrorsOfType<T>();
-
     }
 
-    public interface IHttpCallBuilder<TResult, in TContent, TError>
+    public interface IHttpCallBuilder<TResult, TContent, TError>
     {
         IHttpCallBuilder<TResult, TContent, TError> WithUri(string uri);
         IHttpCallBuilder<TResult, TContent, TError> WithUri(Uri uri);
@@ -56,8 +50,5 @@ namespace AonWeb.Fluent.Http
 
         // conversion methods
         IAdvancedHttpCallBuilder<TResult, TContent, TError> Advanced { get; }
-        IHttpCallBuilder<T, TContent, TError> WithResultOfType<T>();
-        IHttpCallBuilder<TResult, T, TError> WithContentOfType<T>();
-        IHttpCallBuilder<TResult, TContent, T> WithErrorsOfType<T>();
     }
 }

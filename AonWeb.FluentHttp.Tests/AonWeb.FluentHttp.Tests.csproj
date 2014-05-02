@@ -64,7 +64,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Http\AonWeb.FluentHttp.csproj">
+    <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
       <Project>{2996F912-482D-42C4-A315-CBAFF83C899E}</Project>
       <Name>AonWeb.FluentHttp</Name>
     </ProjectReference>

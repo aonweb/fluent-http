@@ -2,7 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace AonWeb.Fluent.HAL.Representations
+namespace AonWeb.FluentHttp.HAL.Representations
 {
     public class HalRequest : IHalRequest
     {

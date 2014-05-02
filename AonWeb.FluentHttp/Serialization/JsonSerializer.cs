@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace AonWeb.Fluent.Http.Serialization
+namespace AonWeb.FluentHttp.Serialization
 {
     public class JsonSerializer<T> : ISerializer<T>
     {
         public async Task<string> Serialize(object value)
         {
-            return await JsonConvert.SerializeObjectAsync(value, Formatting.None, GetSettings());
+            return await Task.Factory.StartNew(() => JsonConvert.SerializeObject(value, Formatting.None, GetSettings()));
         }
 
         public async Task<T> Deserialize(HttpContent content)
@@ -21,7 +21,7 @@ namespace AonWeb.Fluent.Http.Serialization
 
         public async Task<T> Deserialize(string content)
         {
-            return await JsonConvert.DeserializeObjectAsync<T>(content, GetSettings());
+            return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(content, GetSettings()));
         }
 
         private JsonSerializerSettings GetSettings()

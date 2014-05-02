@@ -79,6 +79,24 @@ namespace AonWeb.FluentHttp {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} handlers collection already contains this handler..
+        /// </summary>
+        internal static string HanderAlreadyExistsErrorFormat {
+            get {
+                return ResourceManager.GetString("HanderAlreadyExistsErrorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} handler type is not supported in this call builder..
+        /// </summary>
+        internal static string HandlerTypeNotSupportedErrorFormat {
+            get {
+                return ResourceManager.GetString("HandlerTypeNotSupportedErrorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The maximum allowed number redirects ({0}) was reached. Last uri: &apos;{1}&apos;.
         /// </summary>
         internal static string MaxAutoRedirectsErrorFormat {

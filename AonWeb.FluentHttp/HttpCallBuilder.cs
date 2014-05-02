@@ -1,45 +1,37 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using AonWeb.Fluent.Http.Client;
-using AonWeb.Fluent.Http.Handlers;
-using AonWeb.Fluent.Http.Serialization;
 
-namespace AonWeb.Fluent.Http
+using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Serialization;
+
+namespace AonWeb.FluentHttp
 {
     public class HttpCallBuilder<TResult, TContent, TError> : IAdvancedHttpCallBuilder<TResult, TContent, TError>
     {
-        private readonly HttpCallBuilderSettings<TResult> _settings;
+        private readonly HttpCallBuilderSettings<TResult, TContent, TError> _settings;
         private readonly IHttpCallBuilder _innerBuilder;
-        private readonly ISerializerFactory<TResult> _serializerFactory;
-        private readonly IErrorHandler<TError> _errorHandler;
+        private readonly ISerializerFactory _serializerFactory;
 
         public HttpCallBuilder()
-            : this(new HttpCallBuilderSettings<TResult>(), new HttpCallBuilder()) { }
+            : this(new HttpCallBuilderSettings<TResult, TContent, TError>(), new HttpCallBuilder()) { }
 
         internal HttpCallBuilder(IHttpCallBuilder builder)
-            : this(new HttpCallBuilderSettings<TResult>(), builder) { }
+            : this(new HttpCallBuilderSettings<TResult, TContent, TError>(), builder) { }
 
-        internal HttpCallBuilder(HttpCallBuilderSettings<TResult> settings, IHttpCallBuilder builder)
-            : this(settings, builder, new SerializerFactory<TResult>(), new ErrorHandler<TError>()) { }
+        internal HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder)
+            : this(settings, builder, new SerializerFactory()) { }
 
-        internal HttpCallBuilder(HttpCallBuilderSettings<TResult> settings, IHttpCallBuilder builder, IErrorHandler<TError> errorHandler)
-            : this(settings, builder, new SerializerFactory<TResult>(), errorHandler) { }
-
-        internal HttpCallBuilder(HttpCallBuilderSettings<TResult> settings, IHttpCallBuilder builder, ISerializerFactory<TResult> serializerFactory)
-            : this(settings, builder, serializerFactory, new ErrorHandler<TError>()) { }
-
-        internal HttpCallBuilder(HttpCallBuilderSettings<TResult> settings, IHttpCallBuilder builder, ISerializerFactory<TResult> serializerFactory, IErrorHandler<TError> errorHandler)
+        internal HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder, ISerializerFactory serializerFactory)
         {
             _settings = settings;
             _innerBuilder = builder;
             _serializerFactory = serializerFactory;
-            _errorHandler = errorHandler;
         }
-
 
         public IHttpCallBuilder<TResult, TContent, TError> WithUri(string uri)
         {
@@ -108,7 +100,7 @@ namespace AonWeb.Fluent.Http
         {
             _innerBuilder.WithContent(() =>
             {
-                var serializer = _serializerFactory.GetSerializer(mediaType);
+                var serializer = _serializerFactory.GetSerializer<TContent>(mediaType);
 
                 var content = contentFunc();
 
@@ -147,39 +139,51 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureRedirect(Action<IRedirectHandler> configuration)
+        public IHttpCallBuilder<TResult, TContent, TError> WithHandler(HttpCallHandlerType handlerType, HttpCallHandlerPriority priority, Func<HttpCallContext<TResult, TContent, TError>, Task> handler)
         {
-            _innerBuilder.Advanced.ConfigureRedirect(configuration);
+            _settings.AddHandler(handlerType, priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithRedirectHandler(Action<HttpRedirectContext> handler)
+        public IHttpCallBuilder<TResult, TContent, TError> WithHandler(IHttpCallHandler<HttpCallContext<TResult, TContent, TError>> handler)
         {
-            _innerBuilder.Advanced.WithRedirectHandler(handler);
+            _settings.AddHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureErrorHandling(Action<IErrorHandler<TError>> configuration)
+        public IHttpCallBuilder<TResult, TContent, TError> WithHandlers(params IHttpCallHandler<HttpCallContext<TResult, TContent, TError>>[] handlers)
         {
-
-            if (configuration != null)
-                configuration(_errorHandler);
+            _settings.AddHandlers(handlers);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithErrorHandler(Action<HttpErrorContext<TError>> handler)
+        public IHttpCallBuilder<TResult, TContent, TError> ConfigureHandler<THandler>(HttpCallHandlerType handlerType, Action<THandler> configure)
+            where THandler : class, IHttpCallHandler<HttpCallContext<TResult, TContent, TError>> 
         {
-            _errorHandler.WithErrorHandler(handler);
+            if (!_settings.Handlers.ContainsKey(handlerType))
+                throw new NotSupportedException(string.Format(SR.HandlerTypeNotSupportedErrorFormat, handlerType));
+
+            var handler = _settings.Handlers[handlerType].OfType<THandler>().FirstOrDefault();
+
+            if (handler != null)
+                configure(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithExceptionHandler(Action<HttpExceptionContext> handler)
+        public IHttpCallBuilder<TResult, TContent, TError> WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
-            _errorHandler.WithExceptionHandler(handler);
+            _settings.AddSuccessfulResponseValidator(validator);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithExceptionFactory(Func<HttpErrorContext<TResult, TContent, TError>, Exception> factory)
+        {
+            _settings.ExceptionFactory = factory;
 
             return this;
         }
@@ -189,6 +193,14 @@ namespace AonWeb.Fluent.Http
             _innerBuilder.Advanced.WithNoCache();
 
             return this;
+        }
+
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> Advanced
+        {
+            get
+            {
+                return this;
+            }
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> CancelRequest()
@@ -205,79 +217,89 @@ namespace AonWeb.Fluent.Http
 
         public async Task<TResult> ResultAsync()
         {
-            // TODO: caching
-            // TODO: circuit breaker
-            // TODO: logging
+            return await ResultAsync(new HttpCallContext<TResult, TContent, TError>(this, _settings));
+        }
+
+        internal async Task<TResult> ResultAsync(HttpCallContext<TResult, TContent, TError> context)
+        {
             try
             {
+                await Handle(HttpCallHandlerType.Sending, context);
+
+                if (context.IsResultSet) 
+                    return context.Result;
+
                 var response = await _innerBuilder.ResultAsync();
 
-                var serializer = _serializerFactory.GetSerializer(response);
+                if (!IsSuccessfulResponse(response))
+                {
+                    var serializer = _serializerFactory.GetSerializer<TError>(response);
 
-                var result = await serializer.Deserialize(response.Content);
+                    var error = await serializer.Deserialize(response.Content);
 
-                return result;
+                    var errorCtx = new HttpErrorContext<TResult, TContent, TError>(context, error);
+
+                    await Handle(HttpCallHandlerType.Error, errorCtx);
+
+                    if (!errorCtx.ErrorHandled)
+                        if (_settings.ExceptionFactory != null)
+                            throw _settings.ExceptionFactory(errorCtx);
+                }
+                else
+                {
+                    await Handle(HttpCallHandlerType.Sent, context);
+
+                    var serializer = _serializerFactory.GetSerializer<TResult>(response);
+
+                    context.Result = await serializer.Deserialize(response.Content);
+
+                    await Handle(HttpCallHandlerType.Result, context);
+
+                    return context.Result;
+                } 
             }
             catch (Exception ex)
             {
-                var ctx = _errorHandler.HandleException(ex);
+                var exCtx = new HttpExceptionContext<TResult, TContent, TError>(context, ex);
 
-                if (!ctx.ExceptionHandled)
+                Handle(HttpCallHandlerType.Exception, exCtx).Wait();
+
+                if (!exCtx.ExceptionHandled)
                     throw;
             }
 
             return _settings.DefaultResult();
         }
 
-        #region Transforms
-
-        public IAdvancedHttpCallBuilder<TResult, TContent, TError> Advanced
+        private static async Task Handle(HttpCallHandlerType handlerType, HttpCallContext<TResult, TContent, TError> context)
         {
-            get
-            {
-                return this;
-            }
+            foreach (var handler in context.Handlers[handlerType].OrderBy(h => h.Priority))
+                await handler.Handle(context);
         }
 
-        public IHttpCallBuilder<T, TContent, TError> WithResultOfType<T>()
+        private bool IsSuccessfulResponse(HttpResponseMessage response)
         {
-            return new HttpCallBuilder<T, TContent, TError>(new HttpCallBuilderSettings<T>(), _innerBuilder, _errorHandler);
+            return !_settings.SuccessfulResponseValidators.Any() || _settings.SuccessfulResponseValidators.All(v => v(response));
         }
-
-        public IHttpCallBuilder<TResult, T, TError> WithContentOfType<T>()
-        {
-            return new HttpCallBuilder<TResult, T, TError>(_settings, _innerBuilder, _serializerFactory, _errorHandler);
-        }
-
-        public IHttpCallBuilder<TResult, TContent, T> WithErrorsOfType<T>()
-        {
-            return new HttpCallBuilder<TResult, TContent, T>(_settings, _innerBuilder, _serializerFactory);
-        }
-
-        #endregion
     }
 
     public class HttpCallBuilder : IAdvancedHttpCallBuilder
     {
         private readonly IHttpClientBuilder _clientBuilder;
-        private readonly IRedirectHandler _redirectionHandler;
-        private readonly IRetryHandler _retryHandler;
         private readonly HttpCallBuilderSettings _settings;
 
         public HttpCallBuilder()
-            : this(new HttpCallBuilderSettings(), new HttpClientBuilder(), new RetryHandler(), new RedirectHandler()) { }
+            : this(new HttpClientBuilder()) { }
 
         public HttpCallBuilder(IHttpClientBuilder clientBuilder)
-            : this(new HttpCallBuilderSettings(), clientBuilder, new RetryHandler(),  new RedirectHandler()) { }
+            : this(new HttpCallBuilderSettings(), clientBuilder, new RetryHandler(), new RedirectHandler()) { }
 
-        internal HttpCallBuilder(HttpCallBuilderSettings settings, IHttpClientBuilder clientBuilder, IRetryHandler retryHandler, IRedirectHandler redirectionHandler)
+        internal HttpCallBuilder(HttpCallBuilderSettings settings, IHttpClientBuilder clientBuilder, params IHttpCallHandler<HttpCallContext>[] defaultHandlers)
         {
             _settings = settings;
             _clientBuilder = clientBuilder;
-            _retryHandler = retryHandler;
-            _redirectionHandler = redirectionHandler;
 
-            _settings.AddHandlers(_retryHandler, _redirectionHandler);
+            _settings.AddHandlers(defaultHandlers);
         }
 
         public IAdvancedHttpCallBuilder Advanced
@@ -317,7 +339,6 @@ namespace AonWeb.Fluent.Http
                 return this;
 
             // TODO: should be delay execution to allow uri to set after?
-
             _settings.Uri = Utils.AppendToQueryString(_settings.Uri, name, value);
 
             return this;
@@ -403,32 +424,59 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
-        public IHttpCallBuilder ConfigureRetries(Action<IRetryHandler> configuration)
+        public IHttpCallBuilder ConfigureRetries(Action<RetryHandler> configuration)
         {
-            if (configuration != null)
-                configuration(_retryHandler);
+            return ConfigureHandler(HttpCallHandlerType.Sent,  configuration);
+        }
+
+        public IHttpCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration)
+        {
+            return ConfigureHandler(HttpCallHandlerType.Sent, configuration);
+        }
+
+        public IHttpCallBuilder WithHandler(HttpCallHandlerType handlerType, HttpCallHandlerPriority priority, Func<HttpCallContext, Task> handler)
+        {
+            _settings.AddHandler(handlerType, priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder WithRetryHandler(Action<HttpRetryContext> handler)
+        public IHttpCallBuilder WithHandler(IHttpCallHandler<HttpCallContext> handler)
         {
-            _retryHandler.WithHandler(handler);
+            _settings.AddHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder ConfigureRedirect(Action<IRedirectHandler> configuration)
+        public IHttpCallBuilder WithHandlers(params IHttpCallHandler<HttpCallContext>[] handlers)
         {
-            if (configuration != null)
-                configuration(_redirectionHandler);
+            _settings.AddHandlers(handlers);
 
             return this;
         }
 
-        public IHttpCallBuilder WithRedirectHandler(Action<HttpRedirectContext> handler)
+        public IHttpCallBuilder ConfigureHandler<THandler>(
+            HttpCallHandlerType handlerType,
+            Action<THandler> configure) where THandler : class, IHttpCallHandler<HttpCallContext>
         {
-            _redirectionHandler.WithHandler(handler);
+            var handler = _settings.Handlers[handlerType].OfType<THandler>().FirstOrDefault();
+
+            if (handler != null)
+                configure(handler);
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
+        {
+            _settings.AddSuccessfulResponseValidator(validator);
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithExceptionFactory(Func<HttpResponseMessage, Exception> factory)
+        {
+            _settings.ExceptionFactory = factory;
 
             return this;
         }
@@ -447,25 +495,6 @@ namespace AonWeb.Fluent.Http
             return this;
         }
 
-        #region IHttpCallBuilder<TResult,TContent, TError> Methods
-
-        public IHttpCallBuilder<T, string, string> WithResultOfType<T>()
-        {
-            return new HttpCallBuilder<T, string, string>(this);
-        }
-
-        public IHttpCallBuilder<HttpResponseMessage, T, string> WithContentOfType<T>()
-        {
-            return new HttpCallBuilder<HttpResponseMessage, T, string>(this);
-        }
-
-        public IHttpCallBuilder<HttpResponseMessage, string, T> WithErrorsOfType<T>()
-        {
-            return new HttpCallBuilder<HttpResponseMessage, string, T>(this);
-        }
-
-        #endregion
-
         public HttpResponseMessage Result()
         {
             return ResultAsync().Result;
@@ -473,49 +502,60 @@ namespace AonWeb.Fluent.Http
 
         public async Task<HttpResponseMessage> ResultAsync()
         {
-            return await ResultAsync(new HttpCallContext(_settings));
+            return await ResultAsync(new HttpCallContext(this, _settings));
         }
 
         internal async Task<HttpResponseMessage> ResultAsync(HttpCallContext context)
         {
-            context.Validate();
+            context.ValidateSettings();
 
-            using (var client = _clientBuilder.Create())
+            HttpResponseMessage response = null;
+
+            try
             {
-                using (var message = new HttpRequestMessage(context.Method, context.Uri))
+                using (var client = _clientBuilder.Create())
                 {
-                    if (context.Content != null)
-                        message.Content = context.Content();
+                    using (var message = new HttpRequestMessage(context.Method, context.Uri))
+                    {
+                        if (context.Content != null)
+                            message.Content = context.Content();
 
-                    foreach (var handler in context.Handlers)
-                        handler.Sending(context);
+                        await Handle(HttpCallHandlerType.Sending, context);
 
-                    context.Response = await client.SendAsync(message, context.CompletionOption, context.TokenSource.Token);
+                        response = context.Response = await client.SendAsync(message, context.CompletionOption, context.TokenSource.Token);
 
-                    foreach (var handler in context.Handlers)
-                        handler.Sent(context);
+                        if (!IsSuccessfulResponse(context.Response))
+                            if (_settings.ExceptionFactory != null)
+                                throw _settings.ExceptionFactory(context.Response);
 
-                    //var retryCtx = _retryHandler.HandleRetry(this, response, retryCount);
+                        await Handle(HttpCallHandlerType.Sent, context);
 
-                    //if (retryCtx != null && retryCtx.ShouldRetry)
-                    //{
-                    //    if (retryCtx.RetryAfter > 0)
-                    //        await Task.Delay(retryCtx.RetryAfter, token);
-
-                    //    response = await ResultAsync(token, retryCount + 1, redirectCount);
-                    //}
-
-                    //var redirectCtx = _redirectionHandler.HandleRedirect(this, response, redirectCount);
-
-                    //if (redirectCtx != null)
-                    //{
-                    //    WithUri(redirectCtx.RedirectUri);
-                    //    response = await ResultAsync(token, retryCount, redirectCount + 1);
-                    //}
-
-                    return context.Response;
+                        response = context.Response;
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                var exContext = new HttpExceptionContext(context, ex);
+
+                Handle(HttpCallHandlerType.Exception, exContext).Wait();
+
+                if (!exContext.ExceptionHandled)
+                    throw;
+            }
+
+            return response;
+        }
+
+        private static async Task Handle(HttpCallHandlerType handlerType, HttpCallContext context)
+        {
+            foreach (var handler in context.Handlers[handlerType].OrderBy(h => h.Priority))
+                await handler.Handle(context);
+        }
+
+        private bool IsSuccessfulResponse(HttpResponseMessage response)
+        {
+            return !_settings.SuccessfulResponseValidators.Any() || _settings.SuccessfulResponseValidators.All(v => v(response));
         }
     }
 }

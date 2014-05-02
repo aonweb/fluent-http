@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace AonWeb.Fluent.Tests.Http
+namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
     public class RedirectionHandlerTests

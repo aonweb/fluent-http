@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Http;
 
-namespace AonWeb.Fluent.Http.Handlers
+namespace AonWeb.FluentHttp.Handlers
 {
     public class HttpRetryContext
     {

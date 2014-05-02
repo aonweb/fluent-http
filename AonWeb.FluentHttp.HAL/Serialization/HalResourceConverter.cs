@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using AonWeb.Fluent.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Representations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace AonWeb.Fluent.HAL.Serialization
+namespace AonWeb.FluentHttp.HAL.Serialization
 {
     public class HalResourceConverter : JsonConverter
     {

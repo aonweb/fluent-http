@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp", "AonWeb.FluentHttp\AonWeb.FluentHttp.csproj", "{2996F912-482D-42C4-A315-CBAFF83C899E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Tests", "AonWeb.FluentHttpTests\AonWeb.FluentHttp.Tests.csproj", "{98B8E645-C37A-428A-8CBD-46CED422764B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Tests", "AonWeb.FluentHttp.Tests\AonWeb.FluentHttp.Tests.csproj", "{98B8E645-C37A-428A-8CBD-46CED422764B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{7BAED64B-B6C5-4FFD-AE70-630BFC63FFDC}"
 	ProjectSection(SolutionItems) = preProject

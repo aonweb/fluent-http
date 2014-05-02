@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading;
-using AonWeb.Fluent.Http;
-using AonWeb.Fluent.Http.Client;
+using AonWeb.FluentHttp;
+using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp;
+using AonWeb.FluentHttp.Client;
+
 using Moq;
 using NUnit.Framework;
 
-namespace AonWeb.Fluent.Tests.Http
+namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
     public class HttpCallBuilderTests
