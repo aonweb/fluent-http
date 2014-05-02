@@ -2,8 +2,7 @@
 
 namespace AonWeb.FluentHttp.Serialization
 {
-    // TODO: static SerializationProvider to set settings
-
+    // TODO: static SerializationProvider to set settings or something
     public class SerializerFactory : ISerializerFactory
     {
         public ISerializer<T> GetSerializer<T>(HttpResponseMessage response)

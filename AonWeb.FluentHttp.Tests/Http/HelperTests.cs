@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
-    public class UtilsTests
+    public class HelperTests
     {
         [Test]
         public void MergeAction_WhenCalled_ExpectMerge()
@@ -16,7 +16,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             Action<int> action1 = i => { action1Called = DateTime.Now; Thread.Sleep(1); };
             Action<int> action2 = i => { action2Called = DateTime.Now; Thread.Sleep(1); };
 
-            var actual = Utils.MergeAction(action1, action2);
+            var actual = Helper.MergeAction(action1, action2);
 
             actual(1);
 
@@ -32,7 +32,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             Action<int> action1 = i => { action1Called = DateTime.Now; Thread.Sleep(1); };
             Action<int> action2 = i => { action2Called = DateTime.Now; Thread.Sleep(1); };
 
-            var actual = Utils.MergeAction(action1, action2);
+            var actual = Helper.MergeAction(action1, action2);
 
             actual(1);
 
@@ -42,7 +42,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void MergeAction_WhenCalledWithNulls_ExpectNoException()
         {
-            var actual = Utils.MergeAction<int>(null, null);
+            var actual = Helper.MergeAction<int>(null, null);
 
             actual(1);
 
@@ -54,7 +54,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             Action<int> action = i => { };
 
-            var actual = Utils.MergeAction(null, action);
+            var actual = Helper.MergeAction(null, action);
 
             actual(1);
 
@@ -66,7 +66,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             Action<int> action = i => { };
 
-            var actual = Utils.MergeAction(action, null);
+            var actual = Helper.MergeAction(action, null);
 
             actual(1);
 
@@ -84,7 +84,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var uri = new Uri(url);
             var expectedUri = new Uri(expected);
 
-            var actualUri = Utils.AppendToQueryString(uri, key, value);
+            var actualUri = Helper.AppendToQueryString(uri, key, value);
 
             Assert.AreEqual(expectedUri, actualUri);
         }
@@ -96,7 +96,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var keys = new NameValueCollection { { "q1", "2" }, { "q2", "1 and 2" }, { "q3", "3" } };
             var expected = new Uri("http://www.somedomain.com?q1=2&q2=1+and+2&q3=3");
 
-            var actual = Utils.AppendToQueryString(uri, keys);
+            var actual = Helper.AppendToQueryString(uri, keys);
 
             Assert.AreEqual(expected, actual);
         }
@@ -105,7 +105,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             var expected = new Uri("http://www.somedomain.com");
 
-            var actual = Utils.AppendToQueryString(expected, null);
+            var actual = Helper.AppendToQueryString(expected, null);
 
             Assert.AreEqual(expected, actual);
         }
@@ -115,7 +115,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             var expected = new Uri("http://www.somedomain.com");
 
-            var actual = Utils.AppendToQueryString(expected, new NameValueCollection());
+            var actual = Helper.AppendToQueryString(expected, new NameValueCollection());
 
             Assert.AreEqual(expected, actual);
         }
@@ -126,7 +126,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var uri = new Uri("http://www.somedomain.com?q=1");
             var expected = new Uri("http://www.somedomain.com?q=2");
 
-            var actual = Utils.AppendToQueryString(uri, new NameValueCollection { { "q", "2" } });
+            var actual = Helper.AppendToQueryString(uri, new NameValueCollection { { "q", "2" } });
 
             Assert.AreEqual(expected, actual);
         }
@@ -136,7 +136,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public void AppendToQueryString_WithUriNull_ExpectException()
         {
 
-            Utils.AppendToQueryString(null, null);
+            Helper.AppendToQueryString(null, null);
         }
     }
 }

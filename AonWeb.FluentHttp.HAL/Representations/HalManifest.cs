@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using AonWeb.FluentHttp.Cache;
+
+using AonWeb.FluentHttp.Caching;
 
 namespace AonWeb.FluentHttp.HAL.Representations
 {

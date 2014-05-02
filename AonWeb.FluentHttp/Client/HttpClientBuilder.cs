@@ -23,14 +23,14 @@ namespace AonWeb.FluentHttp.Client
 
         public IHttpClientBuilder Configure(Action<IHttpClient> configuration)
         {
-            _settings.ClientConfiguration = Utils.MergeAction(_settings.ClientConfiguration, configuration);
+            _settings.ClientConfiguration = Helper.MergeAction(_settings.ClientConfiguration, configuration);
 
             return this;
         }
 
         public IHttpClientBuilder WithHeaders(Action<HttpRequestHeaders> configuration)
         {
-            _settings.HeaderConfiguration = Utils.MergeAction(_settings.HeaderConfiguration, configuration);
+            _settings.HeaderConfiguration = Helper.MergeAction(_settings.HeaderConfiguration, configuration);
 
             return this;
         }
@@ -134,11 +134,11 @@ namespace AonWeb.FluentHttp.Client
         
         private HttpMessageHandler CreateHandler()
         {
-            var handler = new WebRequestHandler();
-
-            //this will be handled by the consuming code
-            handler.AllowAutoRedirect = false;
-            handler.CachePolicy = _settings.CachePolicy;
+            var handler = new WebRequestHandler
+            {
+                AllowAutoRedirect = false, //this will be handled by the consuming code
+                CachePolicy = _settings.CachePolicy
+            };
 
             if (_settings.AutomaticDecompression.HasValue)
                 handler.AutomaticDecompression = _settings.AutomaticDecompression.Value;

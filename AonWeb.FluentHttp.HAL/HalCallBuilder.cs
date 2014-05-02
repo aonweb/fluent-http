@@ -1,13 +1,10 @@
-﻿using System;
+﻿using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.HAL.Representations;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using AonWeb.FluentHttp.HAL.Representations;
-using AonWeb.FluentHttp;
-using AonWeb.FluentHttp.Client;
-using AonWeb.FluentHttp.Handlers;
-using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.HAL
 {

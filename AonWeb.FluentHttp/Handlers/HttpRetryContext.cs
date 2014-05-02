@@ -11,5 +11,6 @@ namespace AonWeb.FluentHttp.Handlers
         public Uri Uri { get; internal set; }
         public bool ShouldRetry { get; set; }
         public int RetryAfter { get; internal set; }
+        public int CurrentRetryCount { get; internal set; }
     }
 }

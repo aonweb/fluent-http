@@ -5,7 +5,7 @@ using System.Web;
 
 namespace AonWeb.FluentHttp
 {
-    public static class Utils
+    public static class Helper
     {
         public static T As<T>(this object @this)
         {

@@ -10,7 +10,7 @@ namespace AonWeb.FluentHttp.Client
     {
         public HttpClientSettings()
         {
-            CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
+            CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default);
         }
 
         public Action<IHttpClient> ClientConfiguration { get; internal set; }
@@ -23,6 +23,5 @@ namespace AonWeb.FluentHttp.Client
         public IWebProxy Proxy { get; internal set; }
         public TimeSpan? Timeout { get; internal set; }
         public RequestCachePolicy  CachePolicy { get; internal set; }
-
     }
 }

@@ -123,11 +123,11 @@
   <data name="ArgumentUriNullOrEmpty" xml:space="preserve">
     <value>Uri can not be null or empty</value>
   </data>
-  <data name="HanderAlreadyExistsErrorFormat" xml:space="preserve">
-    <value>The {0} handlers collection already contains this handler.</value>
+  <data name="HanderAlreadyExistsError" xml:space="preserve">
+    <value>This handler has already been registered.</value>
   </data>
-  <data name="HandlerTypeNotSupportedErrorFormat" xml:space="preserve">
-    <value>The {0} handler type is not supported in this call builder.</value>
+  <data name="HanderDoesNotExistErrorFormat" xml:space="preserve">
+    <value>A handler of type '{0}' has not been registered.</value>
   </data>
   <data name="MaxAutoRedirectsErrorFormat" xml:space="preserve">
     <value>The maximum allowed number redirects ({0}) was reached. Last uri: '{1}'</value>

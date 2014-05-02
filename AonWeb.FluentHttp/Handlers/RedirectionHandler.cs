@@ -7,7 +7,7 @@ using AonWeb.FluentHttp.Exceptions;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class RedirectHandler : IHttpCallHandler<HttpCallContext>
+    public class RedirectHandler : HttpCallHandler
     {
         private const int DefaultMaxAutoRedirects = 5;
 
@@ -20,8 +20,6 @@ namespace AonWeb.FluentHttp.Handlers
             MaxAutoRedirects = DefaultMaxAutoRedirects;
         }
 
-        public HttpCallHandlerType HandlerType { get { return HttpCallHandlerType.Sent; } }
-        public HttpCallHandlerPriority Priority { get { return HttpCallHandlerPriority.High; } }
 
         private bool AllowAutoRedirect { get; set; }
         private int MaxAutoRedirects { get; set; }
@@ -44,12 +42,20 @@ namespace AonWeb.FluentHttp.Handlers
 
         public RedirectHandler WithCallback(Action<HttpRedirectContext> callback)
         {
-            OnRedirect = Utils.MergeAction(OnRedirect, callback);
+            OnRedirect = Helper.MergeAction(OnRedirect, callback);
 
             return this;
         }
 
-        public async Task Handle(HttpCallContext context)
+        public override HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
+        {
+            if (type == HttpCallHandlerType.Sent)
+                return HttpCallHandlerPriority.High;
+
+            return base.GetPriority(type);
+        }
+
+        public override async Task OnSent(HttpCallContext context)
         {
             if (AllowAutoRedirect && IsRedirect(context.Response))
             {
@@ -70,7 +76,8 @@ namespace AonWeb.FluentHttp.Handlers
                     StatusCode = context.Response.StatusCode,
                     RequestMessage = context.Response.RequestMessage,
                     RedirectUri = newUri,
-                    CurrentUri = uri
+                    CurrentUri = uri,
+                    CurrentRedirectionCount = redirectCount
                 };
 
                 if (OnRedirect != null)

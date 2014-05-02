@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class RetryHandler : IHttpCallHandler<HttpCallContext>
+    public class RetryHandler : HttpCallHandler
     {
 
         private const int DefaultMaxAutoRetries = 2;
@@ -23,9 +23,6 @@ namespace AonWeb.FluentHttp.Handlers
             RetryAfter = DefaultRetryAfter;
             MaxRetryAfter = DefaultMaxRetryAfter;
         }
-
-        public HttpCallHandlerType HandlerType { get { return HttpCallHandlerType.Sent; } }
-        public HttpCallHandlerPriority Priority { get { return HttpCallHandlerPriority.High; } }
 
         private bool AllowAutoRetry { get; set; }
         private int MaxAutoRetries { get; set; }
@@ -53,15 +50,21 @@ namespace AonWeb.FluentHttp.Handlers
 
         public RetryHandler WithCallback(Action<HttpRetryContext> callback)
         {
-            OnRetry = Utils.MergeAction(OnRetry, callback);
+            OnRetry = Helper.MergeAction(OnRetry, callback);
 
             return this;
         }
 
-        public async Task Handle(HttpCallContext context)
+        public override HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
         {
-            // TODO: probably need to implement the circuit breaker pattern here.
+            if (type == HttpCallHandlerType.Sent)
+                return HttpCallHandlerPriority.High;
 
+            return base.GetPriority(type);
+        }
+
+        public override async Task OnSent(HttpCallContext context)
+        {
             if (AllowAutoRetry && ShouldRetry(context.Response))
             {
                 var uri = context.Uri;
@@ -79,7 +82,8 @@ namespace AonWeb.FluentHttp.Handlers
                     RequestMessage = context.Response.RequestMessage,
                     Uri = uri,
                     ShouldRetry = retryAfter.HasValue,
-                    RetryAfter = retryAfter ?? RetryAfter
+                    RetryAfter = retryAfter ?? RetryAfter,
+                    CurrentRetryCount = retryCount
                 };
 
                 if (OnRetry != null)
@@ -111,15 +115,11 @@ namespace AonWeb.FluentHttp.Handlers
 
             if (retryAfterHeader != null)
             {
-                int tempMs = 0;
+                var tempMs = 0;
                 if (retryAfterHeader.Date.HasValue)
-                {
                     tempMs = (int)(retryAfterHeader.Date.Value - DateTime.UtcNow).TotalMilliseconds;
-                }
                 else if (retryAfterHeader.Delta.HasValue)
-                {
                     tempMs = (int)retryAfterHeader.Delta.Value.TotalMilliseconds;
-                }
 
                 if (tempMs > 0 && tempMs < MaxRetryAfter)
                     return tempMs;

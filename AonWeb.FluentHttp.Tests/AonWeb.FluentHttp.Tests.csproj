@@ -56,14 +56,22 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AssertExtensions.cs" />
+    <Compile Include="Helpers\Helper.cs" />
+    <Compile Include="Helpers\LocalWebServerResponseInfo.cs" />
+    <Compile Include="Helpers\LocalWebServer.cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderTests.cs" />
     <Compile Include="Http\InterfaceDefinitionTests.cs" />
     <Compile Include="Http\RedirectionHandlerTests.cs" />
     <Compile Include="Http\UtilsTests.cs" />
+    <Compile Include="Integration\HttpHandlerCachingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj">
+      <Project>{1901429b-ab31-45af-a071-7f9a985c3cbd}</Project>
+      <Name>AonWeb.FluentHttp.HAL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
       <Project>{2996F912-482D-42C4-A315-CBAFF83C899E}</Project>
       <Name>AonWeb.FluentHttp</Name>
@@ -73,6 +81,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

@@ -79,20 +79,20 @@ namespace AonWeb.FluentHttp {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} handlers collection already contains this handler..
+        ///   Looks up a localized string similar to This handler has already been registered..
         /// </summary>
-        internal static string HanderAlreadyExistsErrorFormat {
+        internal static string HanderAlreadyExistsError {
             get {
-                return ResourceManager.GetString("HanderAlreadyExistsErrorFormat", resourceCulture);
+                return ResourceManager.GetString("HanderAlreadyExistsError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} handler type is not supported in this call builder..
+        ///   Looks up a localized string similar to A handler of type &apos;{0}&apos; has not been registered..
         /// </summary>
-        internal static string HandlerTypeNotSupportedErrorFormat {
+        internal static string HanderDoesNotExistErrorFormat {
             get {
-                return ResourceManager.GetString("HandlerTypeNotSupportedErrorFormat", resourceCulture);
+                return ResourceManager.GetString("HanderDoesNotExistErrorFormat", resourceCulture);
             }
         }
         
