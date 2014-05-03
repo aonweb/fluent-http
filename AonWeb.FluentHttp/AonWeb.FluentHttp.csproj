@@ -68,6 +68,9 @@
     <Compile Include="Handlers\HttpRedirectContext.cs" />
     <Compile Include="Exceptions\HttpErrorException.cs" />
     <Compile Include="Exceptions\MaximumAutoRedirectsException.cs" />
+    <Compile Include="Handlers\HttpResultContext.cs" />
+    <Compile Include="Handlers\HttpSendingContext.cs" />
+    <Compile Include="Handlers\HttpSentContext.cs" />
     <Compile Include="Handlers\IHttpCallHandler.cs" />
     <Compile Include="HttpCallBuilder.cs" />
     <Compile Include="Client\HttpClientWrapper.cs" />

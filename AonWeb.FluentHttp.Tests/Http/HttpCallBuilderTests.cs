@@ -7,14 +7,15 @@ using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Tests.Helpers;
-using Moq;
 using NUnit.Framework;
 
 namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
-    public class HttpCallBuilderTests
+    public class HttpCallBuilderMethodTests
     {
+        #region Declarations, Set up, & Tear Down
+        
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
         private LocalWebServer _server;
@@ -31,6 +32,8 @@ namespace AonWeb.FluentHttp.Tests.Http
             if (_server != null)
                 _server.Stop();
         }
+
+        #endregion
 
         [Test]
         public void CanConstruct()
@@ -133,6 +136,26 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         #endregion
 
+        #region WithQuerystring
+
+        [Test]
+        public void WithQueryString_WhenValidValues_ExpectResultUsesUriAndQuerystring()
+        {
+            //arrange
+            var uri = new Uri(TestUriString);
+            var builder = new HttpCallBuilder().WithUri(uri);
+
+            // assert (called after act)
+            _server.InspectRequest(r => Assert.AreEqual(r.RawUrl, uri));
+
+            //act
+            builder.ResultAsync();
+        }
+
+        //expect over
+
+        #endregion
+
         #region WithMethod
 
         [Test]
@@ -215,6 +238,27 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         #endregion
+
+        /*
+         IHttpCallBuilder WithUri(string uri);
+        IHttpCallBuilder WithUri(Uri uri);
+        IHttpCallBuilder WithQueryString(string name, string value);
+        IHttpCallBuilder WithMethod(string method);
+        IHttpCallBuilder WithMethod(HttpMethod method);
+        IHttpCallBuilder WithContent(string content);
+        IHttpCallBuilder WithContent(string content, Encoding encoding);
+        IHttpCallBuilder WithContent(string content, Encoding encoding, string mediaType);
+        IHttpCallBuilder WithContent(Func<string> contentFactory);
+        IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding);
+        IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding, string mediaType);
+        IHttpCallBuilder WithContent(Func<HttpContent> contentFactory);
+        HttpResponseMessage Result();
+        Task<HttpResponseMessage> ResultAsync();
+
+        IHttpCallBuilder CancelRequest();
+
+        IAdvancedHttpCallBuilder Advanced { get; }
+         */
 
         [Test]
         public void WithConfiguration_WhenAction_ExpectConfigurationApplied()

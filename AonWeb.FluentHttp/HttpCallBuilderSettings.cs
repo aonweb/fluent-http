@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using System.Web;
 using AonWeb.FluentHttp.Handlers;
 using System;
 using System.Collections.Generic;
@@ -11,17 +12,22 @@ namespace AonWeb.FluentHttp
 {
     public class HttpCallBuilderSettings
     {
+        private UriBuilder _uriBuilder;
+
         public HttpCallBuilderSettings()
         {
             Method = HttpMethod.Get;
             CompletionOption = HttpCompletionOption.ResponseContentRead;
             TokenSource = new CancellationTokenSource();
             Handler = new HttpCallHandlerRegister();
-
+            _uriBuilder = new UriBuilder();
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
         }
 
-        public Uri Uri { get; set; }
+        public Uri Uri { get { return _uriBuilder.Uri; } set { _uriBuilder = new UriBuilder(value); } }
+        public string Path { get { return _uriBuilder.Path; } set { _uriBuilder.Path = value; } }
+        public int Port { get { return _uriBuilder.Port; } set { _uriBuilder.Port = value; } }
+        public NameValueCollection Querystring { get { return HttpUtility.ParseQueryString(_uriBuilder.Query); } set { _uriBuilder.Query = ; } }
         public NameValueCollection QueryString { get; set; }
         public HttpMethod Method { get; set; }
         public string MediaType { get; set; }
@@ -53,7 +59,7 @@ namespace AonWeb.FluentHttp
 
         public HttpCallBuilderSettings()
         {
-            
+
             Handler = new HttpCallHandlerRegister<TResult, TContent, TError>();
 
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>
