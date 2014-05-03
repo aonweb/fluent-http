@@ -61,7 +61,7 @@
     <Compile Include="Helpers\LocalWebServer.cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderTests.cs" />
-    <Compile Include="Http\InterfaceDefinitionTests.cs" />
+    <Compile Include="Integration\InterfaceDefinitionTests.cs" />
     <Compile Include="Http\RedirectionHandlerTests.cs" />
     <Compile Include="Http\HelperTests.cs" />
     <Compile Include="Integration\HttpHandlerCachingTests.cs" />

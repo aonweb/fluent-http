@@ -14,6 +14,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
         private readonly Queue<Func<HttpListenerRequest, LocalWebServerResponseInfo>> _responses;
         private readonly AutoResetEvent _handle;
         private Func<HttpListenerRequest, LocalWebServerResponseInfo> _lastResponse;
+        private Action<HttpListenerRequest> _requestInspector;
 
         public LocalWebServer()
             : this(DefaultListenerUri) { }
@@ -112,6 +113,9 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
             Log(context.Request);
 
+            if (_requestInspector != null)
+                _requestInspector(context.Request);
+
             var responseInfo = GetResponseInfo(context);
 
             CreateResponse(context, responseInfo);
@@ -172,6 +176,11 @@ namespace AonWeb.FluentHttp.Tests.Helpers
         public void Dispose()
         {
             Stop();
+        }
+
+        public void InspectRequest(Action<HttpListenerRequest> inspector)
+        {
+            _requestInspector = inspector;
         }
     }
 }

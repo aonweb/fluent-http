@@ -1,13 +1,28 @@
 ﻿using System.Net.Http;
+using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
-namespace AonWeb.FluentHttp.Tests.Http
+namespace AonWeb.FluentHttp.Tests.Integration
 {
     [TestFixture]
     public class InterfaceDefinitionTests
     {
-        private string TestUriString = "http://google.com";
-        private string TestMethod = "GET";
+        private const string TestUriString = LocalWebServer.DefaultListenerUri;
+
+        private LocalWebServer _server;
+
+        [SetUp]
+        public void Setup()
+        {
+            _server = LocalWebServer.ListenInBackground(TestUriString);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+         if (_server != null)
+             _server.Stop();
+        }
 
         [Test]
         public void SimpleCall()
@@ -30,7 +45,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public void OrderDoesntMatter()
         {
             var result = new HttpCallBuilder()
-                .WithMethod(TestMethod)
+                .WithMethod("GET")
                 .WithUri(TestUriString)
                 .Result();
         }
