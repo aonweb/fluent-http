@@ -63,7 +63,7 @@
     <Compile Include="Http\HttpCallBuilderTests.cs" />
     <Compile Include="Http\InterfaceDefinitionTests.cs" />
     <Compile Include="Http\RedirectionHandlerTests.cs" />
-    <Compile Include="Http\UtilsTests.cs" />
+    <Compile Include="Http\HelperTests.cs" />
     <Compile Include="Integration\HttpHandlerCachingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

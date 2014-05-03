@@ -53,10 +53,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\HttpCallException.cs" />
-    <Compile Include="Handlers\CacheResult.cs" />
+    <Compile Include="Caching\CacheResult.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
     <Compile Include="Client\HttpClientSettings.cs" />
-    <Compile Include="Handlers\ErrorHandlerSettings.cs" />
+    <Compile Include="Handlers\DefaultSuccessfulResponseValidator.cs" />
+    <Compile Include="Handlers\DefaultExceptionFactory.cs" />
+    <Compile Include="Handlers\HttpCallContext.cs" />
+    <Compile Include="Handlers\HttpCallHandler.cs" />
+    <Compile Include="Handlers\HttpCallHandlerPriority.cs" />
+    <Compile Include="Handlers\HttpCallHandlerRegister.cs" />
+    <Compile Include="Handlers\HttpCallHandlerType.cs" />
     <Compile Include="Handlers\HttpErrorContext.cs" />
     <Compile Include="Handlers\HttpExceptionContext.cs" />
     <Compile Include="Handlers\HttpRedirectContext.cs" />
@@ -83,7 +89,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SR.resx</DependentUpon>
     </Compile>
-    <Compile Include="Utils.cs" />
+    <Compile Include="Helper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
