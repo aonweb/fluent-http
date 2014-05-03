@@ -9,8 +9,8 @@ namespace AonWeb.FluentHttp.Handlers
             return HttpCallHandlerPriority.Default;
         }
 
-        public virtual async Task OnSending(HttpCallContext context)        { /* do nothing */ }
-        public virtual async Task OnSent(HttpCallContext context)           { /* do nothing */ }
+        public virtual async Task OnSending(HttpSendingContext context)     { /* do nothing */ }
+        public virtual async Task OnSent(HttpSentContext context)           { /* do nothing */ }
         public virtual async Task OnException(HttpExceptionContext context) { /* do nothing */ }
     }
 
@@ -21,9 +21,9 @@ namespace AonWeb.FluentHttp.Handlers
             return HttpCallHandlerPriority.Default;
         }
 
-        public virtual async Task OnSending(HttpCallContext<TResult, TContent, TError> context)        { /* do nothing */ }
-        public virtual async Task OnSent(HttpCallContext<TResult, TContent, TError> context)           { /* do nothing */ }
-        public virtual async Task OnResult(HttpCallContext<TResult, TContent, TError> context)         { /* do nothing */ }
+        public virtual async Task OnSending(HttpSendingContext<TResult, TContent, TError> context)     { /* do nothing */ }
+        public virtual async Task OnSent(HttpSentContext<TResult, TContent, TError> context)           { /* do nothing */ }
+        public virtual async Task OnResult(HttpResultContext<TResult, TContent, TError> context)         { /* do nothing */ }
         public virtual async Task OnError(HttpErrorContext<TResult, TContent, TError> context)         { /* do nothing */ }
         public virtual async Task OnException(HttpExceptionContext<TResult, TContent, TError> context) { /* do nothing */ }
     }

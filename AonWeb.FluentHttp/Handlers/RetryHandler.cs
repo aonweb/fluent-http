@@ -63,7 +63,7 @@ namespace AonWeb.FluentHttp.Handlers
             return base.GetPriority(type);
         }
 
-        public override async Task OnSent(HttpCallContext context)
+        public override async Task OnSent(HttpSentContext context)
         {
             if (AllowAutoRetry && ShouldRetry(context.Response))
             {

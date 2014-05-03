@@ -1,4 +1,6 @@
-﻿using AonWeb.FluentHttp.Handlers;
+﻿using System.Net.Http.Headers;
+using System.Text;
+using AonWeb.FluentHttp.Handlers;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -22,15 +24,14 @@ namespace AonWeb.FluentHttp
         public Uri Uri { get; set; }
         public NameValueCollection QueryString { get; set; }
         public HttpMethod Method { get; set; }
+        public string MediaType { get; set; }
+        public Encoding ContentEncoding { get; set; }
         public HttpCompletionOption CompletionOption { get; set; }
         public CancellationTokenSource TokenSource { get; set; }
-        public Func<HttpContent> Content { get; set; }
+        public Func<HttpContent> ContentFactory { get; set; }
         public HttpCallHandlerRegister Handler { get; private set; }
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
-
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
-
-        
 
         public void ValidateSettings()
         {
@@ -46,9 +47,9 @@ namespace AonWeb.FluentHttp
 
     public class HttpCallBuilderSettings<TResult, TContent, TError>
     {
-        private static readonly Func<TResult> DefaultDefaultResult = () => default(TResult);
+        private static readonly Func<TResult> DefaultDefaultResultFactory = () => default(TResult);
 
-        private Func<TResult> _defaultResult;
+        private Func<TResult> _defaultResultFactory;
 
         public HttpCallBuilderSettings()
         {
@@ -63,22 +64,25 @@ namespace AonWeb.FluentHttp
             ExceptionFactory = DefaultExceptionFactory<TError>.CreateException;
         }
 
+        public Func<TContent> ContentFactory { get; set; }
+        public string MediaType { get; set; }
+        public Encoding ContentEncoding { get; set; }
         public HttpCallHandlerRegister<TResult, TContent, TError> Handler { get; private set; }
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
         public Func<HttpErrorContext<TResult, TContent, TError>, Exception> ExceptionFactory { get; set; }
 
-        public Func<TResult> DefaultResult
+        public Func<TResult> DefaultResultFactory
         {
             get
             {
-                if (_defaultResult == null)
-                    return DefaultDefaultResult;
+                if (_defaultResultFactory == null)
+                    return DefaultDefaultResultFactory;
 
-                return _defaultResult;
+                return _defaultResultFactory;
             }
             set
             {
-                _defaultResult = value;
+                _defaultResultFactory = value;
             }
         }
 

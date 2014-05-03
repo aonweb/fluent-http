@@ -15,10 +15,10 @@ namespace AonWeb.FluentHttp
         IHttpCallBuilder WithContent(string content);
         IHttpCallBuilder WithContent(string content, Encoding encoding);
         IHttpCallBuilder WithContent(string content, Encoding encoding, string mediaType);
-        IHttpCallBuilder WithContent(Func<string> contentFunc);
-        IHttpCallBuilder WithContent(Func<string> contentFunc, Encoding encoding);
-        IHttpCallBuilder WithContent(Func<string> contentFunc, Encoding encoding, string mediaType);
-        IHttpCallBuilder WithContent(Func<HttpContent> contentFunc);
+        IHttpCallBuilder WithContent(Func<string> contentFactory);
+        IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding);
+        IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding, string mediaType);
+        IHttpCallBuilder WithContent(Func<HttpContent> contentFactory);
         HttpResponseMessage Result();
         Task<HttpResponseMessage> ResultAsync();
 
@@ -37,11 +37,11 @@ namespace AonWeb.FluentHttp
         IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content);
         IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding);
         IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType);
-        IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc);
-        IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding);
-        IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFunc, Encoding encoding, string mediaType);
+        IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory);
+        IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding);
+        IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding, string mediaType);
         IHttpCallBuilder<TResult, TContent, TError> WithDefaultResult(TResult result);
-        IHttpCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFunc);
+        IHttpCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFactory);
 
         TResult Result();
         Task<TResult> ResultAsync();

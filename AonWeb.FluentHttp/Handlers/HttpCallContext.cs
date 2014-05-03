@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 
 namespace AonWeb.FluentHttp.Handlers
@@ -29,7 +28,7 @@ namespace AonWeb.FluentHttp.Handlers
             _settings.ValidateSettings();
         }
 
-        public Func<HttpContent> Content { get { return _settings.Content; } }
+        public Func<HttpContent> ContentFactory { get { return _settings.ContentFactory; } }
 
         public HttpMethod Method { get { return _settings.Method; } }
 
@@ -41,8 +40,6 @@ namespace AonWeb.FluentHttp.Handlers
 
         public CancellationTokenSource TokenSource { get { return _settings.TokenSource; } }
 
-        public HttpResponseMessage Response { get; set; }
-
         public IDictionary Items { get { return _items; } }
 
         public IHttpCallBuilder Builder { get { return _builder; } }
@@ -52,9 +49,7 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private readonly HttpCallBuilderSettings<TResult, TContent, TError> _settings;
         private readonly IHttpCallBuilder<TResult, TContent, TError> _builder;
-        private readonly IDictionary<string, object> _items;
-
-        private TResult _result;
+        private readonly IDictionary _items;
 
         public HttpCallContext(HttpCallContext<TResult, TContent, TError> context)
             : this(context.Builder, context._settings) { }
@@ -63,32 +58,17 @@ namespace AonWeb.FluentHttp.Handlers
         {
             _builder = builder;
             _settings = settings;
-            _items = new ConcurrentDictionary<string, object>();
+            _items = new HybridDictionary();
         }
 
-        public HttpResponseMessage Response { get; set; }
-        public TError Error { get; set; }
-
-        public TResult Result
-        {
-            get
-            {
-                return _result;
-            }
-            set
-            {
-                _result = value;
-                IsResultSet = true;
-
-            }
-        }
+        public Func<TContent> ContentFactory { get { return _settings.ContentFactory; } }
 
         public HttpCallHandlerRegister<TResult, TContent, TError> Handler { get { return _settings.Handler; } }
 
-        public IDictionary<string, object> Items { get { return _items; } }
+        public IDictionary Items { get { return _items; } }
 
         public IHttpCallBuilder<TResult, TContent, TError> Builder { get { return _builder; } }
-
-        public bool IsResultSet { get; set; }
+        public string MediaType { get { return _settings.MediaType.MediaType; } }
+        public Encoding ContentEncoding { get { return _settings.ContentEncoding; } }
     }
 }
