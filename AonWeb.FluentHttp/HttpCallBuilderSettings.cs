@@ -21,13 +21,16 @@ namespace AonWeb.FluentHttp
             TokenSource = new CancellationTokenSource();
             Handler = new HttpCallHandlerRegister();
             _uriBuilder = new UriBuilder();
+            QueryString = new NameValueCollection();
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
         }
 
         public Uri Uri { get { return _uriBuilder.Uri; } set { _uriBuilder = new UriBuilder(value); } }
-        public string Path { get { return _uriBuilder.Path; } set { _uriBuilder.Path = value; } }
+        public string Scheme { get { return _uriBuilder.Scheme; } set { _uriBuilder.Scheme = value; } }
+        public string Host { get { return _uriBuilder.Host; } set { _uriBuilder.Host = value; } }
         public int Port { get { return _uriBuilder.Port; } set { _uriBuilder.Port = value; } }
-        public NameValueCollection Querystring { get { return HttpUtility.ParseQueryString(_uriBuilder.Query); } set { _uriBuilder.Query = ; } }
+        public string Path { get { return _uriBuilder.Path; } set { _uriBuilder.Path = value; } }
+        public string UriBuilderQuery { set { _uriBuilder.Query = value; } }
         public NameValueCollection QueryString { get; set; }
         public HttpMethod Method { get; set; }
         public string MediaType { get; set; }
@@ -43,11 +46,6 @@ namespace AonWeb.FluentHttp
         {
             if (Uri == null)
                 throw new InvalidOperationException("Uri not set");
-        }
-
-        public void AddSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
-        {
-            SuccessfulResponseValidators.Add(validator);
         }
     }
 
@@ -90,11 +88,6 @@ namespace AonWeb.FluentHttp
             {
                 _defaultResultFactory = value;
             }
-        }
-
-        public void AddSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
-        {
-            SuccessfulResponseValidators.Add(validator);
         }
     }
 }

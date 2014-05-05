@@ -55,17 +55,19 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="AssertExtensions.cs" />
-    <Compile Include="Helpers\Helper.cs" />
+    <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\TestHelper.cs" />
     <Compile Include="Helpers\LocalWebServerResponseInfo.cs" />
     <Compile Include="Helpers\LocalWebServer.cs" />
+    <Compile Include="Http\HttpCallBuilderAdvancedMethodsTests .cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
-    <Compile Include="Http\HttpCallBuilderTests.cs" />
+    <Compile Include="Http\HttpCallBuilderMethodTests.cs" />
     <Compile Include="Integration\InterfaceDefinitionTests.cs" />
     <Compile Include="Http\RedirectionHandlerTests.cs" />
     <Compile Include="Http\HelperTests.cs" />
     <Compile Include="Integration\HttpHandlerCachingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sandbox.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj">

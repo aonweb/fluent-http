@@ -9,9 +9,14 @@ namespace AonWeb.FluentHttp
 {
     public interface IAdvancedHttpCallBuilder : IHttpCallBuilder
     {
+        IHttpCallBuilder WithScheme(string scheme);
+        IHttpCallBuilder WithHost(string host);
+        IHttpCallBuilder WithPort(int port);
+        IHttpCallBuilder WithPath(string absolutePathAndQuery);
         IHttpCallBuilder WithEncoding(Encoding encoding);
         IHttpCallBuilder WithMediaType(string mediaType);
-
+        IHttpCallBuilder WithMethod(string method);
+        IHttpCallBuilder WithMethod(HttpMethod method);
         IHttpCallBuilder ConfigureClient(Action<IHttpClient> configuration);
         IHttpCallBuilder ConfigureClient(Action<IHttpClientBuilder> configuration);
         IHttpCallBuilder ConfigureRetries(Action<RetryHandler> configuration);
@@ -42,9 +47,14 @@ namespace AonWeb.FluentHttp
 
     public interface IAdvancedHttpCallBuilder<TResult, TContent, TError> : IHttpCallBuilder<TResult, TContent, TError>
     {
+        IHttpCallBuilder<TResult, TContent, TError> WithScheme(string scheme);
+        IHttpCallBuilder<TResult, TContent, TError> WithHost(string host);
+        IHttpCallBuilder<TResult, TContent, TError> WithPort(int port);
+        IHttpCallBuilder<TResult, TContent, TError> WithPath(string absolutePathAndQuery);
         IHttpCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding);
         IHttpCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType);
-
+        IHttpCallBuilder<TResult, TContent, TError> WithMethod(string method);
+        IHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method);
         IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClient> configuration);
         IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration);
         

@@ -68,7 +68,7 @@ namespace AonWeb.FluentHttp.Handlers
         public IDictionary Items { get { return _items; } }
 
         public IHttpCallBuilder<TResult, TContent, TError> Builder { get { return _builder; } }
-        public string MediaType { get { return _settings.MediaType.MediaType; } }
+        public string MediaType { get { return _settings.MediaType; } }
         public Encoding ContentEncoding { get { return _settings.ContentEncoding; } }
     }
 }

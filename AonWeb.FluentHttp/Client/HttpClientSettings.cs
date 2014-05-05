@@ -10,7 +10,7 @@ namespace AonWeb.FluentHttp.Client
     {
         public HttpClientSettings()
         {
-            CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default);
+            CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
         }
 
         public Action<IHttpClient> ClientConfiguration { get; internal set; }

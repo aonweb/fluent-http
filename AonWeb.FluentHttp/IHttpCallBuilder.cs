@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,9 +10,17 @@ namespace AonWeb.FluentHttp
     {
         IHttpCallBuilder WithUri(string uri);
         IHttpCallBuilder WithUri(Uri uri);
+        IHttpCallBuilder WithBaseUri(string uri);
+        IHttpCallBuilder WithBaseUri(Uri uri);
+        IHttpCallBuilder WithRelativePath(string pathAndQuery);
         IHttpCallBuilder WithQueryString(string name, string value);
-        IHttpCallBuilder WithMethod(string method);
-        IHttpCallBuilder WithMethod(HttpMethod method);
+        IHttpCallBuilder WithQueryString(NameValueCollection values);
+        IHttpCallBuilder AsGet();
+        IHttpCallBuilder AsPut();
+        IHttpCallBuilder AsPost();
+        IHttpCallBuilder AsDelete();
+        IHttpCallBuilder AsPatch();
+        IHttpCallBuilder AsHead();
         IHttpCallBuilder WithContent(string content);
         IHttpCallBuilder WithContent(string content, Encoding encoding);
         IHttpCallBuilder WithContent(string content, Encoding encoding, string mediaType);
@@ -31,9 +40,17 @@ namespace AonWeb.FluentHttp
     {
         IHttpCallBuilder<TResult, TContent, TError> WithUri(string uri);
         IHttpCallBuilder<TResult, TContent, TError> WithUri(Uri uri);
+        IHttpCallBuilder<TResult, TContent, TError> WithBaseUri(string uri);
+        IHttpCallBuilder<TResult, TContent, TError> WithBaseUri(Uri uri);
+        IHttpCallBuilder<TResult, TContent, TError> WithRelativePath(string pathAndQuery);
         IHttpCallBuilder<TResult, TContent, TError> WithQueryString(string name, string value);
-        IHttpCallBuilder<TResult, TContent, TError> WithMethod(string method);
-        IHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method);
+        IHttpCallBuilder<TResult, TContent, TError> WithQueryString(NameValueCollection values);
+        IHttpCallBuilder<TResult, TContent, TError> AsGet();
+        IHttpCallBuilder<TResult, TContent, TError> AsPut();
+        IHttpCallBuilder<TResult, TContent, TError> AsPost();
+        IHttpCallBuilder<TResult, TContent, TError> AsDelete();
+        IHttpCallBuilder<TResult, TContent, TError> AsPatch();
+        IHttpCallBuilder<TResult, TContent, TError> AsHead();
         IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content);
         IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding);
         IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType);

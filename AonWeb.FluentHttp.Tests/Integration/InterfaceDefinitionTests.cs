@@ -27,7 +27,7 @@ namespace AonWeb.FluentHttp.Tests.Integration
         [Test]
         public void SimpleCall()
         {
-            var result = new HttpCallBuilder()
+            var result = HttpCallBuilder.Create()
                 .WithUri(TestUriString)
                 .Result();
         }
@@ -35,17 +35,17 @@ namespace AonWeb.FluentHttp.Tests.Integration
         [Test]
         public void SimpleCallWithMethod()
         {
-            var result = new HttpCallBuilder()
+            var result = HttpCallBuilder.Create()
                 .WithUri(TestUriString)
-                .WithMethod(HttpMethod.Get)
+                .AsGet()
                 .Result();
         }
 
         [Test]
         public void OrderDoesntMatter()
         {
-            var result = new HttpCallBuilder()
-                .WithMethod("GET")
+            var result = HttpCallBuilder.Create()
+                .AsGet()
                 .WithUri(TestUriString)
                 .Result();
         }
@@ -53,9 +53,9 @@ namespace AonWeb.FluentHttp.Tests.Integration
         [Test]
         public void SimplePost()
         {
-            var result = new HttpCallBuilder()
+            var result = HttpCallBuilder.Create()
                 .WithUri(TestUriString)
-                .WithMethod(HttpMethod.Post)
+                .AsPost()
                 .WithContent("my data")
                 .Result();
         }

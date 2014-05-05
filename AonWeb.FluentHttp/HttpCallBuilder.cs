@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Web;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Serialization;
@@ -18,20 +19,32 @@ namespace AonWeb.FluentHttp
         private readonly IHttpCallBuilder _innerBuilder;
         private readonly ISerializerFactory _serializerFactory;
 
-        public HttpCallBuilder()
-            : this(new HttpCallBuilderSettings<TResult, TContent, TError>(), new HttpCallBuilder()) { }
+        protected HttpCallBuilder()
+            : this(new HttpCallBuilderSettings<TResult, TContent, TError>(), HttpCallBuilder.Create()) { }
 
-        internal HttpCallBuilder(IHttpCallBuilder builder)
-            : this(new HttpCallBuilderSettings<TResult, TContent, TError>(), builder) { }
-
-        internal HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder)
+        private HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder)
             : this(settings, builder, new SerializerFactory()) { }
 
-        internal HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder, ISerializerFactory serializerFactory)
+        private HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder, ISerializerFactory serializerFactory)
         {
             _settings = settings;
             _innerBuilder = builder;
             _serializerFactory = serializerFactory;
+        }
+
+        public static IHttpCallBuilder<TResult, TContent, TError> Create()
+        {
+            return new HttpCallBuilder<TResult, TContent, TError>();
+        }
+
+        public static IHttpCallBuilder<TResult, TContent, TError> Create(string baseUri)
+        {
+            return Create().WithBaseUri(baseUri);
+        }
+
+        public static IHttpCallBuilder<TResult, TContent, TError> Create(Uri baseUri)
+        {
+            return Create().WithBaseUri(baseUri);
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithUri(string uri)
@@ -48,6 +61,27 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public IHttpCallBuilder<TResult, TContent, TError> WithBaseUri(string uri)
+        {
+            _innerBuilder.WithBaseUri(uri);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithBaseUri(Uri uri)
+        {
+            _innerBuilder.WithBaseUri(uri);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithRelativePath(string pathAndQuery)
+        {
+            _innerBuilder.WithRelativePath(pathAndQuery);
+
+            return this;
+        }
+
         public IHttpCallBuilder<TResult, TContent, TError> WithQueryString(string name, string value)
         {
             _innerBuilder.WithQueryString(name, value);
@@ -55,16 +89,99 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public IHttpCallBuilder<TResult, TContent, TError> WithQueryString(NameValueCollection values)
+        {
+            _innerBuilder.WithQueryString(values);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> AsGet()
+        {
+            return WithMethod(HttpMethod.Get);
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> AsPut()
+        {
+            return WithMethod(HttpMethod.Put);
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> AsPost()
+        {
+            return WithMethod(HttpMethod.Post);
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> AsDelete()
+        {
+            return WithMethod(HttpMethod.Delete);
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> AsPatch()
+        {
+            return WithMethod(new HttpMethod("PATCH"));
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> AsHead()
+        {
+            return WithMethod(HttpMethod.Head);
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithScheme(string scheme)
+        {
+            _innerBuilder.Advanced.WithScheme(scheme);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithHost(string host)
+        {
+            _innerBuilder.Advanced.WithHost(host);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithPort(int port)
+        {
+            _innerBuilder.Advanced.WithPort(port);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithPath(string absolutePathAndQuery)
+        {
+            _innerBuilder.Advanced.WithPath(absolutePathAndQuery);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding)
+        {
+            _settings.ContentEncoding = encoding;
+
+            _innerBuilder.Advanced.WithEncoding(encoding);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType)
+        {
+            _settings.MediaType = mediaType;
+
+            _innerBuilder.Advanced.WithMediaType(mediaType);
+
+            return this;
+        }
+
         public IHttpCallBuilder<TResult, TContent, TError> WithMethod(string method)
         {
-            _innerBuilder.WithMethod(method);
+            _innerBuilder.Advanced.WithMethod(method);
 
             return this;
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method)
         {
-            _innerBuilder.WithMethod(method);
+            _innerBuilder.Advanced.WithMethod(method);
 
             return this;
         }
@@ -103,24 +220,6 @@ namespace AonWeb.FluentHttp
 
             WithEncoding(encoding);
             WithMediaType(mediaType);
-
-            return this;
-        }
-
-        public IHttpCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding)
-        {
-            _settings.ContentEncoding = encoding;
-
-            _innerBuilder.Advanced.WithEncoding(encoding);
-
-            return this;
-        }
-
-        public IHttpCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType)
-        {
-            _settings.MediaType = mediaType;
-
-            _innerBuilder.Advanced.WithMediaType(mediaType);
 
             return this;
         }
@@ -168,7 +267,10 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder<TResult, TContent, TError> WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
-            _settings.AddSuccessfulResponseValidator(validator);
+            if (validator == null)
+                throw new ArgumentNullException("validator");
+
+            _settings.SuccessfulResponseValidators.Add(validator);
 
             return this;
         }
@@ -406,7 +508,7 @@ namespace AonWeb.FluentHttp
                     await context.Handler.OnResult(resultContext);
 
                     return resultContext.Result;
-                } 
+                }
             }
             catch (Exception ex)
             {
@@ -432,20 +534,34 @@ namespace AonWeb.FluentHttp
         private readonly IHttpClientBuilder _clientBuilder;
         private readonly HttpCallBuilderSettings _settings;
 
-        public HttpCallBuilder()
+        protected HttpCallBuilder()
             : this(new HttpClientBuilder()) { }
 
-        public HttpCallBuilder(IHttpClientBuilder clientBuilder)
+        protected HttpCallBuilder(IHttpClientBuilder clientBuilder)
             : this(new HttpCallBuilderSettings(), clientBuilder, new RetryHandler(), new RedirectHandler()) { }
 
-        internal HttpCallBuilder(HttpCallBuilderSettings settings, IHttpClientBuilder clientBuilder, params IHttpCallHandler[] defaultHandlers)
+        private HttpCallBuilder(HttpCallBuilderSettings settings, IHttpClientBuilder clientBuilder, params IHttpCallHandler[] defaultHandlers)
         {
             _settings = settings;
             _clientBuilder = clientBuilder;
 
             foreach (var handler in defaultHandlers)
                 _settings.Handler.AddHandler(handler);
-            
+        }
+
+        public static IHttpCallBuilder Create()
+        {
+            return new HttpCallBuilder();
+        }
+
+        public static IHttpCallBuilder Create(string baseUri)
+        {
+            return Create().WithBaseUri(baseUri);
+        }
+
+        public static IHttpCallBuilder Create(Uri baseUri)
+        {
+            return Create().WithBaseUri(baseUri);
         }
 
         public IAdvancedHttpCallBuilder Advanced
@@ -464,7 +580,7 @@ namespace AonWeb.FluentHttp
         public IHttpCallBuilder WithUri(string uri)
         {
             if (string.IsNullOrEmpty(uri))
-                throw new ArgumentException(SR.ArgumentUriNullOrEmpty, "uri");
+                throw new ArgumentException(SR.ArgumentUriNullOrEmptyError, "uri");
 
             return WithUri(new Uri(uri));
         }
@@ -474,9 +590,39 @@ namespace AonWeb.FluentHttp
             if (uri == null)
                 throw new ArgumentNullException("uri");
 
-            _settings.Uri = uri;
+            if (!uri.IsAbsoluteUri)
+                throw new ArgumentException(SR.ArgumentUriMustBeAbsoluteError, "uri");
 
-            return this;
+            var querystring = uri.ParseQueryString();
+
+            _settings.Uri = uri;
+            _settings.QueryString.Clear();
+
+            return WithQueryString(querystring);
+        }
+
+        public IHttpCallBuilder WithBaseUri(string uri)
+        {
+            return WithUri(uri);
+        }
+
+        public IHttpCallBuilder WithBaseUri(Uri uri)
+        {
+            return WithUri(uri);
+        }
+
+        public IHttpCallBuilder WithRelativePath(string pathAndQuery)
+        {
+            if (string.IsNullOrEmpty(pathAndQuery))
+                return this;
+
+            var path = pathAndQuery;
+
+            if (!VirtualPathUtility.IsAbsolute(pathAndQuery))
+                path = Helper.CombineVirtualPaths(_settings.Path, pathAndQuery);
+
+            return WithPath(path);
+
         }
 
         public IHttpCallBuilder WithQueryString(string name, string value)
@@ -484,8 +630,121 @@ namespace AonWeb.FluentHttp
             if (string.IsNullOrWhiteSpace(name))
                 return this;
 
-            // TODO: should be delay execution to allow uri to set after?
-            _settings.Uri = Helper.AppendToQueryString(_settings.Uri, name, value);
+            _settings.QueryString.Set(name, value);
+
+            _settings.UriBuilderQuery = _settings.QueryString.ToString().TrimStart('?');
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithQueryString(NameValueCollection values)
+        {
+            if (values != null)
+            {
+                for (var i = 0; i < values.Count; i++)
+                    _settings.QueryString.Set(values.GetKey(i), values.Get(i));
+            }
+
+            _settings.UriBuilderQuery = _settings.QueryString.ToString().TrimStart('?');
+
+            return this;
+        }
+
+        public IHttpCallBuilder AsGet()
+        {
+            return WithMethod(HttpMethod.Get);
+        }
+
+        public IHttpCallBuilder AsPut()
+        {
+            return WithMethod(HttpMethod.Put);
+        }
+
+        public IHttpCallBuilder AsPost()
+        {
+            return WithMethod(HttpMethod.Post);
+        }
+
+        public IHttpCallBuilder AsDelete()
+        {
+            return WithMethod(HttpMethod.Delete);
+        }
+
+        public IHttpCallBuilder AsPatch()
+        {
+            return WithMethod(new HttpMethod("PATCH"));
+        }
+
+        public IHttpCallBuilder AsHead()
+        {
+            return WithMethod(HttpMethod.Head);
+        }
+
+        public IHttpCallBuilder WithScheme(string scheme)
+        {
+            if (string.IsNullOrEmpty(scheme))
+                throw new ArgumentNullException("scheme");
+
+            _settings.Scheme = scheme;
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithHost(string host)
+        {
+            if (string.IsNullOrEmpty(host))
+                throw new ArgumentNullException("host");
+
+            _settings.Host = host;
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithPort(int port)
+        {
+            _settings.Port = port;
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithPath(string absolutePathAndQuery)
+        {
+            if (string.IsNullOrEmpty(absolutePathAndQuery))
+                absolutePathAndQuery = "/";
+
+            if (!VirtualPathUtility.IsAbsolute(absolutePathAndQuery))
+                throw new ArgumentException(SR.ArgumentPathMustBeAbsoluteError, "absolutePathAndQuery");
+
+            var index = absolutePathAndQuery.IndexOf("?", StringComparison.Ordinal);
+            if (index > -1)
+            {
+                var querystring = HttpUtility.ParseQueryString(absolutePathAndQuery.Substring(index + 1));
+                absolutePathAndQuery = absolutePathAndQuery.Substring(0, index);
+
+                WithQueryString(querystring);
+            }
+
+            _settings.Path = absolutePathAndQuery;
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithEncoding(Encoding encoding)
+        {
+            if (encoding != null)
+                _settings.ContentEncoding = encoding;
+
+            //TODO: set char set and accept encoding char set?
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithMediaType(string mediaType)
+        {
+            if (mediaType != null)
+                _settings.MediaType = mediaType;
+
+            //TODO: set accepts type?
 
             return this;
         }
@@ -493,9 +752,9 @@ namespace AonWeb.FluentHttp
         public IHttpCallBuilder WithMethod(string method)
         {
             if (string.IsNullOrEmpty(method))
-                throw new ArgumentException(SR.ArgumentMethodNullOrEmpty, "method");
+                throw new ArgumentException(SR.ArgumentMethodNullOrEmptyError, "method");
 
-            return WithMethod(new HttpMethod(method));
+            return WithMethod(new HttpMethod(method.ToUpper()));
         }
 
         public IHttpCallBuilder WithMethod(HttpMethod method)
@@ -510,7 +769,6 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder WithContent(string content)
         {
-
             return WithContent(content, null, null);
         }
 
@@ -540,7 +798,7 @@ namespace AonWeb.FluentHttp
         {
             return WithContent(() =>
             {
-                var content = contentFactory();
+                var content = contentFactory() ?? string.Empty;
 
                 WithEncoding(encoding);
                 WithMediaType(mediaType);
@@ -555,24 +813,6 @@ namespace AonWeb.FluentHttp
                 throw new ArgumentNullException("contentFactory");
 
             _settings.ContentFactory = contentFactory;
-
-            return this;
-        }
-
-        public IHttpCallBuilder WithEncoding(Encoding encoding)
-        {
-            _settings.ContentEncoding = encoding;
-
-            //TODO: set char set and accept encoding char set?
-
-            return this;
-        }
-
-        public IHttpCallBuilder WithMediaType(string mediaType)
-        {
-            _settings.MediaType = mediaType;
-
-            //TODO: set accepts type?
 
             return this;
         }
@@ -609,7 +849,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder ConfigureHandler<THandler>( Action<THandler> configure) where THandler : class, IHttpCallHandler
+        public IHttpCallBuilder ConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
         {
             _settings.Handler.ConfigureHandler(configure);
 
@@ -618,7 +858,10 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
-            _settings.AddSuccessfulResponseValidator(validator);
+            if (validator == null)
+                throw new ArgumentNullException("validator");
+
+            _settings.SuccessfulResponseValidators.Add(validator);
 
             return this;
         }
@@ -634,7 +877,7 @@ namespace AonWeb.FluentHttp
         {
             _clientBuilder
                 .WithCachePolicy(RequestCacheLevel.NoCacheNoStore)
-                .WithHeaders(h => h.CacheControl = new CacheControlHeaderValue{ NoCache = true});
+                .WithHeaders(h => h.CacheControl = new CacheControlHeaderValue { NoCache = true });
 
             return this;
         }

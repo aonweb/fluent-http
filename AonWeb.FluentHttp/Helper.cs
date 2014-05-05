@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Linq;
+using System.Text;
 using System.Web;
 
 namespace AonWeb.FluentHttp
@@ -31,32 +31,33 @@ namespace AonWeb.FluentHttp
             return result;
         }
 
-        public static Uri AppendToQueryString(Uri uri, string key, string value)
+        public static string CombineVirtualPaths(string basePath, string relativePath)
         {
-            return AppendToQueryString(uri, new NameValueCollection { { key, value } });
+            return string.Concat(basePath.TrimEnd('/'), "/", relativePath.TrimStart('/'));
         }
 
-        public static Uri AppendToQueryString(Uri uri, NameValueCollection newValues)
+        /// <summary>
+        /// Converts the specified NameValueCollection to a QueryString formatted string i.e. "key1=val1&amp;key2=val2" suitable for use in a Url query string.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <returns>A QueryString formatted string i.e. "key1=val1&amp;key2=val2"</returns>
+        public static string ToEncoded(this NameValueCollection list)
         {
-            if (uri == null)
-                throw new ArgumentNullException("uri");
 
-            if (newValues == null || newValues.Count == 0)
-                return uri;
-
-            var values = HttpUtility.ParseQueryString(uri.Query);
-
-            foreach (var key in newValues.Keys.OfType<string>())
+            var sb = new StringBuilder();
+            foreach (var key in list.AllKeys)
             {
-                values[key] = newValues[key];
+                foreach (var value in list.GetValues(key))
+                {
+                    if (sb.Length != 0)
+                    sb.Append("&");
+
+                sb.Append(HttpUtility.UrlEncode(value));
+                }
+                
             }
 
-            var builder = new UriBuilder(uri)
-            {
-                Query = values.ToString()
-            };
-
-            return builder.Uri;
+            return sb.ToString();
         }
     }
 }

@@ -117,11 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ArgumentMethodNullOrEmpty" xml:space="preserve">
-    <value>Method can not be null or empty</value>
+  <data name="ArgumentMethodNullOrEmptyError" xml:space="preserve">
+    <value>Method must not be null or empty</value>
   </data>
-  <data name="ArgumentUriNullOrEmpty" xml:space="preserve">
-    <value>Uri can not be null or empty</value>
+  <data name="ArgumentPathMustBeAbsoluteError" xml:space="preserve">
+    <value>Path must be absolute and begin with a "/"</value>
+  </data>
+  <data name="ArgumentUriMustBeAbsoluteError" xml:space="preserve">
+    <value>Uri must be absolute.</value>
+  </data>
+  <data name="ArgumentUriNullOrEmptyError" xml:space="preserve">
+    <value>Uri must not be null or empty</value>
   </data>
   <data name="HanderAlreadyExistsError" xml:space="preserve">
     <value>This handler has already been registered.</value>

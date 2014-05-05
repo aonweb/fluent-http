@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -11,28 +10,28 @@ namespace AonWeb.FluentHttp.Tests.Helpers
     {
         public const string DefaultListenerUri = "http://localhost:8889/";
         private readonly HttpListener _listener = new HttpListener();
-        private readonly Queue<Func<HttpListenerRequest, LocalWebServerResponseInfo>> _responses;
+        private readonly Queue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>> _responses;
         private readonly AutoResetEvent _handle;
-        private Func<HttpListenerRequest, LocalWebServerResponseInfo> _lastResponse;
-        private Action<HttpListenerRequest> _requestInspector;
+        private Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo> _lastResponse;
+        private Action<LocalWebServerRequestInfo> _requestInspector;
 
         public LocalWebServer()
             : this(DefaultListenerUri) { }
 
         public LocalWebServer(string listenerUri)
-            : this(listenerUri, new Func<HttpListenerRequest, LocalWebServerResponseInfo>[0]) { }
+            : this(listenerUri, new Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[0]) { }
 
-        public LocalWebServer(Func<HttpListenerRequest, LocalWebServerResponseInfo>[] responses)
+        public LocalWebServer(Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[] responses)
             : this(DefaultListenerUri, responses) { }
 
         public LocalWebServer(params LocalWebServerResponseInfo[] responses)
-            : this(DefaultListenerUri, responses.Select(r => (Func<HttpListenerRequest, LocalWebServerResponseInfo>)(request => r)).ToArray()) { }
+            : this(DefaultListenerUri, responses.Select(r => (Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>)(request => r)).ToArray()) { }
 
-        public LocalWebServer(string listenerUri, params Func<HttpListenerRequest, LocalWebServerResponseInfo>[] responses)
+        public LocalWebServer(string listenerUri, params Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[] responses)
         {
             _handle = new AutoResetEvent(false);
             _listener.Prefixes.Add(listenerUri);
-            _responses = new Queue<Func<HttpListenerRequest, LocalWebServerResponseInfo>>();
+            _responses = new Queue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>>();
 
             if (responses.Length > 0)
             {
@@ -57,7 +56,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             var listener = new LocalWebServer(listenerUri);
 
             ThreadPool.QueueUserWorkItem(
-                (o) =>
+                _ =>
                 {
                     listener.Start();
                     listener.WaitHandle.WaitOne();
@@ -94,7 +93,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             return AddResponse(request => response);
         }
 
-        public LocalWebServer AddResponse(Func<HttpListenerRequest, LocalWebServerResponseInfo> response)
+        public LocalWebServer AddResponse(Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo> response)
         {
             _responses.Enqueue(response);
 
@@ -111,45 +110,69 @@ namespace AonWeb.FluentHttp.Tests.Helpers
         {
             var context = _listener.EndGetContext(result);
 
-            Log(context.Request);
+            var requestInfo = GetRequestInfo(context.Request);
 
-            if (_requestInspector != null)
-                _requestInspector(context.Request);
+            Log(requestInfo);
 
-            var responseInfo = GetResponseInfo(context);
+            try
+            {
+                if (_requestInspector != null)
+                    _requestInspector(requestInfo);
+            }
+            catch (Exception)
+            {
+                
+            }
+            
+
+            var responseInfo = GetResponseInfo(requestInfo);
 
             CreateResponse(context, responseInfo);
         }
 
-        private void Log(HttpListenerRequest request)
+        private LocalWebServerRequestInfo GetRequestInfo(HttpListenerRequest request)
+        {
+            return new LocalWebServerRequestInfo
+            {
+                ContentEncoding = request.ContentEncoding,
+                ContentLength = request.ContentLength64,
+                ContentType = request.ContentType,
+                HasEntityBody = request.HasEntityBody,
+                Headers = request.Headers,
+                HttpMethod = request.HttpMethod,
+                Url = request.Url,
+                UrlReferrer = request.UrlReferrer,
+                RawUrl = request.RawUrl,
+                AcceptTypes = request.AcceptTypes,
+                UserAgent = request.UserAgent,
+                Body = request.ReadContents()
+            };
+        }
+
+        private void Log(LocalWebServerRequestInfo request)
         {
             Console.WriteLine("Request: {0} - {1}", request.HttpMethod, request.Url);
 
             if (request.HasEntityBody)
             {
-                var encoding = request.ContentEncoding;
-                using (var bodyStream = request.InputStream)
-                using (var streamReader = new StreamReader(bodyStream, encoding))
-                {
                     if (request.ContentType != null)
                         Console.WriteLine("   ContentType: {0}", request.ContentType);
 
-                    Console.WriteLine("   ContentLength: {0}", request.ContentLength64);
+                    Console.WriteLine("   ContentLength: {0}", request.ContentLength);
                     Console.WriteLine("   Body:");
-                    Console.WriteLine(streamReader.ReadToEnd());
-                }
+                    Console.WriteLine(request.Body);
             }
 
             Console.WriteLine("---- End Request ----");
             Console.WriteLine();
         }
 
-        private LocalWebServerResponseInfo GetResponseInfo(HttpListenerContext context)
+        private LocalWebServerResponseInfo GetResponseInfo(LocalWebServerRequestInfo requestInfo)
         {
             if (_responses.Count > 0)
                 _lastResponse = _responses.Dequeue();
 
-            return _lastResponse(context.Request);
+            return _lastResponse(requestInfo);
         }
 
         private void CreateResponse(HttpListenerContext context, LocalWebServerResponseInfo responseInfo)
@@ -178,7 +201,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             Stop();
         }
 
-        public void InspectRequest(Action<HttpListenerRequest> inspector)
+        public void InspectRequest(Action<LocalWebServerRequestInfo> inspector)
         {
             _requestInspector = inspector;
         }
