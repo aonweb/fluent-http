@@ -7,13 +7,14 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Caching
 {
-    //TODO: include dependent uris with primary for requests
-    //TODO: create inverted indexes for allow global cache expiry by some index
-    //TODO: I don't think my vary by headers implementation is correct
 
-    // this class is inspired by the work in CacheCow - https://github.com/aliostad/CacheCow
-    // for whatever reason, I couldn't get the inmemory cache to play nice with call / client builders, and the cache kept disappearing
+    //TODO: create inverted indexes for allow global cache expiry by some index
+    // this class is inspired by the excellent work in CacheCow Caching libraries - https://github.com/aliostad/CacheCow
+    // for whatever reason, I couldn't get the inmemory cache in the HttpClientHandler / CachingHandler 
+    // to play nice with call / client builders, and the cache kept disappearing
     // additionally I need an implementation that allows for deserialized object level caching in addition to http response caching
+    // so I implemented a cachehandler that plugs in to the HttpCallBuilder higher up,
+    // but the base logic for cache validation / invalidation was based off CacheCow
     public abstract class CacheHandlerBase<TResult>
     {
         protected CacheHandlerBase(CacheSettings<TResult> settings)

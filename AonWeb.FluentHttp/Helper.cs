@@ -6,12 +6,15 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace AonWeb.FluentHttp
 {
     public static class Helper
     {
+        public static readonly Task TaskComplete = Task.FromResult(true);
+
         public static T As<T>(this object @this)
         {
             return (T)@this;
@@ -144,6 +147,21 @@ namespace AonWeb.FluentHttp
             var distinct = (list1 ?? Enumerable.Empty<T>()).Concat(list2 ?? Enumerable.Empty<T>()).Distinct();
 
             return new HashSet<T>(distinct);
+        }
+
+        public static HttpHeaderValueCollection<T> AddDistinct<T>(this HttpHeaderValueCollection<T> headers, Func<T, bool> predicate, string value)
+            where T : class
+        {
+            if (!headers.Any(predicate))
+                headers.ParseAdd(value);
+
+            return headers;
+        }
+
+        public static HttpHeaderValueCollection<T> AddDistinct<T>(this HttpHeaderValueCollection<T> headers, Func<T, string> prop, string value)
+            where T : class
+        {
+            return headers.AddDistinct(h => string.Equals(prop(h), value, StringComparison.OrdinalIgnoreCase), value);
         }
     }
 }

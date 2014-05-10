@@ -33,7 +33,7 @@ namespace AonWeb.FluentHttp
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
             MediaType = HttpCallBuilderDefaults.DefaultMediaType;
             ContentEncoding = HttpCallBuilderDefaults.DefaultContentEncoding;
-
+            AutoDecompression = HttpCallBuilderDefaults.AutoDecompressionEnabled;
         }
 
         public IDictionary Items { get { return _items; } }
@@ -101,6 +101,7 @@ namespace AonWeb.FluentHttp
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
         public bool SuppressCancellationErrors { get; set; }
+        public bool AutoDecompression { get; set; }
 
         public void Reset()
         {

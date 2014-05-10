@@ -10,12 +10,6 @@ namespace AonWeb.FluentHttp.Handlers
             Response = response;
         }
 
-        public HttpSentContext(IRecursiveHttpCallBuilder builder, HttpCallBuilderSettings settings, HttpResponseMessage response)
-            : base(builder, settings)
-        {
-            Response = response;
-        }
-
         public HttpResponseMessage Response { get; set; }
     }
 
@@ -25,12 +19,6 @@ namespace AonWeb.FluentHttp.Handlers
 
         public HttpSentContext(HttpCallContext<TResult, TContent, TError> context, HttpResponseMessage response)
             : base(context)
-        {
-            Response = response;
-        }
-
-        public HttpSentContext(IRecursiveHttpCallBuilder<TResult, TContent, TError> builder, HttpCallBuilderSettings<TResult, TContent, TError> settings, HttpResponseMessage response)
-            : base(builder, settings)
         {
             Response = response;
         }

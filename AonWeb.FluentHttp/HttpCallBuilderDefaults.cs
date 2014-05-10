@@ -43,7 +43,7 @@ namespace AonWeb.FluentHttp
             DefaultMediaTypeFormatters = new MediaTypeFormatterCollection();
 
             //Client Defaults
-            DefaultAutoDecompression = true;
+            AutoDecompressionEnabled = true;
             DefaultClientConfiguration = null;
             DefaultRequestHeadersConfiguration = null;
             DefaultDecompressionMethods = DecompressionMethods.GZip | DecompressionMethods.Deflate;
@@ -120,7 +120,7 @@ namespace AonWeb.FluentHttp
         public static Func<IVaryByStore> DefaultVaryByStoreFactory { get; set; }
         public static Action<IHttpClient> DefaultClientConfiguration { get; set; }
         public static Action<HttpRequestHeaders> DefaultRequestHeadersConfiguration { get; set; }
-        public static bool DefaultAutoDecompression { get; set; }
+        public static bool AutoDecompressionEnabled { get; set; }
         public static TimeSpan? DefaultClientTimeout { get; set; }
         public static long? DefaultMaxRequestContentBufferSize { get; set; }
         public static DecompressionMethods? DefaultDecompressionMethods { get; set; }

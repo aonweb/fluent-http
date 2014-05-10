@@ -10,6 +10,7 @@ namespace AonWeb.FluentHttp.Handlers
         {
             ShouldRedirect = true;
         }
+
         public HttpStatusCode StatusCode { get; internal set; }
         public HttpRequestMessage RequestMessage { get; internal set; }
         public Uri RedirectUri { get; set; }

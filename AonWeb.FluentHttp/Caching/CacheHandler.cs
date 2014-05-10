@@ -60,12 +60,14 @@ namespace AonWeb.FluentHttp.Caching
                 context.Result = result.Result;
         }
 
-        public async Task OnSent(HttpSentContext<TResult, TContent, TError> context)
+        public Task OnSent(HttpSentContext<TResult, TContent, TError> context)
         {
             var result = TryGetRevalidatedResult(context, context.Response);
 
             if (result.Found)
                 context.Result = result.Result;
+
+            return Helper.TaskComplete;
         }
 
         public async Task OnResult(HttpResultContext<TResult, TContent, TError> context)
@@ -77,8 +79,8 @@ namespace AonWeb.FluentHttp.Caching
 
         
         // TODO: invalidate caches for uri on error or exception?
-        public async Task OnError(HttpErrorContext<TResult, TContent, TError> context) { /* do nothing */  }
-        public async Task OnException(HttpExceptionContext<TResult, TContent, TError> context) {  /* do nothing */ }
+        public Task OnError(HttpErrorContext<TResult, TContent, TError> context) { return Helper.TaskComplete;  }
+        public Task OnException(HttpExceptionContext<TResult, TContent, TError> context) {  return Helper.TaskComplete; }
         
         #endregion
     }
@@ -155,7 +157,7 @@ namespace AonWeb.FluentHttp.Caching
         #region Unimplemented Methods
 
         // TODO: invalidate caches for uri on exception?
-        public async Task OnException(HttpExceptionContext context) {  /* do nothing */ }
+        public Task OnException(HttpExceptionContext context) {  return Helper.TaskComplete; }
 
         #endregion
     }

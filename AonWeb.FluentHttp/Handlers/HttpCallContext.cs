@@ -49,6 +49,8 @@ namespace AonWeb.FluentHttp.Handlers
         public IRecursiveHttpCallBuilder Builder { get { return _builder; } }
 
         public string MediaType { get { return _settings.MediaType; } }
+        public Encoding ContentEncoding { get { return _settings.ContentEncoding; } }
+        public bool AutoDecompression { get { return _settings.AutoDecompression; } }
     }
 
     public class HttpCallContext<TResult, TContent, TError> : IHttpCallContext

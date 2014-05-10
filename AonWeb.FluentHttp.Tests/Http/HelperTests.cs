@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Net.Http;
 using System.Threading;
 using NUnit.Framework;
 
@@ -71,6 +72,23 @@ namespace AonWeb.FluentHttp.Tests.Http
             actual(1);
 
             Assert.Pass();
+        }
+
+        [Test]
+        public void AddDistinct_WhenAddSameHeaderTwice_ExpectExpectSetOnce()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://foo.com");
+
+            //request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            //Assert.AreEqual(1, request.Headers.Accept.Count);
+
+            request.Headers.AcceptEncoding.AddDistinct(h => h.Value, "gzip");
+            request.Headers.AcceptEncoding.AddDistinct(h => h.Value, "gzip");
+
+            Assert.AreEqual(1, request.Headers.AcceptEncoding.Count);
+
         }
     }
 }

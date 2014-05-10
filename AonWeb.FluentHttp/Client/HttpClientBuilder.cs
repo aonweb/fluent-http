@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 
 namespace AonWeb.FluentHttp.Client
 {
-    // TODO: expose cache store
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly HttpClientSettings _settings;

@@ -11,9 +11,9 @@ namespace AonWeb.FluentHttp.Handlers
             return HttpCallHandlerPriority.Default;
         }
 
-        public virtual async Task OnSending(HttpSendingContext context)     { /* do nothing */ }
-        public virtual async Task OnSent(HttpSentContext context)           { /* do nothing */ }
-        public virtual async Task OnException(HttpExceptionContext context) { /* do nothing */ }
+        public virtual Task OnSending(HttpSendingContext context)     { return Helper.TaskComplete; }
+        public virtual Task OnSent(HttpSentContext context)           { return Helper.TaskComplete; }
+        public virtual Task OnException(HttpExceptionContext context) { return Helper.TaskComplete; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -24,11 +24,11 @@ namespace AonWeb.FluentHttp.Handlers
             return HttpCallHandlerPriority.Default;
         }
 
-        public virtual async Task OnSending(HttpSendingContext<TResult, TContent, TError> context)     { /* do nothing */ }
-        public virtual async Task OnSent(HttpSentContext<TResult, TContent, TError> context)           { /* do nothing */ }
-        public virtual async Task OnResult(HttpResultContext<TResult, TContent, TError> context)         { /* do nothing */ }
-        public virtual async Task OnError(HttpErrorContext<TResult, TContent, TError> context)         { /* do nothing */ }
-        public virtual async Task OnException(HttpExceptionContext<TResult, TContent, TError> context) { /* do nothing */ }
+        public virtual Task OnSending(HttpSendingContext<TResult, TContent, TError> context)     { return Helper.TaskComplete; }
+        public virtual Task OnSent(HttpSentContext<TResult, TContent, TError> context)           { return Helper.TaskComplete; }
+        public virtual Task OnResult(HttpResultContext<TResult, TContent, TError> context)         { return Helper.TaskComplete; }
+        public virtual Task OnError(HttpErrorContext<TResult, TContent, TError> context)         { return Helper.TaskComplete; }
+        public virtual Task OnException(HttpExceptionContext<TResult, TContent, TError> context) { return Helper.TaskComplete; }
     }
 
 }

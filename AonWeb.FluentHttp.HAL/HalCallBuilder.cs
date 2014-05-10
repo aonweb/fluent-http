@@ -117,9 +117,9 @@ namespace AonWeb.FluentHttp.HAL
             return WithMethod(HttpMethod.Head);
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding)
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithContentEncoding(Encoding encoding)
         {
-            _innerBuilder.WithEncoding(encoding);
+            _innerBuilder.WithContentEncoding(encoding);
 
             return this;
         }
@@ -456,6 +456,13 @@ namespace AonWeb.FluentHttp.HAL
         public IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
         {
             _innerBuilder.OnException(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithAutoDecompression(bool enabled = true)
+        {
+            _innerBuilder.WithAutoDecompression(enabled);
 
             return this;
         }

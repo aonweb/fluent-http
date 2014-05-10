@@ -10,12 +10,6 @@ namespace AonWeb.FluentHttp.Handlers
             Request = request;
         }
 
-        public HttpSendingContext(IRecursiveHttpCallBuilder builder, HttpCallBuilderSettings settings, HttpRequestMessage request)
-            : base(builder, settings)
-        {
-            Request = request;
-        }
-
         public HttpRequestMessage Request { get; private set; }
         public HttpContent Content { get { return Request.Content; } }
 
@@ -29,12 +23,6 @@ namespace AonWeb.FluentHttp.Handlers
 
         public HttpSendingContext(HttpCallContext<TResult, TContent, TError> context, HttpRequestMessage request)
             : base(context)
-        {
-            Request = request;
-        }
-
-        public HttpSendingContext(IRecursiveHttpCallBuilder<TResult, TContent, TError> builder, HttpCallBuilderSettings<TResult, TContent, TError> settings, HttpRequestMessage request)
-            : base(builder, settings)
         {
             Request = request;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -47,6 +48,51 @@ namespace AonWeb.FluentHttp.Tests.Http
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
 
+            }
+        }
+
+        [Test]
+        public void AutoRedirect_WhenCallRedirects_ExpectContentSent()
+        {
+            var expected = Helper.CombineVirtualPaths(TestUriString, "redirect");
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                server
+                    .AddResponse(new LocalWebServerResponseInfo { StatusCode = HttpStatusCode.Redirect }.AddHeader("Location", expected))
+                    .AddResponse(new LocalWebServerResponseInfo { Body = "Success" });
+
+                var actual = new List<string>();
+                server.InspectRequest(r => actual.Add(r.Body));
+
+                //act
+                var result = HttpCallBuilder.Create(TestUriString).AsPost().WithContent("Content").Result().ReadContents();
+
+                Assert.AreEqual(2, actual.Count);
+                Assert.AreEqual("Content", actual[1]);
+            }
+        }
+
+        [Test]
+        [TestCase(TestUriString, "/redirect", ExpectedResult = TestUriString + "redirect")]
+        [TestCase(TestUriString + "post", "/redirect", ExpectedResult = TestUriString + "redirect")]
+        [TestCase(TestUriString + "post", "redirect", ExpectedResult = TestUriString + "post/redirect")]
+        public string AutoRedirect_WhenCallRedirectsWithRelativePath_ExpectPathHandled(string uri, string path)
+        {
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                server
+                    .AddResponse(new LocalWebServerResponseInfo { StatusCode = HttpStatusCode.Redirect }.AddHeader("Location", path))
+                    .AddResponse(new LocalWebServerResponseInfo { Body = "Success" });
+
+                string actual = null;
+                server.InspectRequest(r => actual = r.Url.ToString());
+
+                //act
+                var result = HttpCallBuilder.Create(uri).AsPost().WithContent("Content").Result().ReadContents();
+
+                Assert.AreEqual("Success", result);
+
+                return actual;
             }
         }
 

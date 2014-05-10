@@ -7,6 +7,7 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class InMemoryVaryByStore : IVaryByStore
     {
+        private static readonly object _lock = new object();
         private static readonly ConcurrentDictionary<string, ISet<string>> _cache = new ConcurrentDictionary<string, ISet<string>>();
 
         public IEnumerable<string> Get(Uri uri)
@@ -30,7 +31,7 @@ namespace AonWeb.FluentHttp.Caching
             if (!_cache.TryGetValue(key, out headers))
                 headers = new HashSet<string>();
 
-            lock (headers)
+            lock (_lock)
                 headers = Helper.MergeSet(headers, newHeaders.Select(Helper.NormalizeHeader));
 
             _cache[key] = headers;

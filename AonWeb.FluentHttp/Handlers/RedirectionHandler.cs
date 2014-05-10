@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using AonWeb.FluentHttp.Exceptions;
 
 namespace AonWeb.FluentHttp.Handlers
@@ -135,7 +136,10 @@ namespace AonWeb.FluentHttp.Handlers
             if (locationUri.IsAbsoluteUri)
                 return locationUri;
 
-            return new Uri(originalUri.GetLeftPart(UriPartial.Authority) + locationUri.PathAndQuery);
+            if (VirtualPathUtility.IsAbsolute(locationUri.OriginalString))
+                return new Uri(originalUri, locationUri);
+
+            return new Uri(Helper.CombineVirtualPaths(originalUri.GetLeftPart(UriPartial.Path), locationUri.OriginalString));
         }   
     }
 }

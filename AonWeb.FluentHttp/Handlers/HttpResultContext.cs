@@ -11,13 +11,6 @@ namespace AonWeb.FluentHttp.Handlers
             Response = response;
         }
 
-        public HttpResultContext(IRecursiveHttpCallBuilder<TResult, TContent, TError> builder, HttpCallBuilderSettings<TResult, TContent, TError> settings, TResult result, HttpResponseMessage response)
-            : base(builder, settings)
-        {
-            Result = result;
-            Response = response;
-        }
-
         public TResult Result { get; set; }
 
         public HttpResponseMessage Response { get; private set; }

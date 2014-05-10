@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -159,11 +160,11 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithContentEncoding(Encoding encoding)
         {
             _settings.ContentEncoding = encoding;
 
-            _innerBuilder.WithEncoding(encoding);
+            _innerBuilder.WithContentEncoding(encoding);
 
             return this;
         }
@@ -247,7 +248,7 @@ namespace AonWeb.FluentHttp
 
             _settings.ContentFactory = contentFactory;
 
-            WithEncoding(encoding);
+            WithContentEncoding(encoding);
             WithMediaType(mediaType);
 
             return this;
@@ -492,6 +493,13 @@ namespace AonWeb.FluentHttp
         public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddExceptionHandler(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAutoDecompression(bool enabled = true)
+        {
+            _innerBuilder.WithAutoDecompression(enabled);
 
             return this;
         }
@@ -856,7 +864,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder WithEncoding(Encoding encoding)
+        public IAdvancedHttpCallBuilder WithContentEncoding(Encoding encoding)
         {
             if (encoding != null)
                 _settings.ContentEncoding = encoding;
@@ -941,7 +949,7 @@ namespace AonWeb.FluentHttp
             if (contentFactory == null)
                 throw new ArgumentNullException("contentFactory");
 
-            WithEncoding(encoding);
+            WithContentEncoding(encoding);
             WithMediaType(mediaType);
 
             return WithContent(() =>
@@ -1128,6 +1136,17 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public IAdvancedHttpCallBuilder WithAutoDecompression(bool enabled = true)
+        {
+            _settings.AutoDecompression = true;
+
+            _clientBuilder.WithDecompressionMethods(enabled
+                ? DecompressionMethods.GZip | DecompressionMethods.Deflate
+                : DecompressionMethods.None);
+
+            return this;
+        }
+
         public IAdvancedHttpCallBuilder WithSuppressCancellationErrors(bool suppress = true)
         {
             _settings.SuppressCancellationErrors = suppress;
@@ -1201,10 +1220,20 @@ namespace AonWeb.FluentHttp
             if (context.ContentFactory != null)
                 request.Content = context.ContentFactory();
 
-            if (request.Headers.Accept.Count == 0 && !string.IsNullOrWhiteSpace(context.MediaType))
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(context.MediaType));
-
             _clientBuilder.ApplyRequestHeaders(request);
+
+            // if we haven't added an accept header, add a default
+            if (!string.IsNullOrWhiteSpace(context.MediaType))
+                request.Headers.Accept.AddDistinct(h => h.MediaType, context.MediaType);
+
+
+            //if we haven't added a char-set, add a default
+            if (context.AutoDecompression)
+            {
+                request.Headers.AcceptEncoding.AddDistinct(h => h.Value, "gzip");
+                request.Headers.AcceptEncoding.AddDistinct(h => h.Value, "deflate");
+                request.Headers.AcceptEncoding.AddDistinct(h => h.Value, "identity");
+            }
 
             return request;
         }

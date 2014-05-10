@@ -15,7 +15,7 @@ namespace AonWeb.FluentHttp.HAL
         where TContent : IHalRequest
         where TError : IHalResource
     {
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithContentEncoding(Encoding encoding);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithMethod(string method);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method);
@@ -66,6 +66,7 @@ namespace AonWeb.FluentHttp.HAL
         IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
         IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
 
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithAutoDecompression(bool enabled = true);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithSuppressCancellationErrors(bool suppress = true);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithTimeout(TimeSpan? timeout);
     }
