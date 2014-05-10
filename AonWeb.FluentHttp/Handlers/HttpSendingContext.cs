@@ -10,7 +10,7 @@ namespace AonWeb.FluentHttp.Handlers
             Request = request;
         }
 
-        public HttpSendingContext(IHttpCallBuilder builder, HttpCallBuilderSettings settings, HttpRequestMessage request)
+        public HttpSendingContext(IRecursiveHttpCallBuilder builder, HttpCallBuilderSettings settings, HttpRequestMessage request)
             : base(builder, settings)
         {
             Request = request;
@@ -18,25 +18,42 @@ namespace AonWeb.FluentHttp.Handlers
 
         public HttpRequestMessage Request { get; private set; }
         public HttpContent Content { get { return Request.Content; } }
+
+        public HttpResponseMessage Response { get; set; }
     }
 
     public class HttpSendingContext<TResult, TContent, TError> : HttpCallContext<TResult, TContent, TError>
     {
+        private TContent _content;
         private TResult _result;
 
-        public HttpSendingContext(HttpCallContext<TResult, TContent, TError> context, TContent content)
+        public HttpSendingContext(HttpCallContext<TResult, TContent, TError> context, HttpRequestMessage request)
             : base(context)
         {
-            Content = content;
+            Request = request;
         }
 
-        public HttpSendingContext(IHttpCallBuilder<TResult, TContent, TError> builder, HttpCallBuilderSettings<TResult, TContent, TError> settings, TContent content)
+        public HttpSendingContext(IRecursiveHttpCallBuilder<TResult, TContent, TError> builder, HttpCallBuilderSettings<TResult, TContent, TError> settings, HttpRequestMessage request)
             : base(builder, settings)
         {
-            Content = content;
+            Request = request;
         }
 
-        public TContent Content { get; set; }
+        public bool HasContent { get; private set; }
+        public bool IsResultSet { get; private set; }
+
+        public TContent Content
+        {
+            get
+            {
+                return _content;
+            }
+            set
+            {
+                _content = value;
+                HasContent = true;
+            }
+        }
 
         public TResult Result
         {
@@ -51,7 +68,7 @@ namespace AonWeb.FluentHttp.Handlers
             }
         }
 
-        public bool IsResultSet { get; set; }
+        public HttpRequestMessage Request { get; private set; }
     }
 
 }

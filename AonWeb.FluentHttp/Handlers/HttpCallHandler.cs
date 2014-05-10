@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Handlers
 {
+    [ExcludeFromCodeCoverage]
     public abstract class HttpCallHandler : IHttpCallHandler
     {
         public virtual HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
@@ -14,6 +16,7 @@ namespace AonWeb.FluentHttp.Handlers
         public virtual async Task OnException(HttpExceptionContext context) { /* do nothing */ }
     }
 
+    [ExcludeFromCodeCoverage]
     public abstract class HttpCallHandler<TResult, TContent, TError> : IHttpCallHandler<TResult, TContent, TError>
     {
         public virtual HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)

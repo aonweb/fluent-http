@@ -37,14 +37,26 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\ReferenceAssemblies\v4.0\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll</HintPath>
+    </Reference>
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -56,16 +68,18 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Helpers\Extensions.cs" />
-    <Compile Include="Helpers\TestHelper.cs" />
     <Compile Include="Helpers\LocalWebServerResponseInfo.cs" />
     <Compile Include="Helpers\LocalWebServer.cs" />
+    <Compile Include="Http\RetryHandlerTests.cs" />
+    <Compile Include="Http\TypedHttpCallBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderAdvancedMethodsTests .cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderMethodTests.cs" />
+    <Compile Include="Integration\HttpHandlerCachingTests.cs" />
     <Compile Include="Integration\InterfaceDefinitionTests.cs" />
     <Compile Include="Http\RedirectionHandlerTests.cs" />
     <Compile Include="Http\HelperTests.cs" />
-    <Compile Include="Integration\HttpHandlerCachingTests.cs" />
+    <Compile Include="Integration\HttpHandlerTypedCachingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sandbox.cs" />
   </ItemGroup>

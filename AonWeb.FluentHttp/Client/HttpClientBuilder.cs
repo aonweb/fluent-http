@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace AonWeb.FluentHttp.Client
 {
+    // TODO: expose cache store
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly HttpClientSettings _settings;
@@ -99,16 +99,23 @@ namespace AonWeb.FluentHttp.Client
             return this;
         }
 
-        public IHttpClientBuilder WithCachePolicy(RequestCacheLevel cacheLevel)
+        public IHttpClientBuilder WithNoCache(bool nocache = true)
         {
-            return WithCachePolicy(new RequestCachePolicy(cacheLevel));
+            return WithHeaders(
+                h =>
+                    {
+                        if (h.CacheControl == null)
+                            h.CacheControl = new CacheControlHeaderValue();
+
+                        h.CacheControl.NoCache = nocache;
+                        h.CacheControl.NoStore = nocache;
+                    });
         }
 
-        public IHttpClientBuilder WithCachePolicy(RequestCachePolicy cachePolicy)
+        public void ApplyRequestHeaders(HttpRequestMessage request)
         {
-            _settings.CachePolicy = cachePolicy;
-
-            return this;
+            if (_settings.HeaderConfiguration != null)
+                _settings.HeaderConfiguration(request.Headers);
         }
 
         public IHttpClient Create()
@@ -134,11 +141,10 @@ namespace AonWeb.FluentHttp.Client
         
         private HttpMessageHandler CreateHandler()
         {
-            var handler = new WebRequestHandler
+            var handler = new HttpClientHandler
             {
                 AllowAutoRedirect = false, //this will be handled by the consuming code
-                CachePolicy = _settings.CachePolicy
-            };
+            };               
 
             if (_settings.AutomaticDecompression.HasValue)
                 handler.AutomaticDecompression = _settings.AutomaticDecompression.Value;
@@ -167,7 +173,7 @@ namespace AonWeb.FluentHttp.Client
                 handler.Proxy = _settings.Proxy;
                 handler.UseProxy = true;
             }
-
+            
             return handler;
         }
     }

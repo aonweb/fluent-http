@@ -13,24 +13,24 @@ namespace AonWeb.FluentHttp.Client
             _client.Dispose();
         }
 
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
         {
-            return _client.SendAsync(request, completionOption, cancellationToken);
+            return await _client.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption)
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption)
         {
-            return _client.SendAsync(request, completionOption);
+            return await _client.SendAsync(request, completionOption).ConfigureAwait(false);
         }
 
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return _client.SendAsync(request, cancellationToken);
+            return await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
-            return _client.SendAsync(request);
+            return await _client.SendAsync(request).ConfigureAwait(false);
         }
 
         public void CancelPendingRequests()

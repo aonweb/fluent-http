@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.Serialization;
 
@@ -27,6 +28,7 @@ namespace AonWeb.FluentHttp.Exceptions
             Error = error;
         }
 
+        [ExcludeFromCodeCoverage]
         protected HttpErrorException(SerializationInfo info, StreamingContext context) :
             base(info, context) { }
 

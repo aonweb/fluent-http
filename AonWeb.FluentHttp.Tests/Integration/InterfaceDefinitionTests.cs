@@ -1,4 +1,6 @@
 ﻿using System.Net.Http;
+using System.Threading.Tasks;
+
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
@@ -25,39 +27,39 @@ namespace AonWeb.FluentHttp.Tests.Integration
         }
 
         [Test]
-        public void SimpleCall()
+        public async Task SimpleCall()
         {
-            var result = HttpCallBuilder.Create()
+            var result = await HttpCallBuilder.Create()
                 .WithUri(TestUriString)
-                .Result();
+                .ResultAsync();
         }
 
         [Test]
-        public void SimpleCallWithMethod()
+        public async Task SimpleCallWithMethod()
         {
-            var result = HttpCallBuilder.Create()
+            var result = await HttpCallBuilder.Create()
                 .WithUri(TestUriString)
                 .AsGet()
-                .Result();
+                .ResultAsync();
         }
 
         [Test]
-        public void OrderDoesntMatter()
+        public async Task OrderDoesntMatter()
         {
-            var result = HttpCallBuilder.Create()
+            var result = await HttpCallBuilder.Create()
                 .AsGet()
                 .WithUri(TestUriString)
-                .Result();
+                .ResultAsync();
         }
 
         [Test]
-        public void SimplePost()
+        public async Task SimplePost()
         {
-            var result = HttpCallBuilder.Create()
+            var result = await HttpCallBuilder.Create()
                 .WithUri(TestUriString)
                 .AsPost()
                 .WithContent("my data")
-                .Result();
+                .ResultAsync();
         }
     }
 }

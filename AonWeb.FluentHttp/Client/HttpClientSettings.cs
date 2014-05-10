@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
@@ -10,7 +9,13 @@ namespace AonWeb.FluentHttp.Client
     {
         public HttpClientSettings()
         {
-            CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
+            Timeout = HttpCallBuilderDefaults.DefaultClientTimeout;
+            MaxRequestContentBufferSize = HttpCallBuilderDefaults.DefaultMaxRequestContentBufferSize;
+            ClientConfiguration = HttpCallBuilderDefaults.DefaultClientConfiguration;
+            HeaderConfiguration = HttpCallBuilderDefaults.DefaultRequestHeadersConfiguration;
+            AutomaticDecompression = HttpCallBuilderDefaults.DefaultDecompressionMethods;
+            ClientCertificateOptions = HttpCallBuilderDefaults.DefaultClientCertificateOptions;
+            Credentials = HttpCallBuilderDefaults.DefaultCredentials;
         }
 
         public Action<IHttpClient> ClientConfiguration { get; internal set; }
@@ -22,6 +27,5 @@ namespace AonWeb.FluentHttp.Client
         public long? MaxRequestContentBufferSize { get; internal set; }
         public IWebProxy Proxy { get; internal set; }
         public TimeSpan? Timeout { get; internal set; }
-        public RequestCachePolicy  CachePolicy { get; internal set; }
     }
 }

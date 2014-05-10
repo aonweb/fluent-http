@@ -1,35 +1,40 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
-using System.Net.Cache;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+
+using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
-using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp
 {
-    public class HttpCallBuilder<TResult, TContent, TError> : IAdvancedHttpCallBuilder<TResult, TContent, TError>
+    public class HttpCallBuilder<TResult, TContent, TError> : IRecursiveHttpCallBuilder<TResult, TContent, TError>, IAdvancedHttpCallBuilder<TResult, TContent, TError>
     {
         private readonly HttpCallBuilderSettings<TResult, TContent, TError> _settings;
-        private readonly IHttpCallBuilder _innerBuilder;
-        private readonly ISerializerFactory _serializerFactory;
+        private readonly IChildHttpCallBuilder _innerBuilder;
 
         protected HttpCallBuilder()
-            : this(new HttpCallBuilderSettings<TResult, TContent, TError>(), HttpCallBuilder.Create()) { }
+            : this(new HttpCallBuilderSettings<TResult, TContent, TError>(), HttpCallBuilder.CreateAsChild()) { }
 
-        private HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder)
-            : this(settings, builder, new SerializerFactory()) { }
+        private HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IChildHttpCallBuilder builder)
+            : this(settings, builder, new CacheHandler<TResult, TContent, TError>()) { }
 
-        private HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IHttpCallBuilder builder, ISerializerFactory serializerFactory)
+        private HttpCallBuilder(HttpCallBuilderSettings<TResult, TContent, TError> settings, IChildHttpCallBuilder builder, params IHttpCallHandler<TResult, TContent, TError>[] defaultHandlers)
         {
             _settings = settings;
             _innerBuilder = builder;
-            _serializerFactory = serializerFactory;
+
+            foreach (var handler in defaultHandlers)
+                _settings.Handler.AddHandler(handler);
         }
 
         public static IHttpCallBuilder<TResult, TContent, TError> Create()
@@ -128,28 +133,28 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder<TResult, TContent, TError> WithScheme(string scheme)
         {
-            _innerBuilder.Advanced.WithScheme(scheme);
+            _innerBuilder.WithScheme(scheme);
 
             return this;
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithHost(string host)
         {
-            _innerBuilder.Advanced.WithHost(host);
+            _innerBuilder.WithHost(host);
 
             return this;
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithPort(int port)
         {
-            _innerBuilder.Advanced.WithPort(port);
+            _innerBuilder.WithPort(port);
 
             return this;
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithPath(string absolutePathAndQuery)
         {
-            _innerBuilder.Advanced.WithPath(absolutePathAndQuery);
+            _innerBuilder.WithPath(absolutePathAndQuery);
 
             return this;
         }
@@ -158,7 +163,7 @@ namespace AonWeb.FluentHttp
         {
             _settings.ContentEncoding = encoding;
 
-            _innerBuilder.Advanced.WithEncoding(encoding);
+            _innerBuilder.WithEncoding(encoding);
 
             return this;
         }
@@ -167,21 +172,42 @@ namespace AonWeb.FluentHttp
         {
             _settings.MediaType = mediaType;
 
-            _innerBuilder.Advanced.WithMediaType(mediaType);
+            _innerBuilder.WithMediaType(mediaType);
 
             return this;
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithMethod(string method)
         {
-            _innerBuilder.Advanced.WithMethod(method);
+            _innerBuilder.WithMethod(method);
 
             return this;
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method)
         {
-            _innerBuilder.Advanced.WithMethod(method);
+            _innerBuilder.WithMethod(method);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithAcceptHeader(string mediaType)
+        {
+            _innerBuilder.WithAcceptHeader(mediaType);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(Encoding encoding)
+        {
+            _innerBuilder.WithAcceptCharSet(encoding);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(string charSet)
+        {
+            _innerBuilder.WithAcceptCharSet(charSet);
 
             return this;
         }
@@ -189,13 +215,13 @@ namespace AonWeb.FluentHttp
         public IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content)
         {
 
-            return WithContent(content, null, null);
+            return WithContent(content, _settings.ContentEncoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding)
         {
 
-            return WithContent(content, encoding, null);
+            return WithContent(content, encoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType)
@@ -206,12 +232,12 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory)
         {
-            return WithContent(contentFactory, null, null);
+            return WithContent(contentFactory, _settings.ContentEncoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding)
         {
-            return WithContent(contentFactory, encoding, null);
+            return WithContent(contentFactory, encoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding, string mediaType)
@@ -236,16 +262,29 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClient> configuration)
+        public IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
         {
-            _innerBuilder.Advanced.ConfigureClient(configuration);
+            _innerBuilder.ConfigureClient(configuration);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
+        public IHttpCallBuilder<TResult, TContent, TError> WithMediaTypeFormatter(MediaTypeFormatter formatter)
         {
-            _innerBuilder.Advanced.ConfigureClient(configuration);
+            _settings.MediaTypeFormatters.Add(formatter);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure) where TFormatter : MediaTypeFormatter
+        {
+            if (configure == null)
+                throw new ArgumentNullException("configure");
+
+            var formatter = _settings.MediaTypeFormatters.OfType<TFormatter>().FirstOrDefault();
+
+            if (formatter != null)
+                configure(formatter);
 
             return this;
         }
@@ -261,6 +300,13 @@ namespace AonWeb.FluentHttp
             where THandler : class, IHttpCallHandler<TResult, TContent, TError>
         {
             _settings.Handler.ConfigureHandler(configure);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler<TResult, TContent, TError>
+        {
+            _settings.Handler.ConfigureHandler(configure, false);
 
             return this;
         }
@@ -282,11 +328,29 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithNoCache()
+        public IHttpCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true)
         {
-            _innerBuilder.Advanced.WithNoCache();
+
+            ConfigureHandler<CacheHandler<TResult, TContent, TError>>(handler => handler.WithCaching(enabled));
 
             return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true)
+        {
+            _innerBuilder.WithNoCache(nocache);
+
+            return this;
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithDependentUri(string uri)
+        {
+            return TryConfigureHandler<CacheHandler<TResult, TContent, TError>>(h => h.WithDependentUri(uri));
+        }
+
+        public IHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<string> uris)
+        {
+            return TryConfigureHandler<CacheHandler<TResult, TContent, TError>>(h => h.WithDependentUris(uris));
         }
 
         public IHttpCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler)
@@ -446,52 +510,65 @@ namespace AonWeb.FluentHttp
 
         public TResult Result()
         {
-            return ResultAsync().Result;
+            return Task.Run(() => ResultAsync()).Result;
         }
 
         public async Task<TResult> ResultAsync()
         {
+            var result = await RecursiveResultAsync();
+
+            _settings.Reset();
+
+            return result;
+        }
+
+        public async Task<TResult> RecursiveResultAsync()
+        {
             return await ResultAsync(new HttpCallContext<TResult, TContent, TError>(this, _settings));
         }
 
-        internal async Task<TResult> ResultAsync(HttpCallContext<TResult, TContent, TError> context)
+        private async Task<TResult> ResultAsync(HttpCallContext<TResult, TContent, TError> context)
         {
+            HttpResponseMessage response = null;
+            ExceptionDispatchInfo capturedException = null;
             try
             {
-                var content = context.ContentFactory();
-
-                var sendingContext = new HttpSendingContext<TResult, TContent, TError>(context, content);
-
-                await context.Handler.OnSending(sendingContext);
-
-                _innerBuilder.WithContent(() =>
+                //build content before creating request
+                TContent content = default(TContent);
+                if (context.ContentFactory != null)
                 {
-                    var serializer = _serializerFactory.GetSerializer<TContent>(context.MediaType);
+                    content = context.ContentFactory();
 
-                    var contentString = serializer.Serialize(sendingContext.Content).Result;
+                    var httpContent = await CreateContent(content, context);
 
-                    return contentString;
+                    _innerBuilder.WithContent(() => httpContent);
 
-                }, context.ContentEncoding, context.MediaType);
+                }
 
-                if (sendingContext.IsResultSet)
-                    return sendingContext.Result;
+                using (var request = _innerBuilder.CreateRequest())
+                {
+                    var sendingContext = new HttpSendingContext<TResult, TContent, TError>(context, request);
 
-                var response = await _innerBuilder.ResultAsync();
+                    if (context.ContentFactory != null)
+                        sendingContext.Content = content;
+
+                    await context.Handler.OnSending(sendingContext);
+
+                    if (sendingContext.IsResultSet)
+                        return sendingContext.Result;
+
+                    response = await _innerBuilder.ResultFromRequestAsync(request);
+                }
 
                 if (!IsSuccessfulResponse(response))
                 {
-                    var serializer = _serializerFactory.GetSerializer<TError>(response);
-
-                    var error = await serializer.Deserialize(response.Content);
+                    var error = await response.Content.ReadAsAsync<TError>(context.MediaTypeFormatters);
 
                     var errorCtx = new HttpErrorContext<TResult, TContent, TError>(context, error, response);
 
                     await context.Handler.OnError(errorCtx);
 
-                    if (!errorCtx.ErrorHandled)
-                        if (_settings.ExceptionFactory != null)
-                            throw _settings.ExceptionFactory(errorCtx);
+                    if (!errorCtx.ErrorHandled) if (_settings.ExceptionFactory != null) throw _settings.ExceptionFactory(errorCtx);
                 }
                 else
                 {
@@ -499,11 +576,18 @@ namespace AonWeb.FluentHttp
 
                     await context.Handler.OnSent(sentContext);
 
-                    var serializer = _serializerFactory.GetSerializer<TResult>(response);
+                    TResult result;
 
-                    var result = await serializer.Deserialize(response.Content);
+                    if (sentContext.IsResultSet)
+                    {
+                        result = sentContext.Result;
+                    }
+                    else
+                    {
+                        result = await response.Content.ReadAsAsync<TResult>(context.MediaTypeFormatters);
+                    }
 
-                    var resultContext = new HttpResultContext<TResult, TContent, TError>(context, result);
+                    var resultContext = new HttpResultContext<TResult, TContent, TError>(context, result, response);
 
                     await context.Handler.OnResult(resultContext);
 
@@ -512,12 +596,21 @@ namespace AonWeb.FluentHttp
             }
             catch (Exception ex)
             {
-                var exCtx = new HttpExceptionContext<TResult, TContent, TError>(context, ex);
+                capturedException = ExceptionDispatchInfo.Capture(ex);
+            }
+            finally
+            {
+                Helper.DisposeResponse(response);
+            }
+
+            if (capturedException != null)
+            {
+                var exCtx = new HttpExceptionContext<TResult, TContent, TError>(context, capturedException.SourceException);
 
                 context.Handler.OnException(exCtx).Wait();
 
                 if (!exCtx.ExceptionHandled)
-                    throw;
+                    capturedException.Throw();
             }
 
             return _settings.DefaultResultFactory();
@@ -527,9 +620,32 @@ namespace AonWeb.FluentHttp
         {
             return !_settings.SuccessfulResponseValidators.Any() || _settings.SuccessfulResponseValidators.All(v => v(response));
         }
+
+        private async Task<HttpContent> CreateContent<T>(T value, HttpCallContext<TResult, TContent, TError> context)
+        {
+            var type = typeof(T);
+            var mediaType = context.MediaType;
+            var header = new MediaTypeHeaderValue(mediaType);
+            var formatter = context.MediaTypeFormatters.FindWriter(type, header);
+
+            if (formatter == null)
+                throw new ArgumentException(string.Format(SR.NoFormatterForMimeTypeErrorFormat, mediaType));
+
+            HttpContent content;
+            using (var stream = new MemoryStream())
+            {
+                await formatter.WriteToStreamAsync(type, value, stream, null, null);
+
+                content = new ByteArrayContent(stream.ToArray());
+            }
+
+            formatter.SetDefaultContentHeaders(type, content.Headers, header);
+
+            return content;
+        }
     }
 
-    public class HttpCallBuilder : IAdvancedHttpCallBuilder
+    public class HttpCallBuilder : IChildHttpCallBuilder, IRecursiveHttpCallBuilder, IAdvancedHttpCallBuilder
     {
         private readonly IHttpClientBuilder _clientBuilder;
         private readonly HttpCallBuilderSettings _settings;
@@ -538,7 +654,7 @@ namespace AonWeb.FluentHttp
             : this(new HttpClientBuilder()) { }
 
         protected HttpCallBuilder(IHttpClientBuilder clientBuilder)
-            : this(new HttpCallBuilderSettings(), clientBuilder, new RetryHandler(), new RedirectHandler()) { }
+            : this(new HttpCallBuilderSettings(), clientBuilder, new RetryHandler(), new RedirectHandler(), new CacheHandler()) { }
 
         private HttpCallBuilder(HttpCallBuilderSettings settings, IHttpClientBuilder clientBuilder, params IHttpCallHandler[] defaultHandlers)
         {
@@ -552,6 +668,11 @@ namespace AonWeb.FluentHttp
         public static IHttpCallBuilder Create()
         {
             return new HttpCallBuilder();
+        }
+
+        internal static IChildHttpCallBuilder CreateAsChild()
+        {
+            return new HttpCallBuilder(new HttpCallBuilderSettings(), new HttpClientBuilder(), new RetryHandler(), new RedirectHandler());
         }
 
         public static IHttpCallBuilder Create(string baseUri)
@@ -589,9 +710,6 @@ namespace AonWeb.FluentHttp
         {
             if (uri == null)
                 throw new ArgumentNullException("uri");
-
-            if (!uri.IsAbsoluteUri)
-                throw new ArgumentException(SR.ArgumentUriMustBeAbsoluteError, "uri");
 
             var querystring = uri.ParseQueryString();
 
@@ -632,7 +750,7 @@ namespace AonWeb.FluentHttp
 
             _settings.QueryString.Set(name, value);
 
-            _settings.UriBuilderQuery = _settings.QueryString.ToString().TrimStart('?');
+            _settings.UriBuilderQuery = _settings.QueryString.ToEncodedString();
 
             return this;
         }
@@ -645,7 +763,7 @@ namespace AonWeb.FluentHttp
                     _settings.QueryString.Set(values.GetKey(i), values.Get(i));
             }
 
-            _settings.UriBuilderQuery = _settings.QueryString.ToString().TrimStart('?');
+            _settings.UriBuilderQuery = _settings.QueryString.ToEncodedString();
 
             return this;
         }
@@ -734,7 +852,7 @@ namespace AonWeb.FluentHttp
             if (encoding != null)
                 _settings.ContentEncoding = encoding;
 
-            //TODO: set char set and accept encoding char set?
+            WithAcceptCharSet(encoding);
 
             return this;
         }
@@ -744,7 +862,7 @@ namespace AonWeb.FluentHttp
             if (mediaType != null)
                 _settings.MediaType = mediaType;
 
-            //TODO: set accepts type?
+            WithAcceptHeader(mediaType);
 
             return this;
         }
@@ -767,15 +885,30 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public IHttpCallBuilder WithAcceptHeader(string mediaType)
+        {
+            return ConfigureClient(c => c.WithHeaders(h => h.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType))));
+        }
+
+        public IHttpCallBuilder WithAcceptCharSet(Encoding encoding)
+        {
+            return WithAcceptCharSet(encoding.WebName);
+        }
+
+        public IHttpCallBuilder WithAcceptCharSet(string charSet)
+        {
+            return ConfigureClient(c => c.WithHeaders(h => h.AcceptCharset.Add(new StringWithQualityHeaderValue(charSet))));
+        }
+
         public IHttpCallBuilder WithContent(string content)
         {
-            return WithContent(content, null, null);
+            return WithContent(content, _settings.ContentEncoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder WithContent(string content, Encoding encoding)
         {
 
-            return WithContent(content, encoding, null);
+            return WithContent(content, encoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder WithContent(string content, Encoding encoding, string mediaType)
@@ -786,25 +919,27 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder WithContent(Func<string> contentFactory)
         {
-            return WithContent(contentFactory, null, null);
+            return WithContent(contentFactory, _settings.ContentEncoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding)
         {
-            return WithContent(contentFactory, encoding, null);
+            return WithContent(contentFactory, encoding, _settings.MediaType);
         }
 
         public IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding, string mediaType)
         {
+            WithEncoding(encoding);
+            WithMediaType(mediaType);
+
             return WithContent(() =>
             {
                 var content = contentFactory() ?? string.Empty;
 
-                WithEncoding(encoding);
-                WithMediaType(mediaType);
-
                 return new StringContent(content, encoding, mediaType);
             });
+
+
         }
 
         public IHttpCallBuilder WithContent(Func<HttpContent> contentFactory)
@@ -813,13 +948,6 @@ namespace AonWeb.FluentHttp
                 throw new ArgumentNullException("contentFactory");
 
             _settings.ContentFactory = contentFactory;
-
-            return this;
-        }
-
-        public IHttpCallBuilder ConfigureClient(Action<IHttpClient> configuration)
-        {
-            _clientBuilder.Configure(configuration);
 
             return this;
         }
@@ -856,6 +984,13 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public IHttpCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
+        {
+            _settings.Handler.ConfigureHandler(configure, false);
+
+            return this;
+        }
+
         public IHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
             if (validator == null)
@@ -873,13 +1008,28 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithNoCache()
+        public IHttpCallBuilder WithCaching(bool enabled = true)
         {
-            _clientBuilder
-                .WithCachePolicy(RequestCacheLevel.NoCacheNoStore)
-                .WithHeaders(h => h.CacheControl = new CacheControlHeaderValue { NoCache = true });
+            ConfigureHandler<CacheHandler>(handler => handler.WithCaching(enabled));
 
             return this;
+        }
+
+        public IHttpCallBuilder WithNoCache(bool nocache = true)
+        {
+            _clientBuilder.WithNoCache(nocache);
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithDependentUri(string uri)
+        {
+            return TryConfigureHandler<CacheHandler>(h => h.WithDependentUri(uri));
+        }
+
+        public IHttpCallBuilder WithDependentUris(IEnumerable<string> uris)
+        {
+            return TryConfigureHandler<CacheHandler>(h => h.WithDependentUris(uris));
         }
 
         public IHttpCallBuilder OnSending(Action<HttpSendingContext> handler)
@@ -980,48 +1130,97 @@ namespace AonWeb.FluentHttp
 
         public async Task<HttpResponseMessage> ResultAsync()
         {
-            return await ResultAsync(new HttpCallContext(this, _settings));
+            var response = await RecursiveResultAsync();
+
+            _settings.Reset();
+
+            return response;
         }
 
-        internal async Task<HttpResponseMessage> ResultAsync(HttpCallContext context)
+        public async Task<HttpResponseMessage> RecursiveResultAsync()
+        {
+            var context = new HttpCallContext(this, _settings);
+            using (var request = CreateRequest(context))
+            {
+                return await ResultFromRequestAsync(context, request).ConfigureAwait(false);
+            }
+        }
+
+        public HttpRequestMessage CreateRequest()
+        {
+            var context = new HttpCallContext(this, _settings);
+            return CreateRequest(context);
+        }
+
+        public async Task<HttpResponseMessage> ResultFromRequestAsync(HttpRequestMessage request)
+        {
+            var context = new HttpCallContext(this, _settings);
+            return await ResultFromRequestAsync(context, request);
+        }
+
+        private HttpRequestMessage CreateRequest(HttpCallContext context)
+        {
+            var request = new HttpRequestMessage(context.Method, context.Uri);
+
+            if (context.ContentFactory != null)
+                request.Content = context.ContentFactory();
+
+            if (request.Headers.Accept.Count == 0 && !string.IsNullOrWhiteSpace(context.MediaType))
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(context.MediaType));
+
+            _clientBuilder.ApplyRequestHeaders(request);
+
+            return request;
+        }
+
+        private async Task<HttpResponseMessage> ResultFromRequestAsync(HttpCallContext context, HttpRequestMessage request)
         {
             context.ValidateSettings();
 
+            ExceptionDispatchInfo capturedException = null;
             HttpResponseMessage response = null;
 
             try
             {
                 using (var client = _clientBuilder.Create())
                 {
-                    using (var request = new HttpRequestMessage(context.Method, context.Uri))
+                    var sendingContext = new HttpSendingContext(context, request);
+
+                    await context.Handler.OnSending(sendingContext);
+
+                    if (sendingContext.Response != null)
                     {
-                        if (context.ContentFactory != null)
-                            request.Content = context.ContentFactory();
-
-                        var sendingContext = new HttpSendingContext(context, request);
-
-                        await context.Handler.OnSending(sendingContext);
-
-                        response = await client.SendAsync(request, context.CompletionOption, context.TokenSource.Token);
-
-                        if (!IsSuccessfulResponse(response))
-                            if (_settings.ExceptionFactory != null)
-                                throw _settings.ExceptionFactory(response);
-
-                        var sentContext = new HttpSentContext(context, response);
-
-                        await context.Handler.OnSent(sentContext);
+                        response = sendingContext.Response;
                     }
+                    else
+                    {
+                        response = await client.SendAsync(request, context.CompletionOption, context.TokenSource.Token);
+                    }
+
+                    if (!IsSuccessfulResponse(response))
+                        if (_settings.ExceptionFactory != null)
+                            throw _settings.ExceptionFactory(response);
+
+                    var sentContext = new HttpSentContext(context, response);
+
+                    await context.Handler.OnSent(sentContext);
+
+                    response = sentContext.Response;
                 }
             }
             catch (Exception ex)
             {
-                var exContext = new HttpExceptionContext(context, ex);
+                capturedException = ExceptionDispatchInfo.Capture(ex);
+            }
 
-                context.Handler.OnException(exContext).Wait();
+            if (capturedException != null)
+            {
+                var exContext = new HttpExceptionContext(context, capturedException.SourceException);
+
+                await context.Handler.OnException(exContext);
 
                 if (!exContext.ExceptionHandled)
-                    throw;
+                    capturedException.Throw();
             }
 
             return response;
@@ -1030,6 +1229,6 @@ namespace AonWeb.FluentHttp
         private bool IsSuccessfulResponse(HttpResponseMessage response)
         {
             return !_settings.SuccessfulResponseValidators.Any() || _settings.SuccessfulResponseValidators.All(v => v(response));
-        }
+        } 
     }
 }

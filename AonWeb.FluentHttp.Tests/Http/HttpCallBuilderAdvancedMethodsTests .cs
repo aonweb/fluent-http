@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Specialized;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using AonWeb.FluentHttp;
 using AonWeb.FluentHttp.Client;
-using AonWeb.FluentHttp;
-using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
@@ -16,22 +13,13 @@ namespace AonWeb.FluentHttp.Tests.Http
     public class HttpCallBuilderAdvancedMethodTests
     {
         #region Declarations, Set up, & Tear Down
-        
+
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
-        private LocalWebServer _server;
-
-        [SetUp]
-        public void Setup()
+        [TestFixtureSetUp]
+        public void FixtureSetup()
         {
-            _server = LocalWebServer.ListenInBackground(TestUriString);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            if (_server != null)
-                _server.Stop();
+            HttpCallBuilderDefaults.CachingEnabled = false;
         }
 
         #endregion
@@ -41,15 +29,20 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WithMethod_WhenValidString_ExpectResultUsesMethod()
         {
-            //arrange
-            var method = "GET";
-            var builder = HttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                //arrange
+                var method = "GET";
+                var builder = HttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
 
-            // assert (called after act)
-            _server.InspectRequest(r => Assert.AreEqual(r.HttpMethod, method));
+                string actual = null;
+                server.InspectRequest(r => actual = r.HttpMethod);
 
-            //act
-            builder.Result();
+                //act
+                builder.Result();
+
+                Assert.AreEqual(method, actual);
+            }
         }
 
         [Test]
@@ -79,15 +72,20 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WithMethod_WhenValidMethod_ExpectResultUsesMethod()
         {
-            //arrange
-            var method = HttpMethod.Get;
-            var builder = HttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                //arrange
+                var method = HttpMethod.Get;
+                var builder = HttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
 
-            // assert (called after act)
-            _server.InspectRequest(r => Assert.AreEqual(r.HttpMethod, method.Method));
+                string actual = null;
+                server.InspectRequest(r => actual = r.HttpMethod);
 
-            //act
-            builder.Result();
+                //act
+                builder.Result();
+
+                Assert.AreEqual(method.Method, actual);
+            }
         }
 
         [Test]
@@ -105,16 +103,21 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WithMethod_WhenCalledMultipleTimes_ExpectLastWins()
         {
-            //arrange
-            var method1 = "POST";
-            var method2 = "GET";
-            var builder = HttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method1).Advanced.WithMethod(method2);
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                //arrange
+                var method1 = "POST";
+                var method2 = "GET";
+                var builder = HttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method1).Advanced.WithMethod(method2);
 
-            // assert (called after act)
-            _server.InspectRequest(r => Assert.AreEqual(r.HttpMethod, method2));
+                string actual = null;
+                server.InspectRequest(r => actual = r.HttpMethod);
 
-            //act
-            builder.Result();
+                //act
+                builder.Result();
+
+                Assert.AreEqual(method2, actual);
+            }
         }
 
         #endregion
@@ -122,18 +125,26 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WithConfiguration_WhenAction_ExpectConfigurationApplied()
         {
-            Action<IHttpClient> config = client => client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                var expected = "GoogleBot/1.0";
+                string actual = null;
+                server.InspectRequest(r => actual = r.Headers["User-Agent"]);
 
-            var builder = HttpCallBuilder.Create();
+                //act
+                HttpCallBuilder.Create(TestUriString)
+                    .Advanced
+                    .ConfigureClient(b =>
+                        b.WithHeaders(h =>
+                            h.UserAgent.Add(new ProductInfoHeaderValue("GoogleBot", "1.0"))))
+                        .Result();
 
-            // assert (called after act)
-            _server.InspectRequest(r => Assert.AreEqual(r.Headers["Accept"], "application/json"));
+                Assert.AreEqual(expected, actual);
 
-            //act
-            builder.Advanced.ConfigureClient(config).ResultAsync();
-
-
+            }
         }
+
+        
 
         /*
          IHttpCallBuilder WithScheme(string scheme);

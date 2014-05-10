@@ -138,4 +138,7 @@
   <data name="MaxAutoRedirectsErrorFormat" xml:space="preserve">
     <value>The maximum allowed number redirects ({0}) was reached. Last uri: '{1}'</value>
   </data>
+  <data name="NoFormatterForMimeTypeErrorFormat" xml:space="preserve">
+    <value>No MediaTypeFormatter has been registered for media type '{0}'</value>
+  </data>
 </root>

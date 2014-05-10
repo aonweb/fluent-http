@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.Serialization;
 
@@ -18,6 +19,7 @@ namespace AonWeb.FluentHttp.Exceptions
         public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message, Exception exception) :
             base(statusCode, message, exception) { }
 
+        [ExcludeFromCodeCoverage]
         protected MaximumAutoRedirectsException(SerializationInfo info, StreamingContext context) :
             base(info, context) { }
     }

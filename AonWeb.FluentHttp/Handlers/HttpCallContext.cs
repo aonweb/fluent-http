@@ -2,25 +2,29 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class HttpCallContext
+    public interface IHttpCallContext
+    {
+        IDictionary Items { get; }
+    }
+
+    public class HttpCallContext : IHttpCallContext
     {
         private readonly HttpCallBuilderSettings _settings;
-        private readonly IHttpCallBuilder _builder;
-        private readonly IDictionary _items;
+        private readonly IRecursiveHttpCallBuilder _builder;
 
         public HttpCallContext(HttpCallContext context)
             : this(context.Builder, context._settings) { }
 
-        public HttpCallContext(IHttpCallBuilder builder, HttpCallBuilderSettings settings)
+        public HttpCallContext(IRecursiveHttpCallBuilder builder, HttpCallBuilderSettings settings)
         {
             _builder = builder;
             _settings = settings;
-            _items = new HybridDictionary();
         }
 
         public void ValidateSettings()
@@ -40,35 +44,36 @@ namespace AonWeb.FluentHttp.Handlers
 
         public CancellationTokenSource TokenSource { get { return _settings.TokenSource; } }
 
-        public IDictionary Items { get { return _items; } }
+        public IDictionary Items { get { return _settings.Items; } }
 
-        public IHttpCallBuilder Builder { get { return _builder; } }
+        public IRecursiveHttpCallBuilder Builder { get { return _builder; } }
+
+        public string MediaType { get { return _settings.MediaType; } }
     }
 
-    public class HttpCallContext<TResult, TContent, TError>
+    public class HttpCallContext<TResult, TContent, TError> : IHttpCallContext
     {
         private readonly HttpCallBuilderSettings<TResult, TContent, TError> _settings;
-        private readonly IHttpCallBuilder<TResult, TContent, TError> _builder;
-        private readonly IDictionary _items;
+        private readonly IRecursiveHttpCallBuilder<TResult, TContent, TError> _builder;
 
         public HttpCallContext(HttpCallContext<TResult, TContent, TError> context)
             : this(context.Builder, context._settings) { }
 
-        public HttpCallContext(IHttpCallBuilder<TResult, TContent, TError> builder, HttpCallBuilderSettings<TResult, TContent, TError> settings)
+        public HttpCallContext(IRecursiveHttpCallBuilder<TResult, TContent, TError> builder, HttpCallBuilderSettings<TResult, TContent, TError> settings)
         {
             _builder = builder;
             _settings = settings;
-            _items = new HybridDictionary();
         }
 
         public Func<TContent> ContentFactory { get { return _settings.ContentFactory; } }
 
         public HttpCallHandlerRegister<TResult, TContent, TError> Handler { get { return _settings.Handler; } }
 
-        public IDictionary Items { get { return _items; } }
+        public IDictionary Items { get { return _settings.Items; } }
 
-        public IHttpCallBuilder<TResult, TContent, TError> Builder { get { return _builder; } }
+        public IRecursiveHttpCallBuilder<TResult, TContent, TError> Builder { get { return _builder; } }
         public string MediaType { get { return _settings.MediaType; } }
         public Encoding ContentEncoding { get { return _settings.ContentEncoding; } }
+        public MediaTypeFormatterCollection MediaTypeFormatters { get { return _settings.MediaTypeFormatters; } }
     }
 }

@@ -55,7 +55,7 @@ namespace AonWeb.FluentHttp.Handlers
             return this;
         }
 
-        public HttpCallHandlerRegister ConfigureHandler<THandler>(Action<THandler> configure)
+        public HttpCallHandlerRegister ConfigureHandler<THandler>(Action<THandler> configure, bool throwOnNotFound = true)
             where THandler : class, IHttpCallHandler
         {
             if (configure == null)
@@ -64,9 +64,14 @@ namespace AonWeb.FluentHttp.Handlers
             var handler = _callHandlers.OfType<THandler>().FirstOrDefault();
 
             if (handler == null)
-                throw new KeyNotFoundException(string.Format(SR.HanderDoesNotExistErrorFormat, typeof(THandler).Name));
-
-            configure(handler);
+            {
+                if (throwOnNotFound)
+                    throw new KeyNotFoundException(string.Format(SR.HanderDoesNotExistErrorFormat, typeof(THandler).Name));
+            }
+            else
+            {
+                configure(handler);
+            }
 
             return this;
         }
@@ -236,7 +241,7 @@ namespace AonWeb.FluentHttp.Handlers
             return this;
         }
 
-        public HttpCallHandlerRegister<TResult, TContent, TError> ConfigureHandler<THandler>(Action<THandler> configure)
+        public HttpCallHandlerRegister<TResult, TContent, TError> ConfigureHandler<THandler>(Action<THandler> configure, bool throwOnNotFound = true)
             where THandler : class, IHttpCallHandler<TResult, TContent, TError>
         {
             if (configure == null)
@@ -245,9 +250,14 @@ namespace AonWeb.FluentHttp.Handlers
             var handler = _callHandlers.OfType<THandler>().FirstOrDefault();
 
             if (handler == null)
-                throw new KeyNotFoundException(string.Format(SR.HanderDoesNotExistErrorFormat, typeof(THandler).Name));
-
-            configure(handler);
+            {
+                if (throwOnNotFound)
+                    throw new KeyNotFoundException(string.Format(SR.HanderDoesNotExistErrorFormat, typeof(THandler).Name));
+            }
+            else
+            {
+                configure(handler);
+            }
 
             return this;
         }

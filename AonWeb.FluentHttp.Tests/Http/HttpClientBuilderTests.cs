@@ -1,5 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+
 using AonWeb.FluentHttp.Client;
 using NUnit.Framework;
 namespace AonWeb.FluentHttp.Tests.Http
@@ -14,6 +20,8 @@ namespace AonWeb.FluentHttp.Tests.Http
 
             Assert.NotNull(builder);
         }
+
+        #region Configuration
 
         [Test]
         public void WithConfiguration_WhenValidAction_ExpectActionCalled()
@@ -76,58 +84,133 @@ namespace AonWeb.FluentHttp.Tests.Http
             Assert.Pass();
         }
 
-        [Test]
-        public void WithAutoRedirect_When_Expect()
-        {
+        #endregion
 
+        #region Headers
+
+        [Test]
+        public void WithHeaders_WhenCalledWithNameAndValue_ExpectAppliedToClient()
+        {
+            // arrange
+            
+            var builder = CreateBuilder();
+
+            // act
+            var client = builder.WithHeaders("Accept", "application/json").Create();
+
+            // assert
+            Assert.AreEqual("application/json", client.DefaultRequestHeaders.Accept.First().MediaType);
         }
 
         [Test]
-        public void WithAutoRedirect_When_Expect1()
+        public void WithHeaders_WhenCalledWithNameAndValues_ExpectAppliedToClient()
         {
+            // arrange
 
+            var builder = CreateBuilder();
+
+            // act
+            var client = builder.WithHeaders("Accept", new[] { "text/html", "text/xhtml" }).Create();
+
+            // assert
+            Assert.AreEqual("text/html", client.DefaultRequestHeaders.Accept.First().MediaType);
+            Assert.AreEqual("text/xhtml", client.DefaultRequestHeaders.Accept.Last().MediaType);
         }
 
         [Test]
-        public void WithDecompression_When_Expect()
+        public void WithHeaders_WhenCalledWithAction_ExpectAppliedToClient()
         {
+            // arrange
 
+            var builder = CreateBuilder();
+
+            // act
+            var client = builder.WithHeaders(
+                h =>
+                    {
+                        h.AcceptCharset.Add(new StringWithQualityHeaderValue(Encoding.UTF8.WebName));
+                        h.CacheControl = new CacheControlHeaderValue{ NoStore = true };
+                    }).Create();
+
+            // assert
+            Assert.AreEqual(Encoding.UTF8.WebName, client.DefaultRequestHeaders.AcceptCharset.First().Value);
+            Assert.IsTrue(client.DefaultRequestHeaders.CacheControl.NoStore);
+        }
+
+
+        #endregion
+
+        [Test]
+        public void WithClientCertificateOptions_WhenSet_ExpectSettingsUpdated()
+        {
+            // arrange
+            var expected = ClientCertificateOption.Automatic;
+            var builder = CreateBuilder();
+
+            // act
+            var client = builder.WithClientCertificateOptions(expected).Create();
+
+            // assert
+            Assert.AreEqual(expected, builder.Settings.ClientCertificateOptions);
+        }
+
+        // TODO: LocalWebServer test with verify cookie round trip
+        [Test]
+        public void WithCookieContainer_WhenSet_ExpectSettingsUpdated()
+        {
+            // arrange
+            var expected = new CookieContainer();
+            var builder = CreateBuilder();
+
+            // act
+            var client = builder.WithUseCookies(expected).Create();
+
+            // assert
+            Assert.AreEqual(expected, builder.Settings.CookieContainer);
+        }
+
+        // TODO: LocalWebServer test with verify credentials sent
+        [Test]
+        public void WithCredentials_WhenSet_ExpectSettingsUpdated()
+        {
+            // arrange
+            var expected = new NetworkCredential("username", "password");
+            var builder = CreateBuilder();
+
+            // act
+            var client = builder.WithCredentials(expected).Create();
+
+            // assert
+            Assert.AreEqual(expected, builder.Settings.Credentials);
+        }
+
+        // TODO: LocalWebServer test with big content, verify buffer size
+        [Test]
+        public void WithMaxBuffer_WhenSet_ExpectSettingsUpdated()
+        {
+            // arrange
+            var expected = 10000;
+            var builder = CreateBuilder();
+
+            // act
+            var client = builder.WithMaxBufferSize(expected).Create();
+
+            // assert
+            Assert.AreEqual(expected, builder.Settings.MaxRequestContentBufferSize);
         }
 
         [Test]
-        public void WithClientCertificateOptions_When_Expect()
+        public void WithProxy_WhenSet_ExpectSettingsUpdated()
         {
+            // arrange
+            var expected = new WebProxy("http://localhost:8888");
+            var builder = CreateBuilder();
 
-        }
+            // act
+            var client = builder.WithProxy(expected).Create();
 
-        [Test]
-        public void WithCookieContainer_When_Expect()
-        {
-
-        }
-
-        [Test]
-        public void WithCredentials_When_Expect()
-        {
-
-        }
-
-        [Test]
-        public void WithMaxBuffer_When_Expect()
-        {
-
-        }
-
-        [Test]
-        public void WithProxy_When_Expect()
-        {
-
-        }
-
-        [Test]
-        public void Create_When_Expect()
-        {
-
+            // assert
+            Assert.AreEqual(expected, builder.Settings.Proxy);
         }
 
         private IHttpClientBuilder CreateBuilder()

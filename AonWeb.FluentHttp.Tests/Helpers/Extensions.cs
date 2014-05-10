@@ -27,5 +27,11 @@ namespace AonWeb.FluentHttp.Tests
             using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
                 return reader.ReadToEnd();
         }
+
+        public static string ReadContents(this HttpResponseMessage response)
+        {
+            //return response.Content.Headers.Contains("X-ClientCachedOn") ? "Cached" : "Not Cached";
+            return response.Content.ReadAsStringAsync().Result;
+        }
     }
 }

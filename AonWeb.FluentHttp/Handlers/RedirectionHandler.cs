@@ -9,25 +9,31 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public class RedirectHandler : HttpCallHandler
     {
-        private const int DefaultMaxAutoRedirects = 5;
-
-        // TODO: allow this to be configurable?
-        private static readonly HashSet<HttpStatusCode> RedirectStatusCodes = new HashSet<HttpStatusCode> { HttpStatusCode.Redirect, HttpStatusCode.MovedPermanently, HttpStatusCode.Created };
         
         public RedirectHandler()
         {
-            AllowAutoRedirect = true;
-            MaxAutoRedirects = DefaultMaxAutoRedirects;
+            AllowAutoRedirect = HttpCallBuilderDefaults.AutoRedirectEnabled;
+            MaxAutoRedirects = HttpCallBuilderDefaults.DefaultMaxAutoRedirects;
+            RedirectStatusCodes = new HashSet<HttpStatusCode>(HttpCallBuilderDefaults.DefaultRedirectStatusCodes);
+
+            RedirectValidtor = ShouldRedirect;
         }
 
 
         private bool AllowAutoRedirect { get; set; }
         private int MaxAutoRedirects { get; set; }
+        private static ISet<HttpStatusCode> RedirectStatusCodes { get; set; }
+        private Func<HttpResponseMessage, bool> RedirectValidtor { get; set; }
         private Action<HttpRedirectContext> OnRedirect { get; set; }
 
-        public RedirectHandler WithAutoRedirect()
+        public RedirectHandler WithAutoRedirect(bool enabled = true)
         {
-            return WithAutoRedirect(-1);
+            if (enabled)
+                return WithAutoRedirect(-1);
+
+            AllowAutoRedirect = false;
+
+            return this;
         }
 
         public RedirectHandler WithAutoRedirect(int maxAutoRedirects)
@@ -36,6 +42,24 @@ namespace AonWeb.FluentHttp.Handlers
 
             if (maxAutoRedirects >= 0)
                 MaxAutoRedirects = maxAutoRedirects;
+
+            return this;
+        }
+
+        public RedirectHandler WithRedirectStatusCode(HttpStatusCode statusCode)
+        {
+            if (!RedirectStatusCodes.Contains(statusCode))
+                RedirectStatusCodes.Add(statusCode);
+
+            return this;
+        }
+
+        public RedirectHandler WithRedirectValidator(Func<HttpResponseMessage, bool> validator)
+        {
+            if (validator == null)
+                throw new ArgumentNullException("validator");
+
+            RedirectValidtor = validator;
 
             return this;
         }
@@ -57,19 +81,16 @@ namespace AonWeb.FluentHttp.Handlers
 
         public override async Task OnSent(HttpSentContext context)
         {
-            if (AllowAutoRedirect && IsRedirect(context.Response))
+            if (AllowAutoRedirect && RedirectValidtor(context.Response))
             {
                 var uri = context.Uri;
 
                 var redirectCount = context.Items["RedirectCount"].As<int?>().GetValueOrDefault();
 
-                if (redirectCount > MaxAutoRedirects)
+                if (redirectCount >= MaxAutoRedirects)
                     throw new MaximumAutoRedirectsException(context.Response.StatusCode, string.Format(SR.MaxAutoRedirectsErrorFormat, redirectCount, uri));
 
                 var newUri = GetRedirectUri(uri, context.Response);
-
-                if (newUri == null)
-                    return;
 
                 var ctx = new HttpRedirectContext
                 {
@@ -80,16 +101,26 @@ namespace AonWeb.FluentHttp.Handlers
                     CurrentRedirectionCount = redirectCount
                 };
 
+                if (ctx.RedirectUri == null)
+                    return;
+
                 if (OnRedirect != null)
                     OnRedirect(ctx);
 
+                if (!ctx.ShouldRedirect) 
+                    return;
+
                 context.Builder.WithUri(ctx.RedirectUri);
                 context.Items["RedirectCount"] = redirectCount + 1;
-                context.Response = await context.Builder.ResultAsync();
+
+                // dispose of previous response
+                Helper.DisposeResponse(context.Response);
+
+                context.Response = await context.Builder.RecursiveResultAsync();
             }
         }
 
-        private static bool IsRedirect(HttpResponseMessage response)
+        private bool ShouldRedirect(HttpResponseMessage response)
         {
             return RedirectStatusCodes.Contains(response.StatusCode);
         } 

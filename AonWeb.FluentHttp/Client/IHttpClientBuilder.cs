@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
@@ -23,7 +22,8 @@ namespace AonWeb.FluentHttp.Client
         IHttpClientBuilder WithCredentials(ICredentials credentials);
         IHttpClientBuilder WithMaxBufferSize(long bufferSize);
         IHttpClientBuilder WithProxy(IWebProxy proxy);
-        IHttpClientBuilder WithCachePolicy(RequestCacheLevel cacheLevel);
-        IHttpClientBuilder WithCachePolicy(RequestCachePolicy cachePolicy);
+        IHttpClientBuilder WithNoCache(bool nocache = true);
+
+        void ApplyRequestHeaders(HttpRequestMessage request);
     }
 }

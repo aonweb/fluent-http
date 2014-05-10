@@ -3,15 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Tests.Helpers
 {
     public class LocalWebServer : IDisposable
     {
         public const string DefaultListenerUri = "http://localhost:8889/";
-        private readonly HttpListener _listener = new HttpListener();
+       
         private readonly Queue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>> _responses;
         private readonly AutoResetEvent _handle;
+        private readonly IList<string> _prefixes;
+
+        private HttpListener _listener = new HttpListener();
         private Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo> _lastResponse;
         private Action<LocalWebServerRequestInfo> _requestInspector;
 
@@ -29,8 +33,8 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         public LocalWebServer(string listenerUri, params Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[] responses)
         {
+            _prefixes = new List<string> { listenerUri };
             _handle = new AutoResetEvent(false);
-            _listener.Prefixes.Add(listenerUri);
             _responses = new Queue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>>();
 
             if (responses.Length > 0)
@@ -51,16 +55,21 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             return ListenInBackground(DefaultListenerUri);
         }
 
-        public static LocalWebServer ListenInBackground(string listenerUri)
+        public static LocalWebServer ListenInBackground(Uri listenerUri, params string[] additionalUris)
+        {
+            return ListenInBackground(listenerUri.OriginalString, additionalUris);
+        }
+
+        public static LocalWebServer ListenInBackground(string listenerUri, params string[] additionalUris)
         {
             var listener = new LocalWebServer(listenerUri);
 
-            ThreadPool.QueueUserWorkItem(
-                _ =>
-                {
-                    listener.Start();
-                    listener.WaitHandle.WaitOne();
-                });
+            Task.Run(
+                () =>
+                    {
+                        listener.Start(additionalUris);
+                        listener.WaitHandle.WaitOne();
+                    });
 
             return listener;
         }
@@ -73,18 +82,30 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             }
         }
 
-        public void Start()
+        public void Start(params string[] additionalUris)
         {
+            _listener = new HttpListener();
+
+            foreach (var prefix in _prefixes.Concat(additionalUris).Distinct())
+                _listener.Prefixes.Add(prefix);
+
             _listener.Start();
 
             while (_listener.IsListening)
-                ProcessRequest();
+            {
+                var result = _listener.BeginGetContext(ListenerCallback, _listener);
+                result.AsyncWaitHandle.WaitOne();
+            }
         }
 
         public void Stop()
         {
-            _listener.Stop();
-            _listener.Close();
+            if (_listener != null)
+            {
+                _listener.Stop();
+                _listener.Close();
+            }
+
             _handle.Set();
         }
 
@@ -100,30 +121,41 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             return this;
         }
 
-        private void ProcessRequest()
+        public LocalWebServer InspectRequest(Action<LocalWebServerRequestInfo> inspector)
         {
-            var result = _listener.BeginGetContext(ListenerCallback, _listener);
-            result.AsyncWaitHandle.WaitOne();
+            _requestInspector = inspector;
+
+            return this;
+        }
+
+        public LocalWebServer RemoveNextResponse()
+        {
+            if (_responses.Count > 0)
+             _responses.Dequeue();
+
+            return this;
         }
 
         private void ListenerCallback(IAsyncResult result)
         {
-            var context = _listener.EndGetContext(result);
+            HttpListener listener;
+            HttpListenerContext context;
+            try
+            {
+                listener = (HttpListener)result.AsyncState;
+                context = listener.EndGetContext(result);
+            }
+            catch (Exception)
+            {
+                return;
+            }
 
             var requestInfo = GetRequestInfo(context.Request);
 
             Log(requestInfo);
 
-            try
-            {
-                if (_requestInspector != null)
-                    _requestInspector(requestInfo);
-            }
-            catch (Exception)
-            {
-                
-            }
-            
+            if (_requestInspector != null)
+                _requestInspector(requestInfo);
 
             var responseInfo = GetResponseInfo(requestInfo);
 
@@ -155,15 +187,32 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
             if (request.HasEntityBody)
             {
-                    if (request.ContentType != null)
-                        Console.WriteLine("   ContentType: {0}", request.ContentType);
+                if (request.ContentType != null)
+                    Console.WriteLine("   ContentType: {0}", request.ContentType);
 
-                    Console.WriteLine("   ContentLength: {0}", request.ContentLength);
-                    Console.WriteLine("   Body:");
-                    Console.WriteLine(request.Body);
+                Console.WriteLine("   ContentLength: {0}", request.ContentLength);
+                Console.WriteLine("   Body:");
+                Console.WriteLine(request.Body);
+                Console.WriteLine("---- End Request ----");
+                Console.WriteLine();
+            } 
+        }
+
+        private void Log(HttpListenerResponse response, string body)
+        {
+            Console.WriteLine("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
+            Console.WriteLine("  Headers:");
+            foreach (var name in response.Headers.AllKeys)
+            {
+                Console.WriteLine("   {0}: {1}", name, response.Headers[name]);
             }
 
-            Console.WriteLine("---- End Request ----");
+            if (!string.IsNullOrEmpty(body))
+            {
+                Console.WriteLine("   Body: {0}", body);
+            }
+
+            Console.WriteLine("---- End Response ----");
             Console.WriteLine();
         }
 
@@ -184,11 +233,18 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             foreach (var header in responseInfo.Headers)
                 response.AddHeader(header.Key, header.Value);
 
+            response.AddHeader("Date", DateTime.UtcNow.ToString("R"));
+
+            if (!string.IsNullOrWhiteSpace(responseInfo.ContentType) && string.IsNullOrWhiteSpace(response.Headers["Content-Type"]))
+                response.AddHeader("Content-Type", responseInfo.ContentType);
+
             try
             {
                 var buffer = responseInfo.ContentEncoding.GetBytes(responseInfo.Body);
                 response.ContentLength64 = buffer.Length;
                 response.OutputStream.Write(buffer, 0, buffer.Length);
+
+                Log(response, responseInfo.Body);
             }
             finally
             {
@@ -201,9 +257,6 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             Stop();
         }
 
-        public void InspectRequest(Action<LocalWebServerRequestInfo> inspector)
-        {
-            _requestInspector = inspector;
-        }
+        
     }
 }

@@ -11,6 +11,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
         public LocalWebServerResponseInfo()
         {
             Body = string.Empty;
+            ContentType = "application/json";
             ContentEncoding = Encoding.UTF8;
             StatusCode = HttpStatusCode.OK;
             Headers = new Dictionary<string, string>();
@@ -30,14 +31,34 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
             return this;
         }
+
+        public LocalWebServerResponseInfo AddNoCacheHeader()
+        {
+            return AddHeader("Cache-Control", "no-cache, no-store");
+        }
+
+        public LocalWebServerResponseInfo AddPublicCacheHeader(DateTime? expires = null)
+        {
+            return AddCacheHeader("public", expires);
+        }
+
+        public LocalWebServerResponseInfo AddPrivateCacheHeader(DateTime? expires = null)
+        {
+            return AddCacheHeader("private", expires);
+        }
+
+        public LocalWebServerResponseInfo AddCacheHeader(string publicity = "public", DateTime? expires = null)
+        {
+            var exp = expires.GetValueOrDefault(DateTime.UtcNow.AddMinutes(15)).ToUniversalTime();
+            return
+                AddHeader("Cache-Control", publicity + ", max-age=" + (exp - DateTime.UtcNow).TotalSeconds)
+                    .AddHeader("Expires", exp.ToString("R"))
+                    .AddHeader("Last-Modified", DateTime.UtcNow.ToString("R"));
+        }
     }
 
     public class LocalWebServerRequestInfo
     {
-        public LocalWebServerRequestInfo()
-        {
-
-        }
 
         public string Body { get; set; }
         public Encoding ContentEncoding { get; set; }

@@ -5,7 +5,7 @@ using AonWeb.FluentHttp.Caching;
 
 namespace AonWeb.FluentHttp.HAL.Representations
 {
-    public class HalManifest : HalResource, ICachedHttpResult
+    public class HalManifest : HalResource, ICacheableHttpResult
     {
         public TimeSpan? Duration
         {
@@ -15,7 +15,7 @@ namespace AonWeb.FluentHttp.HAL.Representations
             }
         }
 
-        public IEnumerable<string> AssociatedUris
+        public IEnumerable<string> DependentUris
         {
             get
             {

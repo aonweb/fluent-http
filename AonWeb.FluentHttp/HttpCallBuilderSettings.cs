@@ -1,5 +1,8 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Collections;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using AonWeb.FluentHttp.Handlers;
 using System;
@@ -13,18 +16,26 @@ namespace AonWeb.FluentHttp
     public class HttpCallBuilderSettings
     {
         private UriBuilder _uriBuilder;
+        private readonly IDictionary _items;
 
         public HttpCallBuilderSettings()
         {
-            Method = HttpMethod.Get;
-            CompletionOption = HttpCompletionOption.ResponseContentRead;
+            _uriBuilder = new UriBuilder();
+            _items = new HybridDictionary();
+
+            Method = HttpCallBuilderDefaults.DefaultHttpMethod;
+            CompletionOption = HttpCallBuilderDefaults.DefaultCompletionOption;
             TokenSource = new CancellationTokenSource();
             Handler = new HttpCallHandlerRegister();
-            _uriBuilder = new UriBuilder();
+            
             QueryString = new NameValueCollection();
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
+            MediaType = HttpCallBuilderDefaults.DefaultMediaType;
+            ContentEncoding = HttpCallBuilderDefaults.DefaultContentEncoding;
+
         }
 
+        public IDictionary Items { get { return _items; } }
         public Uri Uri { get { return _uriBuilder.Uri; } set { _uriBuilder = new UriBuilder(value); } }
         public string Scheme { get { return _uriBuilder.Scheme; } set { _uriBuilder.Scheme = value; } }
         public string Host { get { return _uriBuilder.Host; } set { _uriBuilder.Host = value; } }
@@ -42,6 +53,11 @@ namespace AonWeb.FluentHttp
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
 
+        public void Reset()
+        {
+            _items.Clear();
+        }
+
         public void ValidateSettings()
         {
             if (Uri == null)
@@ -51,43 +67,40 @@ namespace AonWeb.FluentHttp
 
     public class HttpCallBuilderSettings<TResult, TContent, TError>
     {
-        private static readonly Func<TResult> DefaultDefaultResultFactory = () => default(TResult);
-
-        private Func<TResult> _defaultResultFactory;
+        private readonly IDictionary _items;
 
         public HttpCallBuilderSettings()
         {
+            _items = new HybridDictionary();
+            MediaType = HttpCallBuilderDefaults.DefaultMediaType;
+            ContentEncoding = HttpCallBuilderDefaults.DefaultContentEncoding;
+            MediaTypeFormatters = new MediaTypeFormatterCollection(HttpCallBuilderDefaults.DefaultMediaTypeFormatters);
 
             Handler = new HttpCallHandlerRegister<TResult, TContent, TError>();
 
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>
             {
-                DefaultSuccessfulResponseValidator.IsSuccessfulResponse
+                HttpCallBuilderDefaults.DefaultSuccessfulResponseValidator
             };
 
-            ExceptionFactory = DefaultExceptionFactory<TError>.CreateException;
+            ExceptionFactory = HttpCallBuilderDefaults.DefaultExceptionFactory;
+            DefaultResultFactory = HttpCallBuilderDefaults.DefaultResultFactory<TResult>;
         }
 
+        public IDictionary Items { get { return _items; } }
         public Func<TContent> ContentFactory { get; set; }
         public string MediaType { get; set; }
         public Encoding ContentEncoding { get; set; }
+        public MediaTypeFormatterCollection MediaTypeFormatters { get; set; }
         public HttpCallHandlerRegister<TResult, TContent, TError> Handler { get; private set; }
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
         public Func<HttpErrorContext<TResult, TContent, TError>, Exception> ExceptionFactory { get; set; }
 
-        public Func<TResult> DefaultResultFactory
-        {
-            get
-            {
-                if (_defaultResultFactory == null)
-                    return DefaultDefaultResultFactory;
+        public Func<TResult> DefaultResultFactory { get; set; }
 
-                return _defaultResultFactory;
-            }
-            set
-            {
-                _defaultResultFactory = value;
-            }
+        public void Reset()
+        {
+            _items.Clear();
         }
     }
 }
