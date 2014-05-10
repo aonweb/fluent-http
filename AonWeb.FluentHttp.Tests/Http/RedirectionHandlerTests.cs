@@ -59,7 +59,6 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server
                     .AddResponse(new LocalWebServerResponseInfo { StatusCode = HttpStatusCode.Redirect }.AddHeader("Location", redirectUrl));
 
-                int expected = 2;
                 var calledBack = false;
 
                 //act

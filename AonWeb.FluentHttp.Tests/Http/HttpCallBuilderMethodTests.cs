@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Tests.Helpers;
@@ -23,13 +27,56 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         #endregion
 
+
+        #region Create
+
         [Test]
-        public void CanConstruct()
+        public void Create_ReturnsBuilder()
         {
             var builder = HttpCallBuilder.Create();
 
             Assert.NotNull(builder);
         }
+
+        [Test]
+        public async Task Create_WhenValidString_ExpectResultUsesUri()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri);
+                string actual = null;
+                server.InspectRequest(r => actual = r.Url.OriginalString);
+
+                // act
+                await builder.ResultAsync();
+
+                // assert
+                Assert.AreEqual(uri, actual);
+            }
+        }
+        [Test]
+        public async Task Create_WhenValidUri_ExpectResultUsesUri()
+        {
+            //arrange
+            var uri = new Uri(TestUriString);
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri);
+                string actual = null;
+                server.InspectRequest(r => actual = r.Url.OriginalString);
+
+                // act
+                await builder.ResultAsync();
+
+                // assert
+                Assert.AreEqual(uri, actual);
+            }
+        }
+
+
+        #endregion
 
         #region WithUri
 
@@ -109,17 +156,18 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         [Test]
         [ExpectedException(typeof(ArgumentNullException))]
-        public async Task WithUri_WhenNullUri_ExpectException()
+        public void WithUri_WhenNullUri_ExpectException()
         {
-            //arrange
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+ 
                 Uri uri = null;
-                var builder = HttpCallBuilder.Create().WithUri(uri);
+                HttpCallBuilder.Create().WithUri(uri);
+        }
 
-                //act
-                await builder.ResultAsync();
-            }
+        [Test]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task WithUri_WhenNeverSet_ExpectException()
+        {
+            await HttpCallBuilder.Create().ResultAsync();
         }
 
         [Test]
@@ -466,10 +514,10 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         #endregion
 
-        #region Content
+        #region Content (string)
 
         [Test]
-        public async Task WithContent_WhenValid_ExpectRequestContainsBody([Values("Content", "", null)]string content)
+        public async Task WithContent_AsString_ExpectRequestContainsBody([Values("Content", "", null)]string content)
         {
             //arrange
             var uri = TestUriString;
@@ -487,22 +535,340 @@ namespace AonWeb.FluentHttp.Tests.Http
             }
         }
 
+        [Test]
+        public async Task WithContent_AsStringWithNoEncodingSpecified_ExpectUtf8Used()
+        {
+            //arrange
+            var uri = TestUriString;
+            var content = "Content";
+            var expectedEncoding = Encoding.UTF8;
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(content);
+                
+                Encoding actualContentEncoding = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContentEncoding = r.ContentEncoding;
+                    actualAcceptHeader = r.Headers["Accept-Charset"];
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match");
+                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
+            }
+        }
+
+        [Test]
+        public async Task WithContent_AsStringWithNoMediaTypeSpecified_ExpectJsonUsed()
+        {
+            //arrange
+            var uri = TestUriString;
+            var content = "Content";
+            var expectedMediaType = "application/json";
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(content);
+
+                string actualContentType = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContentType = r.ContentType;
+                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content-Type do not match");
+                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
+            }
+        }
+
+        [Test]
+        public async Task WithContent_AsStringWithEncodingSpecified_ExpectEncodingUsedAndAcceptCharsetAdded()
+        {
+            //arrange
+            var uri = TestUriString;
+            var expectedContent = "Content";
+            var expectedEncoding = Encoding.ASCII;
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(expectedContent, expectedEncoding);
+                string actualContent = null;
+                Encoding actualContentEncoding = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContent = r.Body;
+                    actualContentEncoding = r.ContentEncoding;
+                    actualAcceptHeader = r.Headers["Accept-Charset"];
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual(expectedContent, actualContent, "Content does not match");
+                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match");
+                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
+            }
+        }
+
+        [Test]
+        public async Task WithContent_AsStringWithMediaTypeSpecified_ExpectMediaTypeUsedAndAcceptHeaderSet()
+        {
+            //arrange
+            var uri = TestUriString;
+            var content = "Content";
+            var expectedMediaType = "application/json";
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(content, Encoding.UTF8, expectedMediaType);
+
+                string actualContentType = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContentType = r.ContentType;
+                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content-Type do not match");
+                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
+            }
+        }
+
         #endregion
-        /*
-         
-        
-        IHttpCallBuilder WithContent(string content, Encoding encoding);
-        IHttpCallBuilder WithContent(string content, Encoding encoding, string mediaType);
-        IHttpCallBuilder WithContent(Func<string> contentFactory);
-        IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding);
-        IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding, string mediaType);
-        IHttpCallBuilder WithContent(Func<HttpContent> contentFactory);
-        HttpResponseMessage Result();
-        Task<HttpResponseMessage> Result();
 
-        IHttpCallBuilder CancelRequest();
+        #region Content (func)
 
-        IAdvancedHttpCallBuilder Advanced { get; }
-         */
+        [Test]
+        public async Task WithContent_AsFactoryFunc_ExpectRequestContainsBody([Values("Content", "", null)]string content)
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
+                string actual = null;
+                server.InspectRequest(r => actual = r.Body);
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual(content ?? string.Empty, actual);
+            }
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void WithContent_AsFactoryFuncWithNullValue_ExpectException()
+        {
+            //arrange
+            var uri = TestUriString;
+            
+            HttpCallBuilder.Create(uri).AsPost().WithContent((Func<string>)null);
+                
+        }
+
+        [Test]
+        public async Task WithContent_AsFactoryFuncWithNoEncodingSpecified_ExpectUtf8Used()
+        {
+            //arrange
+            var uri = TestUriString;
+            var content = "Content";
+            var expectedEncoding = Encoding.UTF8;
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
+
+                Encoding actualContentEncoding = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContentEncoding = r.ContentEncoding;
+                    actualAcceptHeader = r.Headers["Accept-Charset"];
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match.");
+                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept Charset does not match");
+            }
+        }
+
+        [Test]
+        public async Task WithContent_AsFactoryFuncWithNoMediaTypeSpecified_ExpectJsonUsed()
+        {
+            //arrange
+            var uri = TestUriString;
+            var content = "Content";
+            var expectedMediaType = "application/json";
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
+
+                string actualContentType = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContentType = r.ContentType;
+                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content Type does not match");
+                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept header does not match");
+            }
+        }
+
+        [Test]
+        public async Task WithContent_AsFactoryFuncWithEncodingSpecified_ExpectEncodingUsedAndAcceptCharsetAdded()
+        {
+            //arrange
+            var uri = TestUriString;
+            var expectedContent = "Content";
+            var expectedEncoding = Encoding.ASCII;
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => expectedContent, expectedEncoding);
+                string actualContent = null;
+                Encoding actualContentEncoding = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContent = r.Body;
+                    actualContentEncoding = r.ContentEncoding;
+                    actualAcceptHeader = r.Headers["Accept-Charset"];
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual(expectedContent, actualContent, "Content does not match");
+                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match");
+                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
+            }
+        }
+
+        [Test]
+        public async Task WithContent_AsFactoryFuncWithMediaTypeSpeficied_ExpectMediaTypeUsedAndAcceptHeaderSet()
+        {
+            //arrange
+            var uri = TestUriString;
+            var content = "Content";
+            var expectedMediaType = "application/json";
+
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content, Encoding.UTF8, expectedMediaType);
+
+                string actualContentType = null;
+                string actualAcceptHeader = null;
+
+                server.InspectRequest(r =>
+                {
+                    actualContentType = r.ContentType;
+                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
+                });
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content-Type do not match");
+                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
+            }
+        }
+
+        [Test]
+        public async Task WithContent_AsHttpContentFactoryFunc_ExpectRequestContainsBody()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var content = new StringContent("Content");
+                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
+                string actual = null;
+                server.InspectRequest(r => actual = r.Body);
+
+                //act
+                await builder.ResultAsync();
+
+                //assert
+                Assert.AreEqual("Content", actual);
+            }
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void WithContent_AsHttpContentFactoryFuncWithNullValue_ExpectException()
+        {
+            //arrange
+            var uri = TestUriString;
+            
+            HttpCallBuilder.Create(uri).AsPost().WithContent((Func<HttpContent>)null);
+                
+        }
+
+        #endregion
+
+        [Test]
+        public void CancelRequest_WhenCalled_ExpectCancelledBeforeCompletion()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 500;
+                var builder = HttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
+
+                // act
+                var watch = new Stopwatch();
+                watch.Start();
+                var task = builder.ResultAsync();
+
+                builder.CancelRequest();
+
+                Task.WaitAll(task);
+
+                // assert
+                Assert.Less(watch.ElapsedMilliseconds, delay);
+            }
+        }
     }
 }

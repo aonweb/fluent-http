@@ -13,14 +13,14 @@ namespace AonWeb.FluentHttp.Client
             MaxRequestContentBufferSize = HttpCallBuilderDefaults.DefaultMaxRequestContentBufferSize;
             ClientConfiguration = HttpCallBuilderDefaults.DefaultClientConfiguration;
             HeaderConfiguration = HttpCallBuilderDefaults.DefaultRequestHeadersConfiguration;
-            AutomaticDecompression = HttpCallBuilderDefaults.DefaultDecompressionMethods;
+            DecompressionMethods = HttpCallBuilderDefaults.DefaultDecompressionMethods;
             ClientCertificateOptions = HttpCallBuilderDefaults.DefaultClientCertificateOptions;
             Credentials = HttpCallBuilderDefaults.DefaultCredentials;
         }
 
         public Action<IHttpClient> ClientConfiguration { get; internal set; }
         public Action<HttpRequestHeaders> HeaderConfiguration { get; internal set; }
-        public DecompressionMethods? AutomaticDecompression { get; internal set; }
+        public DecompressionMethods? DecompressionMethods { get; internal set; }
         public ClientCertificateOption? ClientCertificateOptions { get; internal set; }
         public CookieContainer CookieContainer { get; internal set; }
         public ICredentials Credentials { get; internal set; }

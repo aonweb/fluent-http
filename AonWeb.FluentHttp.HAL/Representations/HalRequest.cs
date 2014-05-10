@@ -9,13 +9,13 @@ namespace AonWeb.FluentHttp.HAL.Representations
         public HalRequest(string impactedUri)
             : this(new[] { impactedUri }) { }
 
-        public HalRequest(params string[] impactedUris)
+        public HalRequest(params string[] dependentUris)
         {
-            ImpactedUris = impactedUris;
+            DependentUris = dependentUris;
         }
 
         [JsonIgnore]
-        public IEnumerable<string> ImpactedUris { get; private set; }
+        public IEnumerable<string> DependentUris { get; private set; }
     }
 
     public class HalRequest<T> : HalRequest

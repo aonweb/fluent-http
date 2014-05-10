@@ -138,11 +138,10 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         private void ListenerCallback(IAsyncResult result)
         {
-            HttpListener listener;
             HttpListenerContext context;
             try
             {
-                listener = (HttpListener)result.AsyncState;
+                var listener = (HttpListener)result.AsyncState;
                 context = listener.EndGetContext(result);
             }
             catch (Exception)

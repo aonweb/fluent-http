@@ -6,6 +6,6 @@ namespace AonWeb.FluentHttp.HAL.Representations
     public interface IHalRequest
     {
         [JsonIgnore]
-        IEnumerable<string> ImpactedUris { get; }
+        IEnumerable<string> DependentUris { get; }
     }
 }

@@ -43,6 +43,7 @@ namespace AonWeb.FluentHttp
             DefaultMediaTypeFormatters = new MediaTypeFormatterCollection();
 
             //Client Defaults
+            DefaultAutoDecompression = true;
             DefaultClientConfiguration = null;
             DefaultRequestHeadersConfiguration = null;
             DefaultDecompressionMethods = DecompressionMethods.GZip | DecompressionMethods.Deflate;
@@ -50,6 +51,7 @@ namespace AonWeb.FluentHttp
             DefaultClientTimeout = null;
             DefaultMaxRequestContentBufferSize = null;
             DefaultCredentials = null;
+            SuppressCancellationErrors = true;
 
             //Redirect Defaults
             AutoRedirectEnabled = true;
@@ -77,6 +79,8 @@ namespace AonWeb.FluentHttp
             DefaultCacheStoreFactory = () => new InMemoryCacheStore();
             DefaultVaryByStoreFactory = () => new InMemoryVaryByStore();
         }
+
+        
 
         public static void ClearCache()
         {
@@ -116,6 +120,7 @@ namespace AonWeb.FluentHttp
         public static Func<IVaryByStore> DefaultVaryByStoreFactory { get; set; }
         public static Action<IHttpClient> DefaultClientConfiguration { get; set; }
         public static Action<HttpRequestHeaders> DefaultRequestHeadersConfiguration { get; set; }
+        public static bool DefaultAutoDecompression { get; set; }
         public static TimeSpan? DefaultClientTimeout { get; set; }
         public static long? DefaultMaxRequestContentBufferSize { get; set; }
         public static DecompressionMethods? DefaultDecompressionMethods { get; set; }
@@ -131,6 +136,7 @@ namespace AonWeb.FluentHttp
         public static TimeSpan DefaultRetryAfter { get; set; }
         public static TimeSpan DefaultMaxRetryAfter { get; set; }
         public static ISet<HttpStatusCode> DefaultRetryStatusCodes { get; set; }
+        public static bool SuppressCancellationErrors { get; set; }
 
         private static bool IsSuccessfulResponse(HttpResponseMessage response)
         {

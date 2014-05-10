@@ -26,8 +26,9 @@ namespace AonWeb.FluentHttp
             Method = HttpCallBuilderDefaults.DefaultHttpMethod;
             CompletionOption = HttpCallBuilderDefaults.DefaultCompletionOption;
             TokenSource = new CancellationTokenSource();
+            SuppressCancellationErrors = HttpCallBuilderDefaults.SuppressCancellationErrors;
             Handler = new HttpCallHandlerRegister();
-            
+
             QueryString = new NameValueCollection();
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
             MediaType = HttpCallBuilderDefaults.DefaultMediaType;
@@ -36,12 +37,59 @@ namespace AonWeb.FluentHttp
         }
 
         public IDictionary Items { get { return _items; } }
-        public Uri Uri { get { return _uriBuilder.Uri; } set { _uriBuilder = new UriBuilder(value); } }
-        public string Scheme { get { return _uriBuilder.Scheme; } set { _uriBuilder.Scheme = value; } }
-        public string Host { get { return _uriBuilder.Host; } set { _uriBuilder.Host = value; } }
-        public int Port { get { return _uriBuilder.Port; } set { _uriBuilder.Port = value; } }
-        public string Path { get { return _uriBuilder.Path; } set { _uriBuilder.Path = value; } }
-        public string UriBuilderQuery { set { _uriBuilder.Query = value; } }
+        public Uri Uri
+        {
+            get { return _uriBuilder.Uri; }
+            set
+            {
+                _uriBuilder = new UriBuilder(value);
+                IsUriSet = true;
+            }
+        }
+        public string Scheme
+        {
+            get { return _uriBuilder.Scheme; }
+            set
+            {
+                _uriBuilder.Scheme = value;
+                IsUriSet = true;
+            }
+        }
+        public string Host
+        {
+            get { return _uriBuilder.Host; }
+            set
+            {
+                _uriBuilder.Host = value;
+                IsUriSet = true;
+            }
+        }
+        public int Port
+        {
+            get { return _uriBuilder.Port; }
+            set
+            {
+                _uriBuilder.Port = value;
+                IsUriSet = true;
+            }
+        }
+        public string Path
+        {
+            get { return _uriBuilder.Path; }
+            set
+            {
+                _uriBuilder.Path = value;
+                IsUriSet = true;
+            }
+        }
+        public string UriBuilderQuery
+        {
+            set
+            {
+                _uriBuilder.Query = value;
+                IsUriSet = true;
+            }
+        }
         public NameValueCollection QueryString { get; set; }
         public HttpMethod Method { get; set; }
         public string MediaType { get; set; }
@@ -52,6 +100,7 @@ namespace AonWeb.FluentHttp
         public HttpCallHandlerRegister Handler { get; private set; }
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
+        public bool SuppressCancellationErrors { get; set; }
 
         public void Reset()
         {
@@ -60,9 +109,11 @@ namespace AonWeb.FluentHttp
 
         public void ValidateSettings()
         {
-            if (Uri == null)
+            if (!IsUriSet)
                 throw new InvalidOperationException("Uri not set");
         }
+
+        private bool IsUriSet { get; set; }
     }
 
     public class HttpCallBuilderSettings<TResult, TContent, TError>

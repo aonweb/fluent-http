@@ -131,35 +131,35 @@ namespace AonWeb.FluentHttp
             return WithMethod(HttpMethod.Head);
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithScheme(string scheme)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithScheme(string scheme)
         {
             _innerBuilder.WithScheme(scheme);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithHost(string host)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithHost(string host)
         {
             _innerBuilder.WithHost(host);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithPort(int port)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithPort(int port)
         {
             _innerBuilder.WithPort(port);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithPath(string absolutePathAndQuery)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithPath(string absolutePathAndQuery)
         {
             _innerBuilder.WithPath(absolutePathAndQuery);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithEncoding(Encoding encoding)
         {
             _settings.ContentEncoding = encoding;
 
@@ -168,7 +168,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType)
         {
             _settings.MediaType = mediaType;
 
@@ -177,35 +177,35 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithMethod(string method)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMethod(string method)
         {
             _innerBuilder.WithMethod(method);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method)
         {
             _innerBuilder.WithMethod(method);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithAcceptHeader(string mediaType)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAcceptHeader(string mediaType)
         {
             _innerBuilder.WithAcceptHeader(mediaType);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(Encoding encoding)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(Encoding encoding)
         {
             _innerBuilder.WithAcceptCharSet(encoding);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(string charSet)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(string charSet)
         {
             _innerBuilder.WithAcceptCharSet(charSet);
 
@@ -242,6 +242,9 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding, string mediaType)
         {
+            if (contentFactory == null)
+                throw new ArgumentNullException("contentFactory");
+
             _settings.ContentFactory = contentFactory;
 
             WithEncoding(encoding);
@@ -262,21 +265,21 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
         {
             _innerBuilder.ConfigureClient(configuration);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithMediaTypeFormatter(MediaTypeFormatter formatter)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMediaTypeFormatter(MediaTypeFormatter formatter)
         {
             _settings.MediaTypeFormatters.Add(formatter);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure) where TFormatter : MediaTypeFormatter
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure) where TFormatter : MediaTypeFormatter
         {
             if (configure == null)
                 throw new ArgumentNullException("configure");
@@ -289,14 +292,14 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithHandler(IHttpCallHandler<TResult, TContent, TError> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithHandler(IHttpCallHandler<TResult, TContent, TError> handler)
         {
             _settings.Handler.AddHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> ConfigureHandler<THandler>(Action<THandler> configure)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> ConfigureHandler<THandler>(Action<THandler> configure)
             where THandler : class, IHttpCallHandler<TResult, TContent, TError>
         {
             _settings.Handler.ConfigureHandler(configure);
@@ -304,14 +307,14 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler<TResult, TContent, TError>
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler<TResult, TContent, TError>
         {
             _settings.Handler.ConfigureHandler(configure, false);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
             if (validator == null)
                 throw new ArgumentNullException("validator");
@@ -321,14 +324,14 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithExceptionFactory(Func<HttpErrorContext<TResult, TContent, TError>, Exception> factory)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithExceptionFactory(Func<HttpErrorContext<TResult, TContent, TError>, Exception> factory)
         {
             _settings.ExceptionFactory = factory;
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true)
         {
 
             ConfigureHandler<CacheHandler<TResult, TContent, TError>>(handler => handler.WithCaching(enabled));
@@ -336,159 +339,173 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true)
         {
             _innerBuilder.WithNoCache(nocache);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithDependentUri(string uri)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUri(string uri)
         {
             return TryConfigureHandler<CacheHandler<TResult, TContent, TError>>(h => h.WithDependentUri(uri));
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<string> uris)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<string> uris)
         {
             return TryConfigureHandler<CacheHandler<TResult, TContent, TError>>(h => h.WithDependentUris(uris));
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddSendingHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddSendingHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSending(Func<HttpSendingContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(Func<HttpSendingContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddSendingHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddSendingHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSent(Action<HttpSentContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(Action<HttpSentContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddSentHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddSentHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSent(Func<HttpSentContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(Func<HttpSentContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddSentHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddSentHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnResult(Action<HttpResultContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(Action<HttpResultContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddResultHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Action<HttpResultContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Action<HttpResultContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddResultHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnResult(Func<HttpResultContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(Func<HttpResultContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddResultHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Func<HttpResultContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Func<HttpResultContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddResultHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnError(Action<HttpErrorContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(Action<HttpErrorContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddErrorHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Action<HttpErrorContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Action<HttpErrorContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddErrorHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnError(Func<HttpErrorContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(Func<HttpErrorContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddErrorHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Func<HttpErrorContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Func<HttpErrorContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddErrorHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnException(Action<HttpExceptionContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(Action<HttpExceptionContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddExceptionHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext<TResult, TContent, TError>> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext<TResult, TContent, TError>> handler)
         {
             _settings.Handler.AddExceptionHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnException(Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddExceptionHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
         {
             _settings.Handler.AddExceptionHandler(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithSuppressCancellationErrors(bool suppress = true)
+        {
+            _innerBuilder.WithSuppressCancellationErrors(suppress);
+
+            return this;
+        }
+
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithTimeout(TimeSpan? timeout)
+        {
+            _innerBuilder.WithTimeout(timeout);
 
             return this;
         }
@@ -690,14 +707,6 @@ namespace AonWeb.FluentHttp
             get { return this; }
         }
 
-        internal HttpCallBuilderSettings Settings
-        {
-            get
-            {
-                return _settings;
-            }
-        }
-
         public IHttpCallBuilder WithUri(string uri)
         {
             if (string.IsNullOrEmpty(uri))
@@ -798,7 +807,7 @@ namespace AonWeb.FluentHttp
             return WithMethod(HttpMethod.Head);
         }
 
-        public IHttpCallBuilder WithScheme(string scheme)
+        public IAdvancedHttpCallBuilder WithScheme(string scheme)
         {
             if (string.IsNullOrEmpty(scheme))
                 throw new ArgumentNullException("scheme");
@@ -808,7 +817,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithHost(string host)
+        public IAdvancedHttpCallBuilder WithHost(string host)
         {
             if (string.IsNullOrEmpty(host))
                 throw new ArgumentNullException("host");
@@ -818,14 +827,14 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithPort(int port)
+        public IAdvancedHttpCallBuilder WithPort(int port)
         {
             _settings.Port = port;
 
             return this;
         }
 
-        public IHttpCallBuilder WithPath(string absolutePathAndQuery)
+        public IAdvancedHttpCallBuilder WithPath(string absolutePathAndQuery)
         {
             if (string.IsNullOrEmpty(absolutePathAndQuery))
                 absolutePathAndQuery = "/";
@@ -847,7 +856,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithEncoding(Encoding encoding)
+        public IAdvancedHttpCallBuilder WithEncoding(Encoding encoding)
         {
             if (encoding != null)
                 _settings.ContentEncoding = encoding;
@@ -857,7 +866,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithMediaType(string mediaType)
+        public IAdvancedHttpCallBuilder WithMediaType(string mediaType)
         {
             if (mediaType != null)
                 _settings.MediaType = mediaType;
@@ -867,7 +876,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithMethod(string method)
+        public IAdvancedHttpCallBuilder WithMethod(string method)
         {
             if (string.IsNullOrEmpty(method))
                 throw new ArgumentException(SR.ArgumentMethodNullOrEmptyError, "method");
@@ -875,7 +884,7 @@ namespace AonWeb.FluentHttp
             return WithMethod(new HttpMethod(method.ToUpper()));
         }
 
-        public IHttpCallBuilder WithMethod(HttpMethod method)
+        public IAdvancedHttpCallBuilder WithMethod(HttpMethod method)
         {
             if (method == null)
                 throw new ArgumentNullException("method");
@@ -885,17 +894,17 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithAcceptHeader(string mediaType)
+        public IAdvancedHttpCallBuilder WithAcceptHeader(string mediaType)
         {
             return ConfigureClient(c => c.WithHeaders(h => h.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType))));
         }
 
-        public IHttpCallBuilder WithAcceptCharSet(Encoding encoding)
+        public IAdvancedHttpCallBuilder WithAcceptCharSet(Encoding encoding)
         {
             return WithAcceptCharSet(encoding.WebName);
         }
 
-        public IHttpCallBuilder WithAcceptCharSet(string charSet)
+        public IAdvancedHttpCallBuilder WithAcceptCharSet(string charSet)
         {
             return ConfigureClient(c => c.WithHeaders(h => h.AcceptCharset.Add(new StringWithQualityHeaderValue(charSet))));
         }
@@ -929,6 +938,9 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding, string mediaType)
         {
+            if (contentFactory == null)
+                throw new ArgumentNullException("contentFactory");
+
             WithEncoding(encoding);
             WithMediaType(mediaType);
 
@@ -952,7 +964,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder ConfigureClient(Action<IHttpClientBuilder> configuration)
+        public IAdvancedHttpCallBuilder ConfigureClient(Action<IHttpClientBuilder> configuration)
         {
             if (configuration != null)
                 configuration(_clientBuilder);
@@ -960,38 +972,38 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder ConfigureRetries(Action<RetryHandler> configuration)
+        public IAdvancedHttpCallBuilder ConfigureRetries(Action<RetryHandler> configuration)
         {
             return ConfigureHandler(configuration);
         }
 
-        public IHttpCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration)
+        public IAdvancedHttpCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration)
         {
             return ConfigureHandler(configuration);
         }
 
-        public IHttpCallBuilder WithHandler(IHttpCallHandler handler)
+        public IAdvancedHttpCallBuilder WithHandler(IHttpCallHandler handler)
         {
             _settings.Handler.AddHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder ConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
+        public IAdvancedHttpCallBuilder ConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
         {
             _settings.Handler.ConfigureHandler(configure);
 
             return this;
         }
 
-        public IHttpCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
+        public IAdvancedHttpCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
         {
             _settings.Handler.ConfigureHandler(configure, false);
 
             return this;
         }
 
-        public IHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
+        public IAdvancedHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
             if (validator == null)
                 throw new ArgumentNullException("validator");
@@ -1001,119 +1013,131 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IHttpCallBuilder WithExceptionFactory(Func<HttpResponseMessage, Exception> factory)
+        public IAdvancedHttpCallBuilder WithExceptionFactory(Func<HttpResponseMessage, Exception> factory)
         {
             _settings.ExceptionFactory = factory;
 
             return this;
         }
 
-        public IHttpCallBuilder WithCaching(bool enabled = true)
+        public IAdvancedHttpCallBuilder WithCaching(bool enabled = true)
         {
             ConfigureHandler<CacheHandler>(handler => handler.WithCaching(enabled));
 
             return this;
         }
 
-        public IHttpCallBuilder WithNoCache(bool nocache = true)
+        public IAdvancedHttpCallBuilder WithNoCache(bool nocache = true)
         {
             _clientBuilder.WithNoCache(nocache);
 
             return this;
         }
 
-        public IHttpCallBuilder WithDependentUri(string uri)
+        public IAdvancedHttpCallBuilder WithDependentUri(string uri)
         {
             return TryConfigureHandler<CacheHandler>(h => h.WithDependentUri(uri));
         }
 
-        public IHttpCallBuilder WithDependentUris(IEnumerable<string> uris)
+        public IAdvancedHttpCallBuilder WithDependentUris(IEnumerable<string> uris)
         {
             return TryConfigureHandler<CacheHandler>(h => h.WithDependentUris(uris));
         }
 
-        public IHttpCallBuilder OnSending(Action<HttpSendingContext> handler)
+        public IAdvancedHttpCallBuilder OnSending(Action<HttpSendingContext> handler)
         {
             _settings.Handler.AddSendingHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext> handler)
+        public IAdvancedHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext> handler)
         {
             _settings.Handler.AddSendingHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnSending(Func<HttpSendingContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSending(Func<HttpSendingContext, Task> handler)
         {
             _settings.Handler.AddSendingHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext, Task> handler)
         {
             _settings.Handler.AddSendingHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnSent(Action<HttpSentContext> handler)
+        public IAdvancedHttpCallBuilder OnSent(Action<HttpSentContext> handler)
         {
             _settings.Handler.AddSentHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext> handler)
+        public IAdvancedHttpCallBuilder OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext> handler)
         {
             _settings.Handler.AddSentHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnSent(Func<HttpSentContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSent(Func<HttpSentContext, Task> handler)
         {
             _settings.Handler.AddSentHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext, Task> handler)
         {
             _settings.Handler.AddSentHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnException(Action<HttpExceptionContext> handler)
+        public IAdvancedHttpCallBuilder OnException(Action<HttpExceptionContext> handler)
         {
             _settings.Handler.AddExceptionHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext> handler)
+        public IAdvancedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext> handler)
         {
             _settings.Handler.AddExceptionHandler(priority, handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnException(Func<HttpExceptionContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnException(Func<HttpExceptionContext, Task> handler)
         {
             _settings.Handler.AddExceptionHandler(handler);
 
             return this;
         }
 
-        public IHttpCallBuilder OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext, Task> handler)
         {
             _settings.Handler.AddExceptionHandler(priority, handler);
 
             return this;
+        }
+
+        public IAdvancedHttpCallBuilder WithSuppressCancellationErrors(bool suppress = true)
+        {
+            _settings.SuppressCancellationErrors = suppress;
+
+            return this;
+        }
+
+        public IAdvancedHttpCallBuilder WithTimeout(TimeSpan? timeout)
+        {
+            return ConfigureClient(c => c.WithTimeout(timeout));
         }
 
         public IHttpCallBuilder CancelRequest()
@@ -1130,7 +1154,17 @@ namespace AonWeb.FluentHttp
 
         public async Task<HttpResponseMessage> ResultAsync()
         {
-            var response = await RecursiveResultAsync();
+            HttpResponseMessage response = null;
+
+            try
+            {
+                response = await RecursiveResultAsync();
+            }
+            catch (TaskCanceledException)
+            {
+                if (!_settings.SuppressCancellationErrors)
+                    throw;
+            }
 
             _settings.Reset();
 
@@ -1160,6 +1194,8 @@ namespace AonWeb.FluentHttp
 
         private HttpRequestMessage CreateRequest(HttpCallContext context)
         {
+            context.ValidateSettings();
+
             var request = new HttpRequestMessage(context.Method, context.Uri);
 
             if (context.ContentFactory != null)
@@ -1175,8 +1211,6 @@ namespace AonWeb.FluentHttp
 
         private async Task<HttpResponseMessage> ResultFromRequestAsync(HttpCallContext context, HttpRequestMessage request)
         {
-            context.ValidateSettings();
-
             ExceptionDispatchInfo capturedException = null;
             HttpResponseMessage response = null;
 
@@ -1229,6 +1263,6 @@ namespace AonWeb.FluentHttp
         private bool IsSuccessfulResponse(HttpResponseMessage response)
         {
             return !_settings.SuccessfulResponseValidators.Any() || _settings.SuccessfulResponseValidators.All(v => v(response));
-        } 
+        }
     }
 }

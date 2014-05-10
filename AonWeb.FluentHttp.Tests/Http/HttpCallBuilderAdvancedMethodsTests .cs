@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Tests.Helpers;
@@ -122,8 +125,10 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         #endregion
 
+        #region Client Configuration
+
         [Test]
-        public void WithConfiguration_WhenAction_ExpectConfigurationApplied()
+        public void WithClientConfiguration_WhenAction_ExpectConfigurationApplied()
         {
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
             {
@@ -144,7 +149,95 @@ namespace AonWeb.FluentHttp.Tests.Http
             }
         }
 
-        
+        #endregion
+
+        #region Timeout & Cancellation
+
+        [Test]
+        [ExpectedException(typeof(AggregateException))]
+        public void CancelRequest_WhenSuppressCancelOff_ExpectException()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 500;
+                var builder = HttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
+
+                // act
+                var watch = new Stopwatch();
+                watch.Start();
+                var task = builder.Advanced.WithSuppressCancellationErrors(false).ResultAsync();
+
+                builder.CancelRequest();
+
+                Task.WaitAll(task);
+            }
+        }
+
+        [Test]
+        public async Task WithTimeout_WithLongCall_ExpectTimeoutBeforeCompletionWithNoException()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 1000;
+                var builder = HttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
+
+                // act
+                var watch = new Stopwatch();
+                watch.Start();
+                var result = await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).ResultAsync();
+
+                // assert
+                Assert.IsNull(result);
+                Assert.GreaterOrEqual(watch.ElapsedMilliseconds, 100);
+                Assert.Less(watch.ElapsedMilliseconds, delay);
+            }
+        }
+
+        [Test]
+        [ExpectedException(typeof(TaskCanceledException))]
+        public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 10000;
+                var builder = HttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
+
+                // act
+                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationErrors(false).ResultAsync();
+            }
+        }
+
+        [Test]
+        public async Task WithTimeout_WithLongCallAndExceptionHandler_ExpectExceptionHandlerCalled()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 1000;
+                var builder = HttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
+                var callbackCalled = false;
+                // act
+                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).OnException(ctx =>
+                {
+                    callbackCalled = true;
+                }).ResultAsync();
+
+                Assert.IsTrue(callbackCalled);
+            }
+        }
+
+        #endregion
 
         /*
          IHttpCallBuilder WithScheme(string scheme);

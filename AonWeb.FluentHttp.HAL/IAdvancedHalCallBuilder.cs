@@ -66,5 +66,7 @@ namespace AonWeb.FluentHttp.HAL
         IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
         IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
 
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithSuppressCancellationErrors(bool suppress = true);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithTimeout(TimeSpan? timeout);
     }
 }

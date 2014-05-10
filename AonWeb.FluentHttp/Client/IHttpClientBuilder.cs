@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp.Client
         IHttpClientBuilder WithHeaders(Action<HttpRequestHeaders> configuration);
         IHttpClientBuilder WithHeaders(string name, string value);
         IHttpClientBuilder WithHeaders(string name, IEnumerable<string> values);
-        IHttpClientBuilder WithTimeout(TimeSpan timeout);
+        IHttpClientBuilder WithTimeout(TimeSpan? timeout);
         IHttpClientBuilder WithDecompressionMethods(DecompressionMethods options);
         IHttpClientBuilder WithClientCertificateOptions(ClientCertificateOption options);
         IHttpClientBuilder WithUseCookies();

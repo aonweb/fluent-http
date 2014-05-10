@@ -45,7 +45,7 @@ namespace AonWeb.FluentHttp.Client
             return WithHeaders(h => h.Add(name, values));
         }
 
-        public IHttpClientBuilder WithTimeout(TimeSpan timeout)
+        public IHttpClientBuilder WithTimeout(TimeSpan? timeout)
         {
             _settings.Timeout = timeout;
 
@@ -54,7 +54,7 @@ namespace AonWeb.FluentHttp.Client
 
         public IHttpClientBuilder WithDecompressionMethods(DecompressionMethods options)
         {
-            _settings.AutomaticDecompression = options;
+            _settings.DecompressionMethods = options;
 
             return this;
         }
@@ -144,10 +144,10 @@ namespace AonWeb.FluentHttp.Client
             var handler = new HttpClientHandler
             {
                 AllowAutoRedirect = false, //this will be handled by the consuming code
-            };               
+            };
 
-            if (_settings.AutomaticDecompression.HasValue)
-                handler.AutomaticDecompression = _settings.AutomaticDecompression.Value;
+            if (_settings.DecompressionMethods.HasValue)
+                handler.AutomaticDecompression = _settings.DecompressionMethods.Value;
 
             if (_settings.ClientCertificateOptions != null)
                 handler.ClientCertificateOptions = _settings.ClientCertificateOptions.Value;

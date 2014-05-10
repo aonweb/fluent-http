@@ -10,12 +10,14 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class MaximumAutoRedirectsException : HttpCallException
     {
+        [ExcludeFromCodeCoverage]
         public MaximumAutoRedirectsException(HttpStatusCode statusCode)
             : base(statusCode) { }
 
         public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message)
             : base(statusCode, message) { }
 
+        [ExcludeFromCodeCoverage]
         public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message, Exception exception) :
             base(statusCode, message, exception) { }
 
