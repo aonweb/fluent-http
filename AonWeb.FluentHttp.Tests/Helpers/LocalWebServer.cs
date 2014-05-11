@@ -33,6 +33,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         public LocalWebServer(string listenerUri, params Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[] responses)
         {
+            EnableLogging = true;
             _prefixes = new List<string> { listenerUri };
             _handle = new AutoResetEvent(false);
             _responses = new Queue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>>();
@@ -81,6 +82,8 @@ namespace AonWeb.FluentHttp.Tests.Helpers
                 return _handle;
             }
         }
+
+        public bool EnableLogging { get; set; }
 
         public void Start(params string[] additionalUris)
         {
@@ -182,6 +185,9 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         private void Log(LocalWebServerRequestInfo request)
         {
+            if (!EnableLogging)
+                return;
+
             Console.WriteLine("Request: {0} - {1}", request.HttpMethod, request.Url);
 
             if (request.HasEntityBody)
@@ -199,6 +205,9 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         private void Log(HttpListenerResponse response, string body)
         {
+            if (!EnableLogging)
+                return;
+
             Console.WriteLine("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
             Console.WriteLine("  Headers:");
             foreach (var name in response.Headers.AllKeys)

@@ -87,6 +87,8 @@
     <Compile Include="Http\RedirectionHandlerTests.cs" />
     <Compile Include="Http\HelperTests.cs" />
     <Compile Include="Integration\HttpHandlerTypedCachingTests.cs" />
+    <Compile Include="Performance\SpeedTest.cs" />
+    <Compile Include="Performance\StressTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sandbox.cs" />
   </ItemGroup>
