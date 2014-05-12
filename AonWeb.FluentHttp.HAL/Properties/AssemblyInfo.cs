@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("AonWeb.FluentHttp.HAL")]
-[assembly: AssemblyDescription("Fluent Http HAL")]
+[assembly: AssemblyDescription("An fluent interface for making hypermedia http calls.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AonWeb")]
 [assembly: AssemblyProduct("AonWeb.FluentHttp.HAL")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

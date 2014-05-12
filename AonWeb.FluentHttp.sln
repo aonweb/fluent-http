@@ -16,6 +16,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{7BAED6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.HAL", "AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj", "{1901429B-AB31-45AF-A071-7F9A985C3CBD}"
 EndProject
+Project("{E09DD79A-4488-4AB9-8D3F-A7EEE78BF432}") = "AonWeb.FluentHttp.Package", "AonWeb.FluentHttp.Package\AonWeb.FluentHttp.Package.nuproj", "{02DD68D0-7849-42F8-9DC7-54477CF3ED23}"
+EndProject
+Project("{E09DD79A-4488-4AB9-8D3F-A7EEE78BF432}") = "AonWeb.FluentHttp.Hal.Package", "AonWeb.FluentHttp.Hal.Package\AonWeb.FluentHttp.Hal.Package.nuproj", "{92BEE853-99EF-494E-804B-863288282C08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +38,14 @@ Global
 		{1901429B-AB31-45AF-A071-7F9A985C3CBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1901429B-AB31-45AF-A071-7F9A985C3CBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1901429B-AB31-45AF-A071-7F9A985C3CBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02DD68D0-7849-42F8-9DC7-54477CF3ED23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02DD68D0-7849-42F8-9DC7-54477CF3ED23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02DD68D0-7849-42F8-9DC7-54477CF3ED23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02DD68D0-7849-42F8-9DC7-54477CF3ED23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92BEE853-99EF-494E-804B-863288282C08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92BEE853-99EF-494E-804B-863288282C08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92BEE853-99EF-494E-804B-863288282C08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92BEE853-99EF-494E-804B-863288282C08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

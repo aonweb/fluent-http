@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>Fluent Http Call Builder</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/aonweb/fluent-http</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <summary>An fluent interface for making http calls, with retry, redirect, caching, and serialzation pre-configured.</summary>
+    <releaseNotes>Initial Release.</releaseNotes>
+    <language>en-US</language>
+    <tags>fluent, http</tags>
+    <references>
+      
+    </references>
+    <dependencies>
+      <group>
+        <dependency id="Microsoft.AspNet.WebApi.Client" version="5.1.2"  />
+        <dependency id="Newtonsoft.Json" version="6.0.0"  />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Net.Http" />
+    </frameworkAssemblies>
+  </metadata>
+    <files />
+</package>

@@ -108,6 +108,7 @@
     <Compile Include="Helper.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AonWeb.FluentHttp.nuspec" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
