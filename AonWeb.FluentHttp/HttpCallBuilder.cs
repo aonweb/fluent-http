@@ -537,11 +537,6 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public TResult Result()
-        {
-            return Task.Run(() => ResultAsync()).Result;
-        }
-
         public async Task<TResult> ResultAsync()
         {
             if (typeof(IEmptyResult).IsAssignableFrom(typeof(TResult)))
@@ -554,7 +549,7 @@ namespace AonWeb.FluentHttp
             return result;
         }
 
-        public async Task Send()
+        public async Task SendAsync()
         {
             _settings.DeserializeResult = false;
 

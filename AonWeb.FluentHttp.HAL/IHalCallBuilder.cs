@@ -32,9 +32,8 @@ namespace AonWeb.FluentHttp.HAL
         IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(TResult result);
         IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFunc);
 
-        TResult Result();
         Task<TResult> ResultAsync();
-        Task Send();
+        Task SendAsync();
 
         IHalCallBuilder<TResult, TContent, TError> CancelRequest();
 

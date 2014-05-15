@@ -489,19 +489,14 @@ namespace AonWeb.FluentHttp.HAL
 
         public IAdvancedHalCallBuilder<TResult, TContent, TError> Advanced { get { return this; } }
 
-        public TResult Result()
-        {
-            return _innerBuilder.Result();
-        }
-
         public async Task<TResult> ResultAsync()
         {
             return await _innerBuilder.ResultAsync().ConfigureAwait(false);
         }
 
-        public async Task Send()
+        public async Task SendAsync()
         {
-            await _innerBuilder.Send().ConfigureAwait(false);
+            await _innerBuilder.SendAsync().ConfigureAwait(false);
         }
 
         private Func<TContent> CreateContentFactoryWrapper(TContent content)

@@ -60,9 +60,8 @@ namespace AonWeb.FluentHttp
         IHttpCallBuilder<TResult, TContent, TError> WithDefaultResult(TResult result);
         IHttpCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFactory);
 
-        TResult Result();
         Task<TResult> ResultAsync();
-        Task Send();
+        Task SendAsync();
 
         IHttpCallBuilder<TResult, TContent, TError> CancelRequest();
 

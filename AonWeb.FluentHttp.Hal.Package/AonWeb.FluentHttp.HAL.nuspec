@@ -17,7 +17,7 @@
     <tags>fluent, http</tags>
     <dependencies>
       <group>
-        <dependency id="AonWeb.FluentHttp" version="1.0.1" />
+        <dependency id="AonWeb.FluentHttp" version="1.0.2" />
       </group>
     </dependencies>
   </metadata>

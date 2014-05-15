@@ -130,7 +130,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var builder = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
-                var actual = builder.Result();
+                var actual = builder.ResultAsync().Result;
 
                 Assert.AreEqual(TestResultValue, actual);
             }
@@ -153,7 +153,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var builder = HttpCallBuilder<bool, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
-                var actual = builder.Result();
+                var actual = builder.ResultAsync().Result;
 
                 Assert.IsTrue(actual);
             }
@@ -177,7 +177,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var builder = HttpCallBuilder<string, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
-                var actual = builder.Result();
+                var actual = builder.ResultAsync().Result;
 
                 Assert.AreEqual(expected, actual);
             }
@@ -199,7 +199,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var builder = HttpCallBuilder<string, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
-                var actual = builder.Result();
+                var actual = builder.ResultAsync().Result;
 
                 Assert.IsNullOrEmpty(actual);
             }
@@ -221,7 +221,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var builder = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
-                var actual = builder.Result();
+                var actual = builder.ResultAsync().Result;
 
                 Assert.IsNull(actual);
             }
@@ -245,7 +245,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Body);
 
                 //act
-                builder.WithContent(()=> TestResultValue).Result();
+                builder.WithContent(()=> TestResultValue).SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
             }
@@ -265,7 +265,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Body);
 
                 //act
-                builder.WithContent(() => true).Result();
+                builder.WithContent(() => true).SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
             }
@@ -305,7 +305,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Body);
 
                 //act
-                builder.WithContent(() => null).Result();
+                builder.WithContent(() => null).SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
             }
@@ -325,7 +325,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Body);
 
                 //act
-                builder.WithContent(() => null).Result();
+                builder.WithContent(() => null).SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
             }
