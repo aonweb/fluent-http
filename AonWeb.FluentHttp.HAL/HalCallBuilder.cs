@@ -16,7 +16,6 @@ namespace AonWeb.FluentHttp.HAL
     public class HalCallBuilder<TResult, TContent, TError> : IAdvancedHalCallBuilder<TResult, TContent, TError>
         where TResult : IHalResource
         where TContent : IHalRequest
-        where TError : IHalResource
     {
         private readonly IAdvancedHttpCallBuilder<TResult, TContent, TError> _innerBuilder;
 
@@ -296,21 +295,21 @@ namespace AonWeb.FluentHttp.HAL
 
         public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentResources(params IHalResource[] resources)
         {
-            var uris = resources.Select(r => r.Links.Self);
+            var uris = resources.Select(r => r.Links.Self());
 
             _innerBuilder.WithDependentUris(uris);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(string link)
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Uri link)
         {
             _innerBuilder.WithDependentUri(link);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Func<string> linkFactory)
+        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Func<Uri> linkFactory)
         {
             if (linkFactory == null)
                 throw new ArgumentNullException("linkFactory");
@@ -497,7 +496,12 @@ namespace AonWeb.FluentHttp.HAL
 
         public async Task<TResult> ResultAsync()
         {
-            return await _innerBuilder.ResultAsync();
+            return await _innerBuilder.ResultAsync().ConfigureAwait(false);
+        }
+
+        public async Task Send()
+        {
+            await _innerBuilder.Send().ConfigureAwait(false);
         }
 
         private Func<TContent> CreateContentFactoryWrapper(TContent content)

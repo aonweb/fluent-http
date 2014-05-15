@@ -11,6 +11,6 @@ namespace AonWeb.FluentHttp.Caching
         TimeSpan? Duration { get; }
 
         [JsonIgnore]
-        IEnumerable<string> DependentUris { get; }
+        IEnumerable<Uri> DependentUris { get; }
     }
 }

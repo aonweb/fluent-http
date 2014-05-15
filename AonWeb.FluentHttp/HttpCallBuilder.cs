@@ -15,6 +15,7 @@ using System.Web;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp
 {
@@ -246,7 +247,8 @@ namespace AonWeb.FluentHttp
             if (contentFactory == null)
                 throw new ArgumentNullException("contentFactory");
 
-            _settings.ContentFactory = contentFactory;
+            if (!typeof(IEmptyRequest).IsAssignableFrom(typeof(TContent)))
+                _settings.ContentFactory = contentFactory;
 
             WithContentEncoding(encoding);
             WithMediaType(mediaType);
@@ -347,12 +349,12 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUri(string uri)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUri(Uri uri)
         {
             return TryConfigureHandler<CacheHandler<TResult, TContent, TError>>(h => h.WithDependentUri(uri));
         }
 
-        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<string> uris)
+        public IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<Uri> uris)
         {
             return TryConfigureHandler<CacheHandler<TResult, TContent, TError>>(h => h.WithDependentUris(uris));
         }
@@ -526,6 +528,8 @@ namespace AonWeb.FluentHttp
             }
         }
 
+        
+
         public IHttpCallBuilder<TResult, TContent, TError> CancelRequest()
         {
             _innerBuilder.CancelRequest();
@@ -540,6 +544,9 @@ namespace AonWeb.FluentHttp
 
         public async Task<TResult> ResultAsync()
         {
+            if (typeof(IEmptyResult).IsAssignableFrom(typeof(TResult)))
+                _settings.DeserializeResult = false;
+
             var result = await RecursiveResultAsync();
 
             _settings.Reset();
@@ -547,9 +554,16 @@ namespace AonWeb.FluentHttp
             return result;
         }
 
+        public async Task Send()
+        {
+            _settings.DeserializeResult = false;
+
+            await ResultAsync().ConfigureAwait(false);
+        }
+
         public async Task<TResult> RecursiveResultAsync()
         {
-            return await ResultAsync(new HttpCallContext<TResult, TContent, TError>(this, _settings));
+            return await ResultAsync(new HttpCallContext<TResult, TContent, TError>(this, _settings)).ConfigureAwait(false);
         }
 
         private async Task<TResult> ResultAsync(HttpCallContext<TResult, TContent, TError> context)
@@ -560,6 +574,7 @@ namespace AonWeb.FluentHttp
             {
                 //build content before creating request
                 TContent content = default(TContent);
+
                 if (context.ContentFactory != null)
                 {
                     content = context.ContentFactory();
@@ -587,13 +602,20 @@ namespace AonWeb.FluentHttp
 
                 if (!IsSuccessfulResponse(response))
                 {
-                    var error = await response.Content.ReadAsAsync<TError>(context.MediaTypeFormatters);
+                    TError error;
+
+                    if (typeof(IEmptyError).IsAssignableFrom(typeof(TError))) 
+                        error = default(TError);
+                    else
+                        error = await response.Content.ReadAsAsync<TError>(context.MediaTypeFormatters);
 
                     var errorCtx = new HttpErrorContext<TResult, TContent, TError>(context, error, response);
 
                     await context.Handler.OnError(errorCtx);
 
-                    if (!errorCtx.ErrorHandled) if (_settings.ExceptionFactory != null) throw _settings.ExceptionFactory(errorCtx);
+                    if (!errorCtx.ErrorHandled) 
+                        if (_settings.ExceptionFactory != null) 
+                            throw _settings.ExceptionFactory(errorCtx);
                 }
                 else
                 {
@@ -601,7 +623,7 @@ namespace AonWeb.FluentHttp
 
                     await context.Handler.OnSent(sentContext);
 
-                    TResult result;
+                    var result = default(TResult);
 
                     if (sentContext.IsResultSet)
                     {
@@ -609,7 +631,8 @@ namespace AonWeb.FluentHttp
                     }
                     else
                     {
-                        result = await response.Content.ReadAsAsync<TResult>(context.MediaTypeFormatters);
+                        if (context.DeserializeResult)
+                            result = await response.Content.ReadAsAsync<TResult>(context.MediaTypeFormatters);
                     }
 
                     var resultContext = new HttpResultContext<TResult, TContent, TError>(context, result, response);
@@ -1042,12 +1065,12 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder WithDependentUri(string uri)
+        public IAdvancedHttpCallBuilder WithDependentUri(Uri uri)
         {
             return TryConfigureHandler<CacheHandler>(h => h.WithDependentUri(uri));
         }
 
-        public IAdvancedHttpCallBuilder WithDependentUris(IEnumerable<string> uris)
+        public IAdvancedHttpCallBuilder WithDependentUris(IEnumerable<Uri> uris)
         {
             return TryConfigureHandler<CacheHandler>(h => h.WithDependentUris(uris));
         }

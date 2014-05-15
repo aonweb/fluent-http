@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp.Caching
             TimeSpan defaultExpiration,
             IEnumerable<string> defaultVaryByHeaders,
             bool mustRevalidateByDefault,
-            IEnumerable<string> dependentUris)
+            IEnumerable<Uri> dependentUris)
         {
             StatusCode = response.StatusCode;
             Date = response.Headers.Date ?? DateTimeOffset.UtcNow;
@@ -58,7 +58,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public ISet<string> VaryHeaders { get; private set; }
 
-        public ISet<string> DependentUris { get; private set; }
+        public ISet<Uri> DependentUris { get; private set; }
 
         private DateTimeOffset? GetExpiration(DateTimeOffset lastModified, object result, HttpResponseMessage response, TimeSpan defaultExpiration)
         {
@@ -86,7 +86,7 @@ namespace AonWeb.FluentHttp.Caching
             return null;
         }
 
-        private ISet<string> GetDependentUris(object result, IEnumerable<string> dependentUris)
+        private ISet<Uri> GetDependentUris(object result, IEnumerable<Uri> dependentUris)
         {
             var uris = dependentUris;
 
@@ -96,7 +96,7 @@ namespace AonWeb.FluentHttp.Caching
                 uris = uris.Concat(cacheableResult.DependentUris);
             }
 
-            return new HashSet<string>(uris.NormalizeUris());
+            return new HashSet<Uri>(uris.NormalizeUris());
         }
 
         public void UpdateExpiration(object result, HttpResponseMessage response, TimeSpan defaultExpiration)

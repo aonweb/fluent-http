@@ -84,9 +84,9 @@ namespace AonWeb.FluentHttp
         /// <param name="uris"></param>
         /// <returns>A distinct list of canonical uri strings.</returns>
         /// <remarks>Removes duplicates and any items that are not valid uris</remarks>
-        internal static IEnumerable<string> NormalizeUris(this IEnumerable<string> uris)
+        internal static IEnumerable<Uri> NormalizeUris(this IEnumerable<Uri> uris)
         {
-            return uris.Select(NormalizeUri).Where(u => !string.IsNullOrWhiteSpace(u)).Distinct();
+            return uris.Select(NormalizeUri).Where(u => u != null).Distinct();
         }
 
         /// <summary>
@@ -94,16 +94,9 @@ namespace AonWeb.FluentHttp
         /// </summary>
         /// <param name="uri"></param>
         /// <returns>A canonical uri string or empty string if url is invalid.</returns>
-        internal static string NormalizeUri(this string uri)
+        internal static Uri NormalizeUri(this Uri uri)
         {
-            try
-            {
-                //try to normalize
-                return new UriBuilder(uri).NormalizeQuery().Uri.ToString();
-            }
-            catch (Exception) { } // if it fails we shouldn't use it any way
-
-            return string.Empty;
+            return new UriBuilder(uri).NormalizeQuery().Uri;
         }
 
         internal static UriBuilder NormalizeQuery(this UriBuilder builder)

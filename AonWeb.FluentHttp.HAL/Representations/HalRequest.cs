@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
@@ -6,16 +7,18 @@ namespace AonWeb.FluentHttp.HAL.Representations
 {
     public class HalRequest : IHalRequest
     {
-        public HalRequest(string impactedUri)
-            : this(new[] { impactedUri }) { }
+        public HalRequest() { }
 
-        public HalRequest(params string[] dependentUris)
+        public HalRequest(Uri dependentUri)
+            : this(new[] { dependentUri }) { }
+
+        public HalRequest(params Uri[] dependentUris)
         {
             DependentUris = dependentUris;
         }
 
         [JsonIgnore]
-        public IEnumerable<string> DependentUris { get; private set; }
+        public IEnumerable<Uri> DependentUris { get; private set; }
     }
 
     public class HalRequest<T> : HalRequest
@@ -24,17 +27,17 @@ namespace AonWeb.FluentHttp.HAL.Representations
         public HalRequest(T resource)
             : this(resource, null) { }
 
-        public HalRequest(T resource, params string[] impactedUris)
-            : base(GetLinks(resource, impactedUris)) { }
+        public HalRequest(T resource, params Uri[] dependentUris)
+            : base(GetLinks(resource, dependentUris)) { }
 
-        private static string[] GetLinks(T resource, string[] impactedUris)
+        private static Uri[] GetLinks(T resource, Uri[] dependentUris)
         {
-            IEnumerable<string> list = impactedUris ?? new string[0];
+            IEnumerable<Uri> list = dependentUris ?? new Uri[0];
 
             if (resource != null)
                 list = list.Concat(new[] { resource.GetSelf() });
 
-            return list.ToArray();
+            return list.Distinct().ToArray();
         }
     }
 }

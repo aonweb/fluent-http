@@ -77,5 +77,13 @@ namespace AonWeb.FluentHttp.Handlers
         public string MediaType { get { return _settings.MediaType; } }
         public Encoding ContentEncoding { get { return _settings.ContentEncoding; } }
         public MediaTypeFormatterCollection MediaTypeFormatters { get { return _settings.MediaTypeFormatters; } }
+
+        public bool DeserializeResult
+        {
+            get
+            {
+                return _settings.DeserializeResult;
+            }
+        }
     }
 }

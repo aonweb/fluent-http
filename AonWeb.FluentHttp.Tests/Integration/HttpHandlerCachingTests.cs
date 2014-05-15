@@ -179,7 +179,7 @@ namespace AonWeb.FluentHttp.Tests.Integration
         public void WithDependendUrls_ExpectPostInvalidatesDependents()
         {
             var parentUri = LocalWebServer.DefaultListenerUri;
-            var childUri = Helper.CombineVirtualPaths(parentUri, "child");
+            var childUri = new Uri(Helper.CombineVirtualPaths(parentUri, "child"));
             using (var server = LocalWebServer.ListenInBackground(parentUri))
             {
 
@@ -214,9 +214,10 @@ namespace AonWeb.FluentHttp.Tests.Integration
         [Test]
         public void WithDependendUrlsThatAreSelfReferential_ExpectPostNoException()
         {
-            var parentUri = LocalWebServer.DefaultListenerUri;
-            var childUri = Helper.CombineVirtualPaths(parentUri, "child");
-            var grandchildUri = Helper.CombineVirtualPaths(parentUri, "grandchild");
+            var parentUri = new Uri(LocalWebServer.DefaultListenerUri);
+            var childUri = new Uri(Helper.CombineVirtualPaths(parentUri.ToString(), "child"));
+            var grandchildUri = new Uri(Helper.CombineVirtualPaths(parentUri.ToString(), "grandchild"));
+
             using (var server = LocalWebServer.ListenInBackground(parentUri))
             {
 
@@ -241,9 +242,10 @@ namespace AonWeb.FluentHttp.Tests.Integration
         [Test]
         public void WithDependendUrls2LevelsDeep_ExpectPostInvalidatesDependents()
         {
-            var parentUri = LocalWebServer.DefaultListenerUri;
-            var childUri = Helper.CombineVirtualPaths(parentUri, "child");
-            var grandchildUri = Helper.CombineVirtualPaths(parentUri, "grandchild");
+            var parentUri = new Uri(LocalWebServer.DefaultListenerUri);
+            var childUri = new Uri(Helper.CombineVirtualPaths(parentUri.ToString(), "child"));
+            var grandchildUri = new Uri(Helper.CombineVirtualPaths(parentUri.ToString(), "grandchild"));
+
             using (var server = LocalWebServer.ListenInBackground(parentUri))
             {
 
@@ -335,15 +337,14 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = "Response2" }.AddPrivateCacheHeader());
 
-                var response1 =  HttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
-                        .Result();
+                var response1 =  HttpCallBuilder.Create(LocalWebServer.DefaultListenerUri).Result();
+
                 var result1 = response1.ReadContents();
 
-                 HttpCallBuilder.Create(LocalWebServer.DefaultListenerUri).AsDelete()
-                        .Result();
+                HttpCallBuilder.Create(LocalWebServer.DefaultListenerUri).AsDelete().Result();
 
-                var response2 =  HttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
-                        .Result();
+                var response2 =  HttpCallBuilder.Create(LocalWebServer.DefaultListenerUri).Result();
+
                 var result2 = response2.ReadContents();
 
                 Assert.AreNotEqual(result1, result2);

@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Caching
 {
@@ -212,6 +213,9 @@ namespace AonWeb.FluentHttp.Caching
                 if (request.Headers.CacheControl.NoStore)
                     return true;
             }
+
+            if (typeof(IEmptyResult).IsAssignableFrom(typeof(TResult)))
+                return true;
 
             return false;
         }

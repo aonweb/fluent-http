@@ -139,7 +139,7 @@ namespace AonWeb.FluentHttp.Tests.Integration
                 }
             }
 
-            public IEnumerable<string> DependentUris { get { yield break; } }
+            public IEnumerable<Uri> DependentUris { get { yield break; } }
         }
 
         public class ExpiredTestResult : TestResult, ICacheableHttpResult
@@ -152,7 +152,7 @@ namespace AonWeb.FluentHttp.Tests.Integration
                 }
             }
 
-            public IEnumerable<string> DependentUris { get { yield break; } }
+            public IEnumerable<Uri> DependentUris { get { yield break; } }
         }
 
         #endregion

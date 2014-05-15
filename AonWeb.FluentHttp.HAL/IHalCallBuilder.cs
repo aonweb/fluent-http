@@ -10,7 +10,6 @@ namespace AonWeb.FluentHttp.HAL
     public interface IHalCallBuilder<TResult, TContent, TError>
         where TResult : IHalResource
         where TContent : IHalRequest
-        where TError : IHalResource
     {
         IHalCallBuilder<TResult, TContent, TError> WithLink(string link);
         IHalCallBuilder<TResult, TContent, TError> WithLink(Uri link);
@@ -35,6 +34,7 @@ namespace AonWeb.FluentHttp.HAL
 
         TResult Result();
         Task<TResult> ResultAsync();
+        Task Send();
 
         IHalCallBuilder<TResult, TContent, TError> CancelRequest();
 

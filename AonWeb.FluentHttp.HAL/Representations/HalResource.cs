@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+
+using Newtonsoft.Json;
 
 namespace AonWeb.FluentHttp.HAL.Representations
 {
@@ -9,4 +11,25 @@ namespace AonWeb.FluentHttp.HAL.Representations
         [JsonProperty("_links")]
         public HyperMediaLinks Links { get; set; }
     }
+
+    public abstract class HalResource<TLinks> : IHalResource<TLinks>
+        where TLinks : HyperMediaLinks
+    {
+        HyperMediaLinks IHalResource.Links
+        {
+            get
+            {
+                return Links;
+            }
+            set
+            {
+                if (value != null && !(value is TLinks))
+                    throw new ArgumentException(string.Format(SR.InvalidTypeErroFormat, typeof(TLinks).Name));
+
+            }
+        }
+
+        [JsonProperty("_links")]
+        public abstract TLinks Links { get; set; }
+    } 
 }

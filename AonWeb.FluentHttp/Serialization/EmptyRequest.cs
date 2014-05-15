@@ -1,7 +1,4 @@
 ﻿namespace AonWeb.FluentHttp.Serialization
 {
-    public class EmptyRequest
-    {
-         
-    }
+    public class EmptyRequest : IEmptyRequest { }
 }

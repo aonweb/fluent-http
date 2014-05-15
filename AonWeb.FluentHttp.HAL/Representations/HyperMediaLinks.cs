@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace AonWeb.FluentHttp.HAL.Representations
@@ -6,12 +7,9 @@ namespace AonWeb.FluentHttp.HAL.Representations
     [JsonObject]
     public class HyperMediaLinks : List<HyperMediaLink>
     {
-        public string Self
+        public Uri Self()
         {
-            get
-            {
-                return this.GetSelf();
-            }
+            return this.GetSelf();
         }
     }
 }

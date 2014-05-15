@@ -52,8 +52,8 @@ namespace AonWeb.FluentHttp
         IAdvancedHttpCallBuilder WithExceptionFactory(Func<HttpResponseMessage, Exception> factory);
         IAdvancedHttpCallBuilder WithCaching(bool enabled = true);
         IAdvancedHttpCallBuilder WithNoCache(bool nocache = true);
-        IAdvancedHttpCallBuilder WithDependentUri(string uri);
-        IAdvancedHttpCallBuilder WithDependentUris(IEnumerable<string> uris);
+        IAdvancedHttpCallBuilder WithDependentUri(Uri uri);
+        IAdvancedHttpCallBuilder WithDependentUris(IEnumerable<Uri> uris);
 
         IAdvancedHttpCallBuilder OnSending(Action<HttpSendingContext> handler);
         IAdvancedHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext> handler);
@@ -105,8 +105,8 @@ namespace AonWeb.FluentHttp
 
         IAdvancedHttpCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true);
         IAdvancedHttpCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUri(string uri);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<string> uris);
+        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUri(Uri uri);
+        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<Uri> uris);
 
         IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler);
         IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext<TResult, TContent, TError>> handler);

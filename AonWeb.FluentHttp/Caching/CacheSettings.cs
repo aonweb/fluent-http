@@ -18,7 +18,7 @@ namespace AonWeb.FluentHttp.Caching
             CacheableMethods = new HashSet<HttpMethod>(HttpCallBuilderDefaults.DefaultCacheableMethods);
             CacheableStatusCodes = new HashSet<HttpStatusCode>(HttpCallBuilderDefaults.DefaultCacheableStatusCodes);
             DefaultVaryByHeaders = new HashSet<string>(HttpCallBuilderDefaults.DefaultVaryByHeaders);
-            DependentUris = new HashSet<string>();
+            DependentUris = new HashSet<Uri>();
             DefaultExpiration = HttpCallBuilderDefaults.DefaultCacheExpiration;
         }
 
@@ -27,7 +27,7 @@ namespace AonWeb.FluentHttp.Caching
         public ISet<HttpMethod> CacheableMethods { get; private set; }
         public ISet<HttpStatusCode> CacheableStatusCodes { get; private set; }
         public ISet<string> DefaultVaryByHeaders { get; private set; }
-        public ISet<string> DependentUris { get; private set; }
+        public ISet<Uri> DependentUris { get; private set; }
         public bool Enabled { get; set; }
 
         public Action<CacheResult<TResult>> ResultInspector { get; set; }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using AonWeb.FluentHttp.Handlers;
 using System.Net.Http;
@@ -22,7 +23,7 @@ namespace AonWeb.FluentHttp.Caching
             return this;
         }
 
-        public CacheHandler<TResult, TContent, TError> WithDependentUris(IEnumerable<string> uris)
+        public CacheHandler<TResult, TContent, TError> WithDependentUris(IEnumerable<Uri> uris)
         {
             foreach (var uri in uris)
             {
@@ -32,10 +33,10 @@ namespace AonWeb.FluentHttp.Caching
             return this;
         }
 
-        public CacheHandler<TResult, TContent, TError> WithDependentUri(string uri)
+        public CacheHandler<TResult, TContent, TError> WithDependentUri(Uri uri)
         {
             uri = uri.NormalizeUri();
-            if (!string.IsNullOrWhiteSpace(uri) && !Settings.DependentUris.Contains(uri))
+            if (uri != null && !Settings.DependentUris.Contains(uri))
                 Settings.DependentUris.Add(uri);
 
             return this;
@@ -101,7 +102,7 @@ namespace AonWeb.FluentHttp.Caching
             return this;
         }
 
-        public CacheHandler WithDependentUris(IEnumerable<string> uris)
+        public CacheHandler WithDependentUris(IEnumerable<Uri> uris)
         {
             foreach (var uri in uris)
             {
@@ -111,10 +112,10 @@ namespace AonWeb.FluentHttp.Caching
             return this;
         }
 
-        public CacheHandler WithDependentUri(string uri)
+        public CacheHandler WithDependentUri(Uri uri)
         {
             uri = uri.NormalizeUri();
-            if (!string.IsNullOrWhiteSpace(uri) && !Settings.DependentUris.Contains(uri))
+            if (uri != null && !Settings.DependentUris.Contains(uri))
                 Settings.DependentUris.Add(uri);
 
             return this;

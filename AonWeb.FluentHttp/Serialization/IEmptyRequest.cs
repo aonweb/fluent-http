@@ -1,4 +1,4 @@
 ﻿namespace AonWeb.FluentHttp.Serialization
 {
-    public class EmptyError : IEmptyError { }
+    public interface IEmptyRequest { }
 }

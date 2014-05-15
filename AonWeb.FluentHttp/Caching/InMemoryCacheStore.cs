@@ -93,7 +93,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public void RemoveItem(Uri uri)
         {
-            TryRemoveDependentUris(new[] { uri.ToString() });
+            TryRemoveDependentUris(new[] { uri });
         }
 
         private static MemoryCache CreateCache()
@@ -103,7 +103,7 @@ namespace AonWeb.FluentHttp.Caching
 
         private void TryRemoveDependentUris(CachedItem cachedItem, ResponseInfo responseInfo)
         {
-            var uris = responseInfo != null ? responseInfo.DependentUris : Enumerable.Empty<string>();
+            var uris = responseInfo != null ? responseInfo.DependentUris : Enumerable.Empty<Uri>();
 
             if (cachedItem != null)
                 uris = uris.Concat(cachedItem.ResponseInfo.DependentUris);
@@ -111,14 +111,10 @@ namespace AonWeb.FluentHttp.Caching
             TryRemoveDependentUris(uris);
         }
 
-        private void TryRemoveDependentUris(IEnumerable<string> uris)
+        private void TryRemoveDependentUris(IEnumerable<Uri> uris)
         {
-            foreach (var uriString in uris.Distinct())
+            foreach (var uri in uris.Distinct())
             {
-
-                Uri uri;
-                if (!Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out uri))
-                    continue;
 
                 var cacheInfo = GetCacheInfo(uri);
 

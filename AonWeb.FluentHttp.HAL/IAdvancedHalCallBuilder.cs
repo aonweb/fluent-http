@@ -13,7 +13,6 @@ namespace AonWeb.FluentHttp.HAL
     public interface IAdvancedHalCallBuilder<TResult, TContent, TError> : IHalCallBuilder<TResult, TContent, TError>
         where TResult : IHalResource
         where TContent : IHalRequest
-        where TError : IHalResource
     {
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithContentEncoding(Encoding encoding);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType);
@@ -38,8 +37,8 @@ namespace AonWeb.FluentHttp.HAL
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true);
         IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentResources(params IHalResource[] resources);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(string link);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Func<string> linkFactory);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Uri link);
+        IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Func<Uri> linkFactory);
 
         IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler);
         IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext<TResult, TContent, TError>> handler);

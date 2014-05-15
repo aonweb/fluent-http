@@ -8,6 +8,8 @@ namespace AonWeb.FluentHttp.HAL
 {
     public static class Extensions
     {
+        #region HasLink
+
         public static bool HasLink(this IHalResource resource, string key)
         {
             if (resource == null || string.IsNullOrWhiteSpace(key))
@@ -24,7 +26,11 @@ namespace AonWeb.FluentHttp.HAL
             return linkEntity.Any(l => string.Equals(l.Rel, key, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static string GetLink(this IHalResource resource, string key)
+        #endregion
+
+        #region GetLink
+
+        public static Uri GetLink(this IHalResource resource, string key)
         {
             if (resource == null)
                 throw new ArgumentNullException("resource");
@@ -32,12 +38,12 @@ namespace AonWeb.FluentHttp.HAL
             return resource.Links.GetLink(key);
         }
 
-        public static string GetLink(this IHalResource resource, string key, string tokenKey, object tokenValue)
+        public static Uri GetLink(this IHalResource resource, string key, string tokenKey, object tokenValue)
         {
             return resource.GetLink(key, new Dictionary<string, object> { { tokenKey, tokenValue } });
         }
 
-        public static string GetLink(this IHalResource resource, string key, IDictionary<string, object> tokens)
+        public static Uri GetLink(this IHalResource resource, string key, IDictionary<string, object> tokens)
         {
             if (resource == null)
                 throw new ArgumentNullException("resource");
@@ -45,7 +51,14 @@ namespace AonWeb.FluentHttp.HAL
             return resource.Links.GetLink(key, tokens);
         }
 
-        public static string GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key)
+        public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key)
+        {
+            var uri = GetLinkString(linkEntity, key);
+
+            return new Uri(uri);
+        }
+
+        private static string GetLinkString(this IEnumerable<HyperMediaLink> linkEntity, string key)
         {
             if (linkEntity == null)
                 throw new ArgumentNullException("linkEntity");
@@ -70,19 +83,19 @@ namespace AonWeb.FluentHttp.HAL
             return link.Href;
         }
 
-        public static string GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, string tokenKey, object tokenValue)
+        public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, string tokenKey, object tokenValue)
         {
             return linkEntity.GetLink(key, new Dictionary<string, object> { { tokenKey, tokenValue } });
         }
 
-        public static string GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, IDictionary<string, object> tokens)
+        public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, IDictionary<string, object> tokens)
         {
-            var formatUrl = linkEntity.GetLink(key);
+            var formatUrl = linkEntity.GetLinkString(key);
 
             if (tokens == null)
                 throw new ArgumentNullException("tokens");
 
-            var output = formatUrl;
+            var outputUrl = formatUrl;
 
             foreach (var token in tokens)
             {
@@ -91,13 +104,69 @@ namespace AonWeb.FluentHttp.HAL
 
                 var val = HttpUtility.UrlEncode((token.Value ?? string.Empty).ToString());
 
-                output = output.Replace("{" + token.Key + "}", val);
+                outputUrl = outputUrl.Replace("{" + token.Key + "}", val);
             }
 
-            return output;
+            return new Uri(outputUrl);
         }
 
-        public static string GetSelf(this IHalResource resource)
+        #endregion
+
+        #region TryGetLink
+
+        public static Uri TryGetLink(this IHalResource resource, string key)
+        {
+            if (resource == null)
+                throw new ArgumentNullException("resource");
+
+            return resource.Links.TryGetLink(key);
+        }
+
+        public static Uri TryGetLink(this IHalResource resource, string key, string tokenKey, object tokenValue)
+        {
+            return resource.TryGetLink(key, new Dictionary<string, object> { { tokenKey, tokenValue } });
+        }
+
+        public static Uri TryGetLink(this IHalResource resource, string key, IDictionary<string, object> tokens)
+        {
+            if (resource == null)
+                throw new ArgumentNullException("resource");
+
+            return resource.Links.TryGetLink(key, tokens);
+        }
+
+        public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key)
+        {
+            if (linkEntity == null)
+                throw new ArgumentNullException("linkEntity");
+
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentNullException("key");
+
+            if (!linkEntity.HasLink(key)) 
+                return null;
+
+            return linkEntity.GetLink(key);
+        }
+
+        public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, string tokenKey, object tokenValue)
+        {
+            return linkEntity.TryGetLink(key, new Dictionary<string, object> { { tokenKey, tokenValue } });
+        }
+
+        public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, IDictionary<string, object> tokens)
+        {
+            if (!linkEntity.HasLink(key))
+                return null;
+
+            return linkEntity.GetLink(key, tokens);
+        }
+
+        #endregion
+
+        #region GetSelf
+
+        public static Uri GetSelf(this IHalResource resource)
         {
             if (resource == null)
                 throw new ArgumentNullException("resource");
@@ -105,9 +174,11 @@ namespace AonWeb.FluentHttp.HAL
             return resource.Links.GetSelf();
         }
 
-        public static string GetSelf(this IEnumerable<HyperMediaLink> linkEntity)
+        public static Uri GetSelf(this IEnumerable<HyperMediaLink> linkEntity)
         {
             return linkEntity.GetLink(HalResource.LinkKeySelf);
         }
+
+        #endregion
     }
 }

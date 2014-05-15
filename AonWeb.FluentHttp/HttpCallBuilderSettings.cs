@@ -124,6 +124,7 @@ namespace AonWeb.FluentHttp
         public HttpCallBuilderSettings()
         {
             _items = new HybridDictionary();
+            DeserializeResult = true;
             MediaType = HttpCallBuilderDefaults.DefaultMediaType;
             ContentEncoding = HttpCallBuilderDefaults.DefaultContentEncoding;
             MediaTypeFormatters = new MediaTypeFormatterCollection(HttpCallBuilderDefaults.DefaultMediaTypeFormatters);
@@ -139,6 +140,7 @@ namespace AonWeb.FluentHttp
             DefaultResultFactory = HttpCallBuilderDefaults.DefaultResultFactory<TResult>;
         }
 
+        public bool DeserializeResult { get; set; }
         public IDictionary Items { get { return _items; } }
         public Func<TContent> ContentFactory { get; set; }
         public string MediaType { get; set; }
@@ -150,9 +152,12 @@ namespace AonWeb.FluentHttp
 
         public Func<TResult> DefaultResultFactory { get; set; }
 
+        
+
         public void Reset()
         {
             _items.Clear();
+            DeserializeResult = true;
         }
     }
 }
