@@ -10,7 +10,7 @@ namespace AonWeb.FluentHttp.Handlers
     {
         public RetryHandler()
         {
-            AllowAutoRetry = HttpCallBuilderDefaults.AutoRetryEnabled;
+            Enabled = HttpCallBuilderDefaults.AutoRetryEnabled;
             MaxAutoRetries = HttpCallBuilderDefaults.DefaultMaxAutoRetries;
             RetryAfter = HttpCallBuilderDefaults.DefaultRetryAfter;
             MaxRetryAfter = HttpCallBuilderDefaults.DefaultMaxRetryAfter;
@@ -19,28 +19,26 @@ namespace AonWeb.FluentHttp.Handlers
             RetryValidator = ShouldRetry;
         }
 
-        private bool AllowAutoRetry { get; set; }
         private int MaxAutoRetries { get; set; }
         private TimeSpan RetryAfter { get; set; }
         private TimeSpan MaxRetryAfter { get; set; }
         private ISet<HttpStatusCode> RetryStatusCodes { get; set; }
         private Action<HttpRetryContext> OnRetry { get; set; }
-        private Func<HttpResponseMessage, bool> RetryValidator { get; set; }
-
+        private Func<HttpSentContext, bool> RetryValidator { get; set; }
 
         public RetryHandler WithAutoRetry(bool enabled = true)
         {
             if (enabled)
                 return WithAutoRetry(-1, TimeSpan.Zero);
 
-            AllowAutoRetry = false;
+            Enabled = false;
 
             return this;
         }
 
         public RetryHandler WithAutoRetry(int maxAutoRetries, TimeSpan retryAfter)
         {
-            AllowAutoRetry = true;
+            Enabled = true;
 
             if (maxAutoRetries >= 0)
                 MaxAutoRetries = maxAutoRetries;
@@ -59,7 +57,7 @@ namespace AonWeb.FluentHttp.Handlers
             return this;
         }
 
-        public RetryHandler WithRetryValidator(Func<HttpResponseMessage, bool> validator)
+        public RetryHandler WithRetryValidator(Func<HttpSentContext, bool> validator)
         {
             if (validator == null)
                 throw new ArgumentNullException("validator");
@@ -86,49 +84,49 @@ namespace AonWeb.FluentHttp.Handlers
 
         public override async Task OnSent(HttpSentContext context)
         {
-            if (AllowAutoRetry && RetryValidator(context.Response))
+            if (!RetryValidator(context)) 
+                return;
+
+            var uri = context.Uri;
+
+            var retryCount = context.Items["RetryCount"].As<int?>().GetValueOrDefault();
+
+            if (retryCount >= MaxAutoRetries)
+                return;
+
+            var retryAfter = GetRetryAfter(context.Response);
+
+            var ctx = new HttpRetryContext
             {
-                var uri = context.Uri;
+                StatusCode = context.Response.StatusCode,
+                RequestMessage = context.Response.RequestMessage,
+                Uri = uri,
+                ShouldRetry = retryAfter.HasValue,
+                RetryAfter = retryAfter ?? RetryAfter,
+                CurrentRetryCount = retryCount
+            };
 
-                var retryCount = context.Items["RetryCount"].As<int?>().GetValueOrDefault();
+            if (OnRetry != null)
+                OnRetry(ctx);
 
-                if (retryCount >= MaxAutoRetries)
-                    return;
-
-                var retryAfter = GetRetryAfter(context.Response);
-
-                var ctx = new HttpRetryContext
-                {
-                    StatusCode = context.Response.StatusCode,
-                    RequestMessage = context.Response.RequestMessage,
-                    Uri = uri,
-                    ShouldRetry = retryAfter.HasValue,
-                    RetryAfter = retryAfter ?? RetryAfter,
-                    CurrentRetryCount = retryCount
-                };
-
-                if (OnRetry != null)
-                    OnRetry(ctx);
-
-                if (!ctx.ShouldRetry)
-                    return;
+            if (!ctx.ShouldRetry)
+                return;
 
                 
-                if (ctx.RetryAfter > TimeSpan.Zero)
-                    await Task.Delay(ctx.RetryAfter, context.TokenSource.Token);
+            if (ctx.RetryAfter > TimeSpan.Zero)
+                await Task.Delay(ctx.RetryAfter, context.TokenSource.Token);
 
-                context.Items["RetryCount"] = retryCount + 1;
+            context.Items["RetryCount"] = retryCount + 1;
 
-                // dispose of previous response
-                Helper.DisposeResponse(context.Response);
+            // dispose of previous response
+            Helper.DisposeResponse(context.Response);
 
-                context.Response = await context.Builder.RecursiveResultAsync();
-            }
+            context.Response = await context.Builder.RecursiveResultAsync();
         }
 
-        private bool ShouldRetry(HttpResponseMessage response)
+        private bool ShouldRetry(HttpSentContext context)
         {
-            return RetryStatusCodes.Contains(response.StatusCode);
+            return RetryStatusCodes.Contains(context.Response.StatusCode);
         }
 
         private TimeSpan? GetRetryAfter(HttpResponseMessage response)

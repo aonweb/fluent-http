@@ -6,6 +6,10 @@ namespace AonWeb.FluentHttp.Handlers
     [ExcludeFromCodeCoverage]
     public abstract class HttpCallHandler : IHttpCallHandler
     {
+        private bool _enabled = true;
+
+        public virtual bool Enabled { get{ return _enabled; } set { _enabled = value; } }
+
         public virtual HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
         {
             return HttpCallHandlerPriority.Default;
@@ -19,6 +23,10 @@ namespace AonWeb.FluentHttp.Handlers
     [ExcludeFromCodeCoverage]
     public abstract class HttpCallHandler<TResult, TContent, TError> : IHttpCallHandler<TResult, TContent, TError>
     {
+        private bool _enabled = true;
+
+        public virtual bool Enabled { get { return _enabled; } set { _enabled = value; } }
+
         public virtual HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
         {
             return HttpCallHandlerPriority.Default;

@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+
+using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.HAL
@@ -24,7 +26,12 @@ namespace AonWeb.FluentHttp.HAL
 
         private HalCallBuilder(IAdvancedHttpCallBuilder<TResult, TContent, TError> builder)
         {
-            _innerBuilder = builder;
+            _innerBuilder = builder.ConfigureMediaTypeFormatter<JsonMediaTypeFormatter>(
+                f =>
+                    {
+                        f.SerializerSettings.Converters.Add(new HalResourceConverter());
+                        f.SerializerSettings.Converters.Add(new HyperMediaLinksConverter());
+                    });
         }
 
         public static IHalCallBuilder<TResult, TContent, TError> Create()

@@ -4,6 +4,8 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
+
 using AonWeb.FluentHttp.Client;
 using Moq;
 
@@ -28,9 +30,13 @@ namespace AonWeb.FluentHttp.Tests
                 return reader.ReadToEnd();
         }
 
+        public static string ReadContents(this Task<HttpResponseMessage> response)
+        {
+            return response.Result.ReadContents();
+        }
+
         public static string ReadContents(this HttpResponseMessage response)
         {
-            //return response.Content.Headers.Contains("X-ClientCachedOn") ? "Cached" : "Not Cached";
             return response.Content.ReadAsStringAsync().Result;
         }
     }

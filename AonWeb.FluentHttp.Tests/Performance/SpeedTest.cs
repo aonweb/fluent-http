@@ -81,11 +81,11 @@ namespace AonWeb.FluentHttp.Tests.Performance
                 for (var i = 0; i < iterations; i++)
                 {
 
-                    var result = HttpCallBuilder.Create(TestUriString).Result();
+                    var result = HttpCallBuilder.Create(TestUriString).ResultAsync().Result;
 
-                    result = HttpCallBuilder.Create(TestUriString).AsPost().WithContent("Content").Result();
+                    result = HttpCallBuilder.Create(TestUriString).AsPost().WithContent("Content").ResultAsync().Result;
 
-                    result = HttpCallBuilder.Create(TestUriString).AsPut().WithContent("Content").Result();
+                    result = HttpCallBuilder.Create(TestUriString).AsPut().WithContent("Content").ResultAsync().Result;
                 }
 
                 return watch.Elapsed;

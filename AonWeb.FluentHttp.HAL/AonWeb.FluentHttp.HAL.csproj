@@ -75,6 +75,7 @@
     <Compile Include="Serialization\HalEmbeddedAttribute.cs" />
     <Compile Include="Serialization\HalResourceConverter.cs" />
     <Compile Include="Serialization\HyperMediaLinksConverter.cs" />
+    <Compile Include="Serialization\SerializationErrorHelper.cs" />
     <Compile Include="SR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

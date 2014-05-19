@@ -12,11 +12,11 @@ namespace AonWeb.FluentHttp.Caching
             ResponseInfo = responseInfo;
         }
 
-        public CacheResult(TResult result, HttpResponseMessage response, CacheSettings<TResult> settings)
+        public CacheResult(TResult result, HttpResponseMessage response, CacheContext<TResult> context)
         {
             Found = true;
             Result = result;
-            ResponseInfo = CreateResponseInfo(result,  response, settings);
+            ResponseInfo = CreateResponseInfo(result, response, context);
         }
 
         public bool Found { get; set; }
@@ -24,22 +24,22 @@ namespace AonWeb.FluentHttp.Caching
         public ResponseInfo ResponseInfo { get; private set; }
         public static CacheResult<TResult> Empty = new CacheResult<TResult>();
 
-        public void UpdateResponseInfo(HttpResponseMessage response, CacheSettings<TResult> settings)
+        public void UpdateResponseInfo(HttpResponseMessage response, CacheContext<TResult> context)
         {
             if (ResponseInfo == null)
-                ResponseInfo = CreateResponseInfo(Result, response, settings);
+                ResponseInfo = CreateResponseInfo(Result, response, context);
             else
-                ResponseInfo.UpdateExpiration(Result, response, settings.DefaultExpiration);
+                ResponseInfo.UpdateExpiration(Result, response, context.DefaultExpiration);
         }
 
-        private ResponseInfo CreateResponseInfo(TResult result, HttpResponseMessage response, CacheSettings<TResult> settings)
+        private ResponseInfo CreateResponseInfo(TResult result, HttpResponseMessage response, CacheContext<TResult> context)
         {
             return new ResponseInfo(result,
                 response,
-                settings.DefaultExpiration,
-                settings.DefaultVaryByHeaders,
-                settings.MustRevalidateByDefault,
-                settings.DependentUris);
+                context.DefaultExpiration,
+                context.DefaultVaryByHeaders,
+                context.MustRevalidateByDefault,
+                context.DependentUris);
         }
     }
 }

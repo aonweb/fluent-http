@@ -43,7 +43,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Url.ToString());
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString).Result().ReadContents();
+                var result = HttpCallBuilder.Create(TestUriString).ResultAsync().Result.ReadContents();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -65,7 +65,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual.Add(r.Body));
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString).AsPost().WithContent("Content").Result().ReadContents();
+                var result = HttpCallBuilder.Create(TestUriString).AsPost().WithContent("Content").ResultAsync().Result.ReadContents();
 
                 Assert.AreEqual(2, actual.Count);
                 Assert.AreEqual("Content", actual[1]);
@@ -76,7 +76,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [TestCase(TestUriString, "/redirect", ExpectedResult = TestUriString + "redirect")]
         [TestCase(TestUriString + "post", "/redirect", ExpectedResult = TestUriString + "redirect")]
         [TestCase(TestUriString + "post", "redirect", ExpectedResult = TestUriString + "post/redirect")]
-        public string AutoRedirect_WhenCallRedirectsWithRelativePath_ExpectPathHandled(string uri, string path)
+        public async Task<string> AutoRedirect_WhenCallRedirectsWithRelativePath_ExpectPathHandled(string uri, string path)
         {
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
             {
@@ -88,7 +88,8 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Url.ToString());
 
                 //act
-                var result = HttpCallBuilder.Create(uri).AsPost().WithContent("Content").Result().ReadContents();
+                var response = await HttpCallBuilder.Create(uri).AsPost().WithContent("Content").ResultAsync();
+                var result = await response.Content.ReadAsStringAsync();
 
                 Assert.AreEqual("Success", result);
 
@@ -110,7 +111,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureRedirect(h => h.WithAutoRedirect(false).WithCallback(ctx => calledBack = true))
-                    .Result();
+                    .ResultAsync().Wait();
 
                 Assert.IsFalse(calledBack);
 
@@ -131,7 +132,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
                 //act
                 var result = HttpCallBuilder.Create(TestUriString)
-                    .Advanced.ConfigureRedirect(h => h.WithAutoRedirect()).Result().ReadContents();
+                    .Advanced.ConfigureRedirect(h => h.WithAutoRedirect()).ResultAsync().Result.ReadContents();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -161,7 +162,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                         if (ctx.CurrentRedirectionCount >= 1)
                             ctx.ShouldRedirect = false;
                     }))
-                    .Result();
+                    .ResultAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
 
@@ -178,7 +179,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                     .AddResponse(new LocalWebServerResponseInfo());
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString).Result();
+                var result = HttpCallBuilder.Create(TestUriString).ResultAsync().Result;
 
                 Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
 
@@ -199,7 +200,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
                 //act
                 var result = HttpCallBuilder.Create(TestUriString)
-                    .Advanced.ConfigureRedirect(h => h.WithRedirectStatusCode(HttpStatusCode.MultipleChoices)).Result().ReadContents();
+                    .Advanced.ConfigureRedirect(h => h.WithRedirectStatusCode(HttpStatusCode.MultipleChoices)).ResultAsync().Result.ReadContents();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -221,8 +222,8 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 var result = HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRedirect(h =>
-                        h.WithRedirectValidator(r => r.StatusCode == HttpStatusCode.MultipleChoices))
-                    .Result().ReadContents();
+                        h.WithRedirectValidator(r => r.Response.StatusCode == HttpStatusCode.MultipleChoices))
+                    .ResultAsync().Result.ReadContents();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -237,7 +238,9 @@ namespace AonWeb.FluentHttp.Tests.Http
                 HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRedirect(h =>
                         h.WithRedirectValidator(null))
-                    .Result();
+                    .ResultAsync();
+
+            Assert.Fail();
         }
 
         [Test]

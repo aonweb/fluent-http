@@ -9,7 +9,9 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 {
     public class HalResourceConverter : JsonConverter
     {
-        public HalResourceConverter(Type type = null)
+        public HalResourceConverter() : this(null) { }
+
+        public HalResourceConverter(Type type)
         {
             ObjectType = type;
         }
@@ -71,52 +73,44 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            var jsonToken = JToken.ReadFrom(reader);
+            var json = JObject.Load(reader);
 
-            var deserializedObject = JsonConvert.DeserializeObject(jsonToken.ToString(), ObjectType ?? objectType, new JsonConverter[] { });
+            JToken embedded;
+            if (json.TryGetValue("_embedded", out embedded))
+                json.Remove("_embedded");
 
-            if (jsonToken["_embedded"] != null && jsonToken["_embedded"].HasValues)
+            serializer.Converters.Remove(this);
+
+            var resource = json.ToObject(ObjectType ?? objectType, serializer);
+
+            serializer.Converters.Add(this);
+
+            if (embedded == null) 
+                return resource;
+            
+            var enumerator = ((JObject)embedded).GetEnumerator();
+
+            while (enumerator.MoveNext())
             {
-                var enumerator = ((JObject)jsonToken["_embedded"]).GetEnumerator();
+                var rel = enumerator.Current.Key;
 
-                while (enumerator.MoveNext())
+                foreach (var property in objectType.GetProperties())
                 {
-                    var rel = enumerator.Current.Key;
+                    var attribute = property.GetCustomAttributes(true).OfType<HalEmbeddedAttribute>().FirstOrDefault(attr => attr.Rel == rel);
 
-                    foreach (var property in objectType.GetProperties())
-                    {
-                        var attribute = property.GetCustomAttributes(true)
-                            .FirstOrDefault(attr => attr is HalEmbeddedAttribute && ((HalEmbeddedAttribute)attr).Rel == rel);
+                    if (attribute == null)
+                        continue;
 
-                        var halEmbeddedAttribute = attribute as HalEmbeddedAttribute;
+                    var type = attribute.Type ?? property.PropertyType;
 
-                        if (halEmbeddedAttribute == null)
-                            continue;
+                    var propValue = enumerator.Current.Value.ToObject(type, serializer);
 
-                        var type = halEmbeddedAttribute.Type ?? property.PropertyType;
-
-                        property.SetValue(
-                            deserializedObject,
-                            JsonConvert.DeserializeObject(
-                                enumerator.Current.Value.ToString(),
-                                type,
-                                new JsonConverter[]
-                                    {
-                                        new HalResourceConverter(halEmbeddedAttribute.CollectionMemberType)
-                                    }),
-                            null);
-                    }
+                    property.SetValue(resource, propValue, null);
                 }
             }
+            
 
-            if (jsonToken["_links"] != null && jsonToken["_links"].HasValues && typeof(IHalResource).IsAssignableFrom(objectType))
-            {
-                ((IHalResource)deserializedObject).Links = JsonConvert.DeserializeObject<HyperMediaLinks>(
-                                                            jsonToken["_links"].ToString(),
-                                                            new JsonConverter[] { new HyperMediaLinksConverter() });
-            }
-
-            return deserializedObject;
+            return resource;
         }
 
         public override bool CanConvert(Type objectType)

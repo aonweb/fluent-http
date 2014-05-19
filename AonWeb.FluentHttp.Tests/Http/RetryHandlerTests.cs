@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Tests.Helpers;
@@ -34,7 +35,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 var result = HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureHandler<RetryHandler>(h => h.WithAutoRetry(1, TimeSpan.FromMilliseconds(2)))
-                        .Result().ReadContents();
+                        .ResultAsync().ReadContents();
 
                 Assert.AreEqual("Success", result);
             }
@@ -54,7 +55,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureHandler<RetryHandler>(h => h.WithAutoRetry())
-                        .Result().ReadContents();
+                        .ResultAsync().ReadContents();
 
                 Assert.AreEqual(expected, actual);
             }
@@ -72,7 +73,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureRetries(h => h.WithAutoRetry(false).WithCallback(ctx => calledBack = true))
-                        .Result();
+                        .ResultAsync().Wait();
 
                 Assert.IsFalse(calledBack);
             }
@@ -96,14 +97,14 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureHandler<RetryHandler>(h => h.WithAutoRetry(3, TimeSpan.FromMilliseconds(3)))
-                    .Result();
+                    .ResultAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
             }
         }
 
         [Test]
-        public void AutoRetry_ExpectStopAfterMaximum()
+        public async Task AutoRetry_ExpectStopAfterMaximum()
         {
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
             {
@@ -115,7 +116,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual++);
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString).Result();
+                var result = await HttpCallBuilder.Create(TestUriString).ResultAsync();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual(HttpStatusCode.ServiceUnavailable, result.StatusCode);
@@ -135,7 +136,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual++);
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString).Advanced.ConfigureRetries(h => h.WithRetryStatusCode(HttpStatusCode.InternalServerError)).Result();
+                var result = HttpCallBuilder.Create(TestUriString).Advanced.ConfigureRetries(h => h.WithRetryStatusCode(HttpStatusCode.InternalServerError)).ResultAsync().Result;
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual(HttpStatusCode.InternalServerError, result.StatusCode);
@@ -157,8 +158,8 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 var result = HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRetries(h => 
-                        h.WithRetryValidator(r => r.StatusCode == HttpStatusCode.InternalServerError))
-                    .Result();
+                        h.WithRetryValidator(r => r.Response.StatusCode == HttpStatusCode.InternalServerError))
+                    .ResultAsync().Result;
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual(HttpStatusCode.InternalServerError, result.StatusCode);
@@ -173,7 +174,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             HttpCallBuilder.Create(TestUriString)
                 .Advanced.ConfigureRetries(h =>
                     h.WithRetryValidator(null))
-                .Result();
+                .ResultAsync().Wait();
         }
 
         [Test]
@@ -198,7 +199,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                         if (ctx.CurrentRetryCount >= 1)
                             ctx.ShouldRetry = false;
                     }))
-                    .Result();
+                    .ResultAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
 
@@ -221,7 +222,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var result = HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureHandler<RetryHandler>(h => h.WithCallback(ctx =>
                         { actual = ctx.RetryAfter; }))
-                    .Result().ReadContents();
+                    .ResultAsync().ReadContents();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -244,7 +245,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var result = HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureHandler<RetryHandler>(h => h.WithCallback(ctx =>
                     { actual = ctx.RetryAfter; }))
-                    .Result().ReadContents();
+                    .ResultAsync().ReadContents();
 
                 Assert.Greater(actual.TotalMilliseconds, 1);
                 Assert.LessOrEqual(actual.TotalMilliseconds, 2500);
@@ -275,7 +276,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                                     actual = ctx.RetryAfter;
                                 });
                             })
-                    .Result();
+                    .ResultAsync().Result;
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual(HttpStatusCode.ServiceUnavailable, result.StatusCode);

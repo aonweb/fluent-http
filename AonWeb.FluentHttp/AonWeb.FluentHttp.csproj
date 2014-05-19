@@ -55,9 +55,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Caching\CacheContext.cs" />
+    <Compile Include="Caching\CacheContextBase.cs" />
     <Compile Include="Caching\CachedItem.cs" />
     <Compile Include="Caching\CacheHandler.cs" />
     <Compile Include="Caching\CacheHandlerBase.cs" />
+    <Compile Include="Caching\CacheHandlerDefaults.cs" />
     <Compile Include="Caching\CacheResult.cs" />
     <Compile Include="Caching\CacheSettings.cs" />
     <Compile Include="Caching\IVaryByStore.cs" />

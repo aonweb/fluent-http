@@ -40,17 +40,30 @@ namespace AonWeb.FluentHttp.Handlers
 
         public HttpCallHandlerRegister AddHandler(IHttpCallHandler handler)
         {
-            if (handler == null)
-                throw new ArgumentNullException("handler");
+            if (handler == null) throw new ArgumentNullException("handler");
 
-            if (_callHandlers.Contains(handler))
-                throw new InvalidOperationException(SR.HanderAlreadyExistsError);
+            if (_callHandlers.Contains(handler)) throw new InvalidOperationException(SR.HanderAlreadyExistsError);
 
             _callHandlers.Add(handler);
 
-            AddSendingHandler(handler.GetPriority(HttpCallHandlerType.Sending), ctx => handler.OnSending(ctx));
-            AddSentHandler(handler.GetPriority(HttpCallHandlerType.Sent), ctx => handler.OnSent(ctx));
-            AddExceptionHandler(handler.GetPriority(HttpCallHandlerType.Exception), ctx => handler.OnException(ctx));
+            AddSendingHandler(
+                handler.GetPriority(HttpCallHandlerType.Sending), async ctx =>
+                {  
+                    if (handler.Enabled)
+                        await handler.OnSending(ctx);
+                });
+
+            AddSentHandler(handler.GetPriority(HttpCallHandlerType.Sent), async ctx =>
+            {
+                if (handler.Enabled)
+                    await handler.OnSent(ctx);
+            });
+
+            AddExceptionHandler(handler.GetPriority(HttpCallHandlerType.Exception), async ctx =>
+            {
+                if (handler.Enabled)
+                    await handler.OnException(ctx);
+            });
 
             return this;
         }
@@ -232,11 +245,35 @@ namespace AonWeb.FluentHttp.Handlers
 
             _callHandlers.Add(handler);
 
-            AddSendingHandler(handler.GetPriority(HttpCallHandlerType.Sending), ctx => handler.OnSending(ctx));
-            AddSentHandler(handler.GetPriority(HttpCallHandlerType.Sent), ctx => handler.OnSent(ctx));
-            AddResultHandler(handler.GetPriority(HttpCallHandlerType.Result), ctx => handler.OnResult(ctx));
-            AddErrorHandler(handler.GetPriority(HttpCallHandlerType.Error), ctx => handler.OnError(ctx));
-            AddExceptionHandler(handler.GetPriority(HttpCallHandlerType.Exception), ctx => handler.OnException(ctx));
+            AddSendingHandler(handler.GetPriority(HttpCallHandlerType.Sending), async ctx =>
+            {
+                if (handler.Enabled)
+                    await handler.OnSending(ctx);
+            });
+
+            AddSentHandler(handler.GetPriority(HttpCallHandlerType.Sent), async ctx =>
+            {
+                if (handler.Enabled)
+                    await handler.OnSent(ctx);
+            });
+
+            AddResultHandler(handler.GetPriority(HttpCallHandlerType.Result), async ctx =>
+            {
+                if (handler.Enabled)
+                    await handler.OnResult(ctx);
+            });
+
+            AddErrorHandler(handler.GetPriority(HttpCallHandlerType.Error), async ctx =>
+            {
+                if (handler.Enabled)
+                    await handler.OnError(ctx);
+            });
+
+            AddExceptionHandler(handler.GetPriority(HttpCallHandlerType.Exception), async ctx =>
+            {
+                if (handler.Enabled)
+                    await handler.OnException(ctx);
+            });
 
             return this;
         }

@@ -42,7 +42,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.HttpMethod);
 
                 //act
-                builder.Result();
+                builder.ResultAsync().Wait();
 
                 Assert.AreEqual(method, actual);
             }
@@ -85,7 +85,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.HttpMethod);
 
                 //act
-                builder.Result();
+                builder.ResultAsync().Wait();
 
                 Assert.AreEqual(method.Method, actual);
             }
@@ -100,7 +100,9 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = HttpCallBuilder.Create().Advanced.WithMethod(method);
 
             //act
-            builder.Result();
+            builder.ResultAsync();
+
+            Assert.Fail();
         }
 
         [Test]
@@ -117,7 +119,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.HttpMethod);
 
                 //act
-                builder.Result();
+                builder.ResultAsync().Wait();
 
                 Assert.AreEqual(method2, actual);
             }
@@ -142,7 +144,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                     .ConfigureClient(b =>
                         b.WithHeaders(h =>
                             h.UserAgent.Add(new ProductInfoHeaderValue("GoogleBot", "1.0"))))
-                        .Result();
+                        .ResultAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
 

@@ -141,4 +141,10 @@
   <data name="NoFormatterForMimeTypeErrorFormat" xml:space="preserve">
     <value>No MediaTypeFormatter has been registered for media type '{0}'</value>
   </data>
+  <data name="CacheContextRequestMessageRequiredError" xml:space="preserve">
+    <value>The current Cache Context must have Request Message</value>
+  </data>
+  <data name="CacheContextResponseInfoRequiredError" xml:space="preserve">
+    <value>The current Cache Context must have ResponseInfo</value>
+  </data>
 </root>

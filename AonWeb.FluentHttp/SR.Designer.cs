@@ -97,6 +97,24 @@ namespace AonWeb.FluentHttp {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The current Cache Context must have Request Message.
+        /// </summary>
+        internal static string CacheContextRequestMessageRequiredError {
+            get {
+                return ResourceManager.GetString("CacheContextRequestMessageRequiredError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current Cache Context must have ResponseInfo.
+        /// </summary>
+        internal static string CacheContextResponseInfoRequiredError {
+            get {
+                return ResourceManager.GetString("CacheContextResponseInfoRequiredError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This handler has already been registered..
         /// </summary>
         internal static string HanderAlreadyExistsError {

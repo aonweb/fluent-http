@@ -1,4 +1,8 @@
-﻿namespace AonWeb.FluentHttp.HAL.Representations
+﻿using AonWeb.FluentHttp.HAL.Serialization;
+
+using Newtonsoft.Json;
+
+namespace AonWeb.FluentHttp.HAL.Representations
 {
     public interface IHalResource
     {
@@ -6,7 +10,7 @@
     }
 
     public interface IHalResource<TLinks> : IHalResource
-        where TLinks : HyperMediaLinks
+        where TLinks : HyperMediaLinks, new()
     {
         new TLinks Links { get; set; }
     }

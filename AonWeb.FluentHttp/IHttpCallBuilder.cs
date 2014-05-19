@@ -28,7 +28,6 @@ namespace AonWeb.FluentHttp
         IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding);
         IHttpCallBuilder WithContent(Func<string> contentFactory, Encoding encoding, string mediaType);
         IHttpCallBuilder WithContent(Func<HttpContent> contentFactory);
-        HttpResponseMessage Result();
         Task<HttpResponseMessage> ResultAsync();
 
         IHttpCallBuilder CancelRequest();

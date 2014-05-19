@@ -4,6 +4,7 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public interface IHttpCallHandler
     {
+        bool Enabled { get; }
         HttpCallHandlerPriority GetPriority(HttpCallHandlerType type);
         Task OnSending(HttpSendingContext context);
         Task OnSent(HttpSentContext context);
@@ -12,6 +13,7 @@ namespace AonWeb.FluentHttp.Handlers
 
     public interface IHttpCallHandler<TResult, TContent, TError>
     {
+        bool Enabled { get; }
         HttpCallHandlerPriority GetPriority(HttpCallHandlerType type);
         Task OnSending(HttpSendingContext<TResult, TContent, TError> context);
         Task OnSent(HttpSentContext<TResult, TContent, TError> context);

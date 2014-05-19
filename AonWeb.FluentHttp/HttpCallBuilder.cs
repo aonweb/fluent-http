@@ -1184,11 +1184,6 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public HttpResponseMessage Result()
-        {
-            return ResultAsync().Result;
-        }
-
         public async Task<HttpResponseMessage> ResultAsync()
         {
             HttpResponseMessage response = null;
@@ -1211,22 +1206,24 @@ namespace AonWeb.FluentHttp
         public async Task<HttpResponseMessage> RecursiveResultAsync()
         {
             var context = new HttpCallContext(this, _settings);
+
             using (var request = CreateRequest(context))
             {
-                return await ResultFromRequestAsync(context, request).ConfigureAwait(false);
+                return await ResultFromRequestAsync(context, request);
             }
         }
 
         public HttpRequestMessage CreateRequest()
         {
             var context = new HttpCallContext(this, _settings);
+
             return CreateRequest(context);
         }
 
         public async Task<HttpResponseMessage> ResultFromRequestAsync(HttpRequestMessage request)
         {
             var context = new HttpCallContext(this, _settings);
-            return await ResultFromRequestAsync(context, request);
+            return await ResultFromRequestAsync(context, request).ConfigureAwait(false);
         }
 
         private HttpRequestMessage CreateRequest(HttpCallContext context)

@@ -43,7 +43,7 @@ namespace AonWeb.FluentHttp.Caching
         {
             var isResponseMessage = false;
 
-            var response = context.Result.Result as HttpResponseMessage;
+            var response = context.CacheResult.Result as HttpResponseMessage;
 
             var cachedItem = _cache.Get(context.Key) as CachedItem;
 
@@ -57,9 +57,9 @@ namespace AonWeb.FluentHttp.Caching
                 }
                 else
                 {
-                    result = context.Result.Result;
+                    result = context.CacheResult.Result;
                 }
-                cachedItem = new CachedItem(context.Result.ResponseInfo)
+                cachedItem = new CachedItem(context.CacheResult.ResponseInfo)
                 {
                     Result = result,
                     IsHttpResponseMessage = isResponseMessage
@@ -67,7 +67,7 @@ namespace AonWeb.FluentHttp.Caching
             }
             else
             {
-                cachedItem.ResponseInfo.Merge(context.Result.ResponseInfo);
+                cachedItem.ResponseInfo.Merge(context.CacheResult.ResponseInfo);
             }
 
             _cache.Set(context.Key, cachedItem, cachedItem.ResponseInfo.Expiration);
@@ -79,7 +79,7 @@ namespace AonWeb.FluentHttp.Caching
             var item = _cache.Remove(context.Key) as CachedItem;
 
             RemoveCacheKey(context.Uri, context.Key);
-            TryRemoveDependentUris(item, context.Result.ResponseInfo);
+            TryRemoveDependentUris(item, context.CacheResult.ResponseInfo);
 
             return item != null;
         }

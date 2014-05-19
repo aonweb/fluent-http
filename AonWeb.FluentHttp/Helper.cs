@@ -15,7 +15,7 @@ namespace AonWeb.FluentHttp
     {
         public static readonly Task TaskComplete = Task.FromResult(true);
 
-        public static T As<T>(this object @this)
+        internal static T As<T>(this object @this)
         {
             return (T)@this;
         }
@@ -35,6 +35,19 @@ namespace AonWeb.FluentHttp
                     action2(x);
                 };
             }
+
+            return result;
+        }
+
+        public static Func<T, bool> MergePredicate<T>(Func<T, bool> predicate1, Func<T, bool> predicate2)
+        {
+            if (predicate1 == null && predicate2 == null)
+                return x => true;
+
+            var result = predicate1 ?? predicate2;
+
+            if (predicate1 != null && predicate2 != null)
+                result = x => predicate1(x) && predicate2(x);
 
             return result;
         }

@@ -13,8 +13,9 @@ namespace AonWeb.FluentHttp.HAL.Representations
     }
 
     public abstract class HalResource<TLinks> : IHalResource<TLinks>
-        where TLinks : HyperMediaLinks
+        where TLinks : HyperMediaLinks, new()
     {
+        [JsonIgnore]
         HyperMediaLinks IHalResource.Links
         {
             get
@@ -25,11 +26,10 @@ namespace AonWeb.FluentHttp.HAL.Representations
             {
                 if (value != null && !(value is TLinks))
                     throw new ArgumentException(string.Format(SR.InvalidTypeErroFormat, typeof(TLinks).Name));
-
             }
         }
 
         [JsonProperty("_links")]
-        public abstract TLinks Links { get; set; }
+        public TLinks Links { get; set; }
     } 
 }

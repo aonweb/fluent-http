@@ -17,7 +17,5 @@ namespace AonWeb.FluentHttp.HAL.Serialization
         public string Rel { get; set; }
 
         public Type Type { get; set; }
-
-        public Type CollectionMemberType { get; set; }
     }
 }
