@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
@@ -27,7 +28,6 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         #endregion
 
-
         #region Create
 
         [Test]
@@ -43,36 +43,32 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create(uri);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(uri, actual);
-            }
+            // act
+            await builder.ResultAsync();
+
+            // assert
+            Assert.AreEqual(uri, actual);
         }
         [Test]
         public async Task Create_WhenValidUri_ExpectResultUsesUri()
         {
             //arrange
             var uri = new Uri(TestUriString);
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create(uri);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(uri, actual);
-            }
+            // act
+            await builder.ResultAsync();
+
+            // assert
+            Assert.AreEqual(uri, actual);
         }
 
 
@@ -85,18 +81,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(uri);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(uri, actual);
-            }
+            // act
+            await builder.ResultAsync();
+
+            // assert
+            Assert.AreEqual(uri, actual);
         }
 
         [Test]
@@ -105,7 +99,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = "blah blah";
-            var builder = HttpCallBuilder.Create();
+            var builder = MockHttpCallBuilder.CreateMock();
 
             //act
             builder.WithUri(uri);
@@ -117,7 +111,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             string uri = null;
-            var builder = HttpCallBuilder.Create();
+            var builder = MockHttpCallBuilder.CreateMock();
 
             //act
             builder.WithUri(uri);
@@ -129,7 +123,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = string.Empty;
-            var builder = HttpCallBuilder.Create();
+            var builder = MockHttpCallBuilder.CreateMock();
 
             //act
             builder.WithUri(uri);
@@ -140,34 +134,32 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = new Uri(TestUriString);
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(uri);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(uri, actual);
-            }
+            // act
+            await builder.ResultAsync();
+
+            // assert
+            Assert.AreEqual(uri, actual);
         }
 
         [Test]
         [ExpectedException(typeof(ArgumentNullException))]
         public void WithUri_WhenNullUri_ExpectException()
         {
- 
-                Uri uri = null;
-                HttpCallBuilder.Create().WithUri(uri);
+
+            Uri uri = null;
+            MockHttpCallBuilder.CreateMock().WithUri(uri);
         }
 
         [Test]
         [ExpectedException(typeof(InvalidOperationException))]
         public async Task WithUri_WhenNeverSet_ExpectException()
         {
-            await HttpCallBuilder.Create().ResultAsync();
+            await MockHttpCallBuilder.CreateMock().ResultAsync();
         }
 
         [Test]
@@ -176,7 +168,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = "somedomain.com/path";
-            var builder = HttpCallBuilder.Create();
+            var builder = MockHttpCallBuilder.CreateMock();
 
             //act
             builder.WithUri(uri);
@@ -188,18 +180,17 @@ namespace AonWeb.FluentHttp.Tests.Http
             //arrange
             var uri1 = "http://yahoo.com";
             var uri2 = TestUriString;
-            using (var server = LocalWebServer.ListenInBackground(uri2))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(uri1).WithUri(uri2);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri1);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(uri2, actual);
-            }
+            // act
+            await builder.WithUri(uri2).ResultAsync();
+
+            // assert
+            Assert.AreEqual(uri2, actual);
+
         }
 
         #endregion
@@ -211,18 +202,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = new Uri(TestUriString);
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(uri);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(uri, actual);
-            }
+            // act
+            await builder.ResultAsync();
+
+            // assert
+            Assert.AreEqual(uri, actual);
         }
 
         [Test]
@@ -235,73 +224,65 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = new Uri(TestUriString);
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(uri).WithQueryString(key, value);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.WithQueryString(key, value).ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WithQueryString_WithMultipleKeys_ExpectResultQuerystring()
         {
             var uri = new Uri(TestUriString + "?q1=1");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var values = new NameValueCollection { { "q1", "2" }, { "q2", "1 and 2" }, { "q3", "3" } };
-                var expected = new Uri(TestUriString + "?q1=2&q2=1+and+2&q3=3");
 
-                var builder = HttpCallBuilder.Create().WithUri(uri).WithQueryString(values);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
+            var values = new NameValueCollection { { "q1", "2" }, { "q2", "1 and 2" }, { "q3", "3" } };
+            var expected = new Uri(TestUriString + "?q1=2&q2=1+and+2&q3=3");
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.WithQueryString(values).ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
         [Test]
         public async Task WithQueryString_WithNullValues_ExpectSameUri()
         {
             var expected = new Uri(TestUriString);
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(expected).WithQueryString(null);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(expected);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.WithQueryString(null).ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WithQueryString_WithNoValues_ExpectSameUri()
         {
             var expected = new Uri(TestUriString);
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(expected).WithQueryString(new NameValueCollection());
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            var builder = MockHttpCallBuilder.CreateMock(expected);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
+
+            // act
+            await builder.WithQueryString(new NameValueCollection()).ResultAsync();
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -309,18 +290,17 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             var uri = new Uri(TestUriString + "?q=1");
             var expected = new Uri(TestUriString + "?q=2");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder =
-                    HttpCallBuilder.Create().WithUri(uri).WithQueryString(new NameValueCollection { { "q", "2" } });
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                var result = await builder.ResultAsync();
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            var builder =
+                MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
+
+            // act
+            var result = await builder.WithQueryString(new NameValueCollection { { "q", "2" } }).ResultAsync();
+            // assert
+            Assert.AreEqual(expected, actual);
+
         }
 
         [Test]
@@ -328,51 +308,47 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             var uri = new Uri(TestUriString + "?q=1");
             var expected = new Uri(TestUriString + "?q=2");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create().WithUri(uri).WithQueryString("q", "2");
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
+
+            // act
+            await builder.WithQueryString("q", "2").ResultAsync();
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WithQueryString_WithUriSetAfter_ExpectValueReplaced()
         {
             var expected = new Uri(TestUriString + "?q=2");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create().WithQueryString("q2", "1").WithUri(expected);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            var builder = MockHttpCallBuilder.CreateMock();
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
+
+            // act
+            await builder.WithQueryString("q2", "1").WithUri(expected).ResultAsync();
+            // assert
+            Assert.AreEqual(expected, actual);
+
         }
 
         [Test]
         public async Task WithQueryString_WithBaseUriSetAfter_ExpectValueReplaced()
         {
             var expected = new Uri(TestUriString + "?q=2");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create().WithQueryString("q2", "1").WithBaseUri(expected);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Url.OriginalString);
 
-                // act
-                await builder.ResultAsync();
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            var builder = MockHttpCallBuilder.CreateMock();
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
+
+            // act
+            await builder.WithQueryString("q2", "1").WithBaseUri(expected).ResultAsync();
+            // assert
+            Assert.AreEqual(expected, actual);
+
         }
 
         #endregion
@@ -384,18 +360,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var expected = "GET";
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create(TestUriString);
-                string actual = null;
-                server.InspectRequest(r => actual = r.HttpMethod);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -403,18 +377,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var expected = "GET";
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create(TestUriString).AsGet();
-                string actual = null;
-                server.InspectRequest(r => actual = r.HttpMethod);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.AsGet().ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -422,18 +394,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var expected = "PUT";
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create(TestUriString).AsPut();
-                string actual = null;
-                server.InspectRequest(r => actual = r.HttpMethod);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.AsPut().ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -441,18 +411,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var expected = "POST";
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create(TestUriString).AsPost();
-                string actual = null;
-                server.InspectRequest(r => actual = r.HttpMethod);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.AsPost().ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -460,18 +428,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var expected = "DELETE";
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create(TestUriString).AsDelete();
-                string actual = null;
-                server.InspectRequest(r => actual = r.HttpMethod);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.AsDelete().ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -479,18 +445,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var expected = "PATCH";
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create(TestUriString).AsPatch();
-                string actual = null;
-                server.InspectRequest(r => actual = r.HttpMethod);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.AsPatch().ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -498,18 +462,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var expected = "HEAD";
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
-                var builder = HttpCallBuilder.Create(TestUriString).AsHead();
-                string actual = null;
-                server.InspectRequest(r => actual = r.HttpMethod);
 
-                // act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
-                // assert
-                Assert.AreEqual(expected, actual);
-            }
+            // act
+            await builder.AsHead().ResultAsync();
+
+            // assert
+            Assert.AreEqual(expected, actual);
         }
 
         #endregion
@@ -521,18 +483,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(content);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Body);
 
-                //act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                //assert
-                Assert.AreEqual(content ?? string.Empty, actual);
-            }
+            //act
+            await builder.AsPost().WithContent(content).ResultAsync();
+
+            //assert
+            Assert.AreEqual(content ?? string.Empty, actual);
         }
 
         [Test]
@@ -543,26 +503,21 @@ namespace AonWeb.FluentHttp.Tests.Http
             var content = "Content";
             var expectedEncoding = Encoding.UTF8;
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(content);
-                
-                Encoding actualContentEncoding = null;
-                string actualAcceptHeader = null;
+                actualAcceptHeader = ctx.Request.Content.Headers.ContentType.CharSet;
+            });
 
-                server.InspectRequest(r =>
-                {
-                    actualContentEncoding = r.ContentEncoding;
-                    actualAcceptHeader = r.Headers["Accept-Charset"];
-                });
+            //act
+            await builder.AsPost().WithContent(content).ResultAsync();
 
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match");
-                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
-            }
+            //assert
+            Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
         }
 
         [Test]
@@ -573,26 +528,24 @@ namespace AonWeb.FluentHttp.Tests.Http
             var content = "Content";
             var expectedMediaType = "application/json";
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+
+            string actualContentType = null;
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(content);
+                actualContentType = ctx.Request.Content.Headers.ContentType.MediaType;
+                actualAcceptHeader = ctx.Request.Headers.Accept.First().MediaType;
+            });
 
-                string actualContentType = null;
-                string actualAcceptHeader = null;
+            //act
+            await builder.AsPost().WithContent(content).ResultAsync();
 
-                server.InspectRequest(r =>
-                {
-                    actualContentType = r.ContentType;
-                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
-                });
-
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content-Type do not match");
-                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
-            }
+            //assert
+            Assert.AreEqual("application/json", actualContentType, "Content-Type do not match");
+            Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
         }
 
         [Test]
@@ -603,28 +556,23 @@ namespace AonWeb.FluentHttp.Tests.Http
             var expectedContent = "Content";
             var expectedEncoding = Encoding.ASCII;
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actualContent = null;
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(expectedContent, expectedEncoding);
-                string actualContent = null;
-                Encoding actualContentEncoding = null;
-                string actualAcceptHeader = null;
+                actualContent = ctx.Request.Content.ReadAsStringAsync().Result;
+                actualAcceptHeader = ctx.Request.Content.Headers.ContentType.CharSet;
+            });
 
-                server.InspectRequest(r =>
-                {
-                    actualContent = r.Body;
-                    actualContentEncoding = r.ContentEncoding;
-                    actualAcceptHeader = r.Headers["Accept-Charset"];
-                });
+            //act
+            await builder.AsPost().WithContent(expectedContent, expectedEncoding).ResultAsync();
 
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual(expectedContent, actualContent, "Content does not match");
-                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match");
-                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
-            }
+            //assert
+            Assert.AreEqual(expectedContent, actualContent, "Content does not match");
+            Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
         }
 
         [Test]
@@ -635,26 +583,24 @@ namespace AonWeb.FluentHttp.Tests.Http
             var content = "Content";
             var expectedMediaType = "application/json";
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+
+            string actualContentType = null;
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(content, Encoding.UTF8, expectedMediaType);
+                actualContentType = ctx.Request.Content.Headers.ContentType.MediaType;
+                actualAcceptHeader = ctx.Request.Headers.Accept.First().MediaType;
+            });
 
-                string actualContentType = null;
-                string actualAcceptHeader = null;
+            //act
+            await builder.AsPost().WithContent(content, Encoding.UTF8, expectedMediaType).ResultAsync();
 
-                server.InspectRequest(r =>
-                {
-                    actualContentType = r.ContentType;
-                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
-                });
-
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content-Type do not match");
-                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
-            }
+            //assert
+            Assert.AreEqual("application/json", actualContentType, "Content-Type do not match");
+            Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
         }
 
         #endregion
@@ -666,18 +612,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Body);
 
-                //act
-                await builder.ResultAsync();
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                //assert
-                Assert.AreEqual(content ?? string.Empty, actual);
-            }
+            //act
+            await builder.AsPost().WithContent(() => content).ResultAsync();
+
+            //assert
+            Assert.AreEqual(content ?? string.Empty, actual);
         }
 
         [Test]
@@ -686,9 +630,9 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            
-            HttpCallBuilder.Create(uri).AsPost().WithContent((Func<string>)null);
-                
+
+            MockHttpCallBuilder.CreateMock(uri).AsPost().WithContent((Func<string>)null);
+
         }
 
         [Test]
@@ -699,26 +643,21 @@ namespace AonWeb.FluentHttp.Tests.Http
             var content = "Content";
             var expectedEncoding = Encoding.UTF8;
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
+                actualAcceptHeader = ctx.Request.Content.Headers.ContentType.CharSet;
+            });
 
-                Encoding actualContentEncoding = null;
-                string actualAcceptHeader = null;
+            //act
+            await builder.AsPost().WithContent(() => content).ResultAsync();
 
-                server.InspectRequest(r =>
-                {
-                    actualContentEncoding = r.ContentEncoding;
-                    actualAcceptHeader = r.Headers["Accept-Charset"];
-                });
-
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match.");
-                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept Charset does not match");
-            }
+            //assert
+            Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept Charset does not match");
         }
 
         [Test]
@@ -729,26 +668,24 @@ namespace AonWeb.FluentHttp.Tests.Http
             var content = "Content";
             var expectedMediaType = "application/json";
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+
+            string actualContentType = null;
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
+                actualContentType = ctx.Request.Content.Headers.ContentType.MediaType;
+                actualAcceptHeader = ctx.Request.Headers.Accept.First().MediaType;
+            });
 
-                string actualContentType = null;
-                string actualAcceptHeader = null;
+            //act
+            await builder.AsPost().WithContent(() => content).ResultAsync();
 
-                server.InspectRequest(r =>
-                {
-                    actualContentType = r.ContentType;
-                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
-                });
-
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content Type does not match");
-                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept header does not match");
-            }
+            //assert
+            Assert.AreEqual("application/json", actualContentType, "Content Type does not match");
+            Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept header does not match");
         }
 
         [Test]
@@ -759,28 +696,23 @@ namespace AonWeb.FluentHttp.Tests.Http
             var expectedContent = "Content";
             var expectedEncoding = Encoding.ASCII;
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actualContent = null;
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => expectedContent, expectedEncoding);
-                string actualContent = null;
-                Encoding actualContentEncoding = null;
-                string actualAcceptHeader = null;
+                actualContent = ctx.Request.Content.ReadAsStringAsync().Result;
+                actualAcceptHeader = ctx.Request.Content.Headers.ContentType.CharSet;
+            });
 
-                server.InspectRequest(r =>
-                {
-                    actualContent = r.Body;
-                    actualContentEncoding = r.ContentEncoding;
-                    actualAcceptHeader = r.Headers["Accept-Charset"];
-                });
+            //act
+            await builder.AsPost().WithContent(() => expectedContent, expectedEncoding).ResultAsync();
 
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual(expectedContent, actualContent, "Content does not match");
-                Assert.AreEqual(expectedEncoding, actualContentEncoding, "Content Encoding does not match");
-                Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
-            }
+            //assert
+            Assert.AreEqual(expectedContent, actualContent, "Content does not match");
+            Assert.AreEqual(expectedEncoding.WebName, actualAcceptHeader, "Accept encoding does not match");
         }
 
         [Test]
@@ -791,26 +723,24 @@ namespace AonWeb.FluentHttp.Tests.Http
             var content = "Content";
             var expectedMediaType = "application/json";
 
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+
+            string actualContentType = null;
+            string actualAcceptHeader = null;
+
+            builder.OnSending(ctx =>
             {
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content, Encoding.UTF8, expectedMediaType);
+                actualContentType = ctx.Request.Content.Headers.ContentType.MediaType;
+                actualAcceptHeader = ctx.Request.Headers.Accept.First().MediaType;
+            });
 
-                string actualContentType = null;
-                string actualAcceptHeader = null;
+            //act
+            await builder.WithContent(() => content, Encoding.UTF8, expectedMediaType).AsPost().ResultAsync();
 
-                server.InspectRequest(r =>
-                {
-                    actualContentType = r.ContentType;
-                    actualAcceptHeader = r.AcceptTypes.FirstOrDefault();
-                });
-
-                //act
-                await builder.ResultAsync();
-
-                //assert
-                Assert.AreEqual("application/json; charset=utf-8", actualContentType, "Content-Type do not match");
-                Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
-            }
+            //assert
+            Assert.AreEqual("application/json", actualContentType, "Content-Type do not match");
+            Assert.AreEqual(expectedMediaType, actualAcceptHeader, "Accept do not match");
         }
 
         [Test]
@@ -818,19 +748,17 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            using (var server = LocalWebServer.ListenInBackground(uri))
-            {
-                var content = new StringContent("Content");
-                var builder = HttpCallBuilder.Create(uri).AsPost().WithContent(() => content);
-                string actual = null;
-                server.InspectRequest(r => actual = r.Body);
 
-                //act
-                await builder.ResultAsync();
+            var content = new StringContent("Content");
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            string actual = null;
+            builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                //assert
-                Assert.AreEqual("Content", actual);
-            }
+            //act
+            await builder.AsPost().WithContent(() => content).ResultAsync();
+
+            //assert
+            Assert.AreEqual("Content", actual);
         }
 
         [Test]
@@ -839,9 +767,9 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            
-            HttpCallBuilder.Create(uri).AsPost().WithContent((Func<HttpContent>)null);
-                
+
+            MockHttpCallBuilder.CreateMock(uri).AsPost().WithContent((Func<HttpContent>)null);
+
         }
 
         #endregion
@@ -851,10 +779,12 @@ namespace AonWeb.FluentHttp.Tests.Http
         {
             //arrange
             var uri = TestUriString;
-            using (var server = LocalWebServer.ListenInBackground(uri))
+
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
             {
+
                 var delay = 500;
-                var builder = HttpCallBuilder.Create().WithUri(uri);
+                var builder = MockHttpCallBuilder.CreateMock(uri);
                 server.InspectRequest(r => Thread.Sleep(delay));
 
                 // act

@@ -10,7 +10,7 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp
 {
-    internal interface IChildHttpCallBuilder : IAdvancedHttpCallBuilder
+    public interface IChildHttpCallBuilder : IAdvancedHttpCallBuilder
     {
         HttpRequestMessage CreateRequest();
         Task<HttpResponseMessage> ResultFromRequestAsync(HttpRequestMessage request);

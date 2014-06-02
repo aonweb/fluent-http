@@ -23,7 +23,6 @@ namespace AonWeb.FluentHttp.Tests
             mock.Verify(m => m.SendAsync(It.Is(messagePredicate), It.IsAny<HttpCompletionOption>(), It.IsAny<CancellationToken>()), times);
         }
 
-
         public static string ReadContents(this HttpListenerRequest request)
         {
             using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))

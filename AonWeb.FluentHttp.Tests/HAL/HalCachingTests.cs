@@ -60,7 +60,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
         //get to list with embeds, put to canonical, expires list
         [Test]
-        public void WhenGetListWithEmbeddedResources_ThenModifyOneEmbeddedResource_ExpiectListExpired()
+        public void WhenGetListWithEmbeddedResources_ThenModifyOneEmbeddedResource_ExpectListExpired()
         {
 
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))

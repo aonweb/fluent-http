@@ -10,6 +10,7 @@ using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp
 {
@@ -39,8 +40,8 @@ namespace AonWeb.FluentHttp
             DefaultSuccessfulResponseValidator = IsSuccessfulResponse;
             DefaultMediaType = "application/json";
             DefaultContentEncoding = Encoding.UTF8;
-
-            DefaultMediaTypeFormatters = new MediaTypeFormatterCollection();
+            DefaultMediaTypeFormatters = new MediaTypeFormatterCollection().FluentAdd(new StringMediaFormatter());
+            DefaultHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
 
             //Client Defaults
             AutoDecompressionEnabled = true;
@@ -58,9 +59,9 @@ namespace AonWeb.FluentHttp
             DefaultMaxAutoRedirects = 2;
             DefaultRedirectStatusCodes = new HashSet<HttpStatusCode>
             {
+                HttpStatusCode.Found,
                 HttpStatusCode.Redirect,
-                HttpStatusCode.MovedPermanently,
-                HttpStatusCode.Created
+                HttpStatusCode.MovedPermanently
             };
 
             //Retry
@@ -103,6 +104,7 @@ namespace AonWeb.FluentHttp
             store.RemoveItem(uri);
         }
 
+        public static Func<IHttpCallHandler[]> DefaultHandlerFactory { get; set; }
         public static MediaTypeFormatterCollection DefaultMediaTypeFormatters { get; set; }
         public static HttpMethod DefaultHttpMethod { get; set; }
         public static HttpCompletionOption DefaultCompletionOption { get; set; }
@@ -130,6 +132,8 @@ namespace AonWeb.FluentHttp
         public static bool AutoRedirectEnabled { get; set; }
         public static int DefaultMaxAutoRedirects { get; set; }
         public static ISet<HttpStatusCode> DefaultRedirectStatusCodes { get; set; }
+
+        public static bool AutoFollowLocationEnabled { get; set; }
 
         public static bool AutoRetryEnabled { get; set; }
         public static int DefaultMaxAutoRetries { get; set; }

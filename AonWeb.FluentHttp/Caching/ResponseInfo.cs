@@ -62,6 +62,15 @@ namespace AonWeb.FluentHttp.Caching
 
         private DateTimeOffset? GetExpiration(DateTimeOffset lastModified, object result, HttpResponseMessage response, TimeSpan defaultExpiration)
         {
+            var cacheableResult = result as ICacheableHttpResult;
+            if (cacheableResult != null)
+            {
+                if (cacheableResult.Duration.HasValue && cacheableResult.Duration.Value > TimeSpan.Zero)
+                    return lastModified.Add(cacheableResult.Duration.Value);
+
+                return lastModified.Add(defaultExpiration);
+            }
+
             if (response.Headers.CacheControl != null)
             {
                 if (response.Headers.CacheControl.MaxAge.HasValue)
@@ -73,15 +82,6 @@ namespace AonWeb.FluentHttp.Caching
 
             if (response.Content != null && response.Content.Headers.Expires.HasValue)
                 return response.Content.Headers.Expires.Value;
-
-            var cacheableResult = result as ICacheableHttpResult;
-            if (cacheableResult != null)
-            {
-                if (cacheableResult.Duration.HasValue && cacheableResult.Duration.Value > TimeSpan.Zero)
-                    return lastModified.Add(cacheableResult.Duration.Value);
-
-                return lastModified.Add(defaultExpiration);
-            }
 
             return null;
         }

@@ -5,18 +5,19 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AonWeb.FluentHttp.Mocks;
+
 namespace AonWeb.FluentHttp.Tests.Helpers
 {
     public class LocalWebServer : IDisposable
     {
         public const string DefaultListenerUri = "http://localhost:8889/";
        
-        private readonly Queue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>> _responses;
+        private readonly ResponseQueue<LocalWebServerRequestInfo, LocalWebServerResponseInfo> _responses;
         private readonly AutoResetEvent _handle;
         private readonly IList<string> _prefixes;
 
         private HttpListener _listener = new HttpListener();
-        private Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo> _lastResponse;
         private Action<LocalWebServerRequestInfo> _requestInspector;
 
         public LocalWebServer()
@@ -36,19 +37,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             EnableLogging = true;
             _prefixes = new List<string> { listenerUri };
             _handle = new AutoResetEvent(false);
-            _responses = new Queue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>>();
-
-            if (responses.Length > 0)
-            {
-                foreach (var response in responses)
-                {
-                    _responses.Enqueue(response);
-                }
-            }
-            else
-            {
-                _lastResponse = request => new LocalWebServerResponseInfo();
-            }
+            _responses = new ResponseQueue<LocalWebServerRequestInfo, LocalWebServerResponseInfo>(responses);
         }
 
         public static LocalWebServer ListenInBackground()
@@ -119,7 +108,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         public LocalWebServer AddResponse(Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo> response)
         {
-            _responses.Enqueue(response);
+            _responses.Add(response);
 
             return this;
         }
@@ -133,8 +122,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         public LocalWebServer RemoveNextResponse()
         {
-            if (_responses.Count > 0)
-             _responses.Dequeue();
+             _responses.RemoveNext();
 
             return this;
         }
@@ -226,10 +214,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         private LocalWebServerResponseInfo GetResponseInfo(LocalWebServerRequestInfo requestInfo)
         {
-            if (_responses.Count > 0)
-                _lastResponse = _responses.Dequeue();
-
-            return _lastResponse(requestInfo);
+            return _responses.GetNext()(requestInfo);
         }
 
         private void CreateResponse(HttpListenerContext context, LocalWebServerResponseInfo responseInfo)
@@ -264,7 +249,5 @@ namespace AonWeb.FluentHttp.Tests.Helpers
         {
             Stop();
         }
-
-        
     }
 }

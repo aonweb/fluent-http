@@ -81,6 +81,7 @@
     <Compile Include="Helpers\LocalWebServerResponseInfo.cs" />
     <Compile Include="Helpers\LocalWebServer.cs" />
     <Compile Include="Http\RetryHandlerTests.cs" />
+    <Compile Include="Http\MockTypedHttpCallBuilderTests.cs" />
     <Compile Include="Http\TypedHttpCallBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderAdvancedMethodsTests .cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
@@ -99,6 +100,10 @@
     <ProjectReference Include="..\AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj">
       <Project>{1901429b-ab31-45af-a071-7f9a985c3cbd}</Project>
       <Name>AonWeb.FluentHttp.HAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AonWeb.FluentHttp.Mocks\AonWeb.FluentHttp.Mocks.csproj">
+      <Project>{c1051b93-89f8-4a6f-8601-a5d5fb7b6648}</Project>
+      <Name>AonWeb.FluentHttp.Mocks</Name>
     </ProjectReference>
     <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
       <Project>{2996F912-482D-42C4-A315-CBAFF83C899E}</Project>

@@ -27,9 +27,9 @@ namespace AonWeb.FluentHttp.Tests.Http
         #endregion
 
         [Test]
+        [TestCase(HttpStatusCode.Found)]
         [TestCase(HttpStatusCode.Redirect)]
         [TestCase(HttpStatusCode.MovedPermanently)]
-        [TestCase(HttpStatusCode.Created)]
         public void AutoRedirect_WhenCallRedirects_ExpectRedirectOnByDefaultAndLocationFollowed(HttpStatusCode statusCode)
         {
             var expected = Helper.CombineVirtualPaths(TestUriString, "redirect");

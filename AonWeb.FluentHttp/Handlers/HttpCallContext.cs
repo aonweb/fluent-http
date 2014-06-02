@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Text;
@@ -51,6 +52,11 @@ namespace AonWeb.FluentHttp.Handlers
         public string MediaType { get { return _settings.MediaType; } }
         public Encoding ContentEncoding { get { return _settings.ContentEncoding; } }
         public bool AutoDecompression { get { return _settings.AutoDecompression; } }
+
+        public bool IsSuccessfulResponse(HttpResponseMessage response)
+        {
+            return !_settings.SuccessfulResponseValidators.Any() || _settings.SuccessfulResponseValidators.All(v => v(response));
+        }
     }
 
     public class HttpCallContext<TResult, TContent, TError> : IHttpCallContext
@@ -84,6 +90,11 @@ namespace AonWeb.FluentHttp.Handlers
             {
                 return _settings.DeserializeResult;
             }
+        }
+
+        public bool IsSuccessfulResponse(HttpResponseMessage response)
+        {
+            return !_settings.SuccessfulResponseValidators.Any() || _settings.SuccessfulResponseValidators.All(v => v(response));
         }
     }
 }

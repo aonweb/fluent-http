@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,6 +15,13 @@ namespace AonWeb.FluentHttp
     public static class Helper
     {
         public static readonly Task TaskComplete = Task.FromResult(true);
+
+        internal static MediaTypeFormatterCollection FluentAdd(this MediaTypeFormatterCollection collection, MediaTypeFormatter formatter)
+        {
+            collection.Add(formatter);
+
+            return collection;
+        }
 
         internal static T As<T>(this object @this)
         {

@@ -152,8 +152,6 @@ namespace AonWeb.FluentHttp
 
         public Func<TResult> DefaultResultFactory { get; set; }
 
-        
-
         public void Reset()
         {
             _items.Clear();

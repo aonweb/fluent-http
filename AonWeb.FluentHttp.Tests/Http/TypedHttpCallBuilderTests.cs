@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Exceptions;
+using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
@@ -11,7 +12,7 @@ using NUnit.Framework;
 namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
-    public class TypedHttpCallBuilderTests
+    public class TypedMockHttpCallBuilderTests
     {
         #region Declarations, Set up, & Tear Down
 
@@ -117,32 +118,32 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenComplexTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+
+                var builder = MockHttpCallBuilder<TestResult, EmptyRequest, EmptyError>.CreateMock(TestUriString);
                 //arrange
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK,
                     Body = TestResultString
                 });
-                var builder = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(TestUriString);
+
+
 
                 //act
                 var actual = builder.ResultAsync().Result;
 
                 Assert.AreEqual(TestResultValue, actual);
-            }
         }
 
         [Test]
         public void WhenSimpleTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<bool, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+
                 //arrange
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
@@ -150,23 +151,21 @@ namespace AonWeb.FluentHttp.Tests.Http
                     Body = "true"
                 });
 
-                var builder = HttpCallBuilder<bool, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
                 var actual = builder.ResultAsync().Result;
 
                 Assert.IsTrue(actual);
-            }
         }
 
         [Test]
         public void WhenStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<string, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+
                 //arrange
                 var expected = "some string data";
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
@@ -174,57 +173,73 @@ namespace AonWeb.FluentHttp.Tests.Http
                     Body = "\"" + expected + "\""
                 });
 
-                var builder = HttpCallBuilder<string, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
                 var actual = builder.ResultAsync().Result;
 
                 Assert.AreEqual(expected, actual);
-            }
+        }
+
+        [Test]
+        public void WhenStringTypedGet_WithPlainTextResponseResponse_ExpectValidDeserializedResult()
+        {
+            var builder = MockHttpCallBuilder<string, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+
+            //arrange
+            var expected = "some string data";
+            builder.WithResponse(new ResponseInfo
+            {
+                ContentEncoding = Encoding.UTF8,
+                ContentType = "text/plain",
+                StatusCode = HttpStatusCode.OK,
+                Body = expected
+            });
+
+
+            //act
+            var actual = builder.ResultAsync().Result;
+
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public void WhenEmptyStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<string, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+
                 //arrange
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK
                 });
 
-                var builder = HttpCallBuilder<string, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
                 var actual = builder.ResultAsync().Result;
 
                 Assert.IsNullOrEmpty(actual);
-            }
         }
 
         [Test]
         public void WhenEmptyTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<TestResult, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+
                 //arrange
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK
                 });
 
-                var builder = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(TestUriString);
 
                 //act
                 var actual = builder.ResultAsync().Result;
 
                 Assert.IsNull(actual);
-            }
         }
 
         #endregion
@@ -234,101 +249,91 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenPostingComplexType_ExpectRequestContentSerializedCorrectly()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, TestResult, EmptyError>.CreateMock(TestUriString);
+
                 var expected = TestResultString;
-                server.AddResponse(new LocalWebServerResponseInfo());
+                builder.WithResponse(new ResponseInfo());
 
                 //arrange
-                var builder = HttpCallBuilder<EmptyResult, TestResult, EmptyError>.Create(TestUriString).AsPost();
                 string actual = null;
-                server.InspectRequest(r => actual = r.Body);
+                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(()=> TestResultValue).SendAsync().Wait();
+                builder.WithContent(() => TestResultValue).AsPost().SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
-            }
         }
 
         [Test]
         public void WhenPuttingSimpleTyped_ExpectRequestContentSerializedCorrectly()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, bool, EmptyError>.CreateMock(TestUriString);
+
                 //arrange
                 var expected = "true";
-                server.AddResponse(new LocalWebServerResponseInfo());
+                builder.WithResponse(new ResponseInfo());
 
-                var builder = HttpCallBuilder<EmptyResult, bool, EmptyError>.Create(TestUriString).AsPut();
                 string actual = null;
-                server.InspectRequest(r => actual = r.Body);
+                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(() => true).SendAsync().Wait();
+                builder.WithContent(() => true).AsPut().SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
-            }
         }
 
         [Test]
         public async Task WhenPostingStringType_ExpectRequestContentSerializedCorrectly()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, string, EmptyError>.CreateMock(TestUriString);
+
                 //arrange
                 var expected = "some string data";
-                server.AddResponse(new LocalWebServerResponseInfo());
+                builder.WithResponse(new ResponseInfo());
 
-                var builder = HttpCallBuilder<EmptyResult, string, EmptyError>.Create(TestUriString).AsPost();
                 string actual = null;
-                server.InspectRequest(r => actual = r.Body);
+                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                var result = await builder.WithContent(() => expected).ResultAsync();
+                var result = await builder.WithContent(() => expected).AsPost().ResultAsync();
 
                 Assert.AreEqual("\"" + expected + "\"", actual);
-            }
         }
 
         [Test]
         public void WhenPostingEmptyStringType_ExpectRequestContentSerializedCorrectly()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, string, EmptyError>.CreateMock(TestUriString);
+
                 //arrange
                 var expected = "null";
-                server.AddResponse(new LocalWebServerResponseInfo());
+                builder.WithResponse(new ResponseInfo());
 
-                var builder = HttpCallBuilder<EmptyResult, string, EmptyError>.Create(TestUriString).AsPost();
                 string actual = null;
-                server.InspectRequest(r => actual = r.Body);
+                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(() => null).SendAsync().Wait();
+                builder.WithContent(() => null).AsPost().SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
-            }
         }
 
         [Test]
         public void WhenPostingEmptyType_ExpectRequestContentSerializedCorrectly()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, TestResult, EmptyError>.CreateMock(TestUriString);
+
                 var expected = "null";
-                server.AddResponse(new LocalWebServerResponseInfo());
+                builder.WithResponse(new ResponseInfo());
 
                 //arrange
-                var builder = HttpCallBuilder<EmptyResult, TestResult, EmptyError>.Create(TestUriString).AsPost();
                 string actual = null;
-                server.InspectRequest(r => actual = r.Body);
+                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(() => null).SendAsync().Wait();
+                builder.WithContent(() => null).AsPost().SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
-            }
         }
 
         #endregion
@@ -338,17 +343,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenCallFailsAndErrorIsComplexType_ExpectRequestContentSerializedCorrectly()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, TestResult>.CreateMock(TestUriString);
+
                 //arrange
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = TestResultString
                 });
-                var builder = HttpCallBuilder<EmptyResult, EmptyRequest, TestResult>.Create(TestUriString);
 
                 //act
                 try
@@ -359,24 +363,22 @@ namespace AonWeb.FluentHttp.Tests.Http
                 catch (HttpErrorException<TestResult> ex)
                 {
                     Assert.AreEqual(TestResultValue, ex.Error);
-                } 
-            }
+                }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsSimpleTyped_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, bool>.CreateMock(TestUriString);
+
                 //arrange
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = "true"
                 });
-                var builder = HttpCallBuilder<EmptyResult, EmptyRequest, bool>.Create(TestUriString);
 
                 //act
                 try
@@ -388,24 +390,22 @@ namespace AonWeb.FluentHttp.Tests.Http
                 {
                     Assert.IsTrue(ex.Error);
                 }
-            }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsStringType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, string>.CreateMock(TestUriString);
+
                 //arrange
                 var expected = "some string data";
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = "\"" + expected + "\""
                 });
-                var builder = HttpCallBuilder<EmptyResult, EmptyRequest, string>.Create(TestUriString);
 
                 //act
                 try
@@ -417,24 +417,22 @@ namespace AonWeb.FluentHttp.Tests.Http
                 {
                     Assert.AreEqual(expected, ex.Error);
                 }
-            }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsEmptyStringType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, string>.CreateMock(TestUriString);
+
                 //arrange
-                
-                server.AddResponse(new LocalWebServerResponseInfo
+
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = null
                 });
-                var builder = HttpCallBuilder<EmptyResult, EmptyRequest, string>.Create(TestUriString);
 
                 //act
                 try
@@ -446,23 +444,21 @@ namespace AonWeb.FluentHttp.Tests.Http
                 {
                     Assert.IsNullOrEmpty(ex.Error);
                 }
-            }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsEmptyType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
-            {
+            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, TestResult>.CreateMock(TestUriString);
+
                 //arrange
-                server.AddResponse(new LocalWebServerResponseInfo
+                builder.WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = null
                 });
-                var builder = HttpCallBuilder<EmptyResult, EmptyRequest, TestResult>.Create(TestUriString);
 
                 //act
                 try
@@ -474,7 +470,6 @@ namespace AonWeb.FluentHttp.Tests.Http
                 {
                     Assert.IsNull(ex.Error);
                 }
-            }
         }
 
         #endregion

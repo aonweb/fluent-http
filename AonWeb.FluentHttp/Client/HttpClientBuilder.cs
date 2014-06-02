@@ -120,9 +120,9 @@ namespace AonWeb.FluentHttp.Client
         public IHttpClient Create()
         {
             // should we pool these client or handler
-            var handler = CreateHandler();
+            var handler = CreateHandler(_settings);
 
-            var client = new HttpClient(handler);
+            var client = GetClientInstance(handler);
 
             if (_settings.Timeout.HasValue)
                 client.Timeout = _settings.Timeout.Value;
@@ -130,46 +130,49 @@ namespace AonWeb.FluentHttp.Client
             if (_settings.HeaderConfiguration != null) 
                 _settings.HeaderConfiguration(client.DefaultRequestHeaders);
 
-            var wrapper = new HttpClientWrapper(client);
-
             if (_settings.ClientConfiguration != null)
-                _settings.ClientConfiguration(wrapper);
+                _settings.ClientConfiguration(client);
 
-            return wrapper;
+            return client;
+        }
+
+        protected virtual IHttpClient GetClientInstance(HttpMessageHandler handler)
+        {
+            return new HttpClientWrapper(new HttpClient(handler));
         }
         
-        private HttpMessageHandler CreateHandler()
+        protected virtual HttpMessageHandler CreateHandler(HttpClientSettings settings)
         {
             var handler = new HttpClientHandler
             {
                 AllowAutoRedirect = false, //this will be handled by the consuming code
             };
 
-            if (_settings.DecompressionMethods.HasValue)
-                handler.AutomaticDecompression = _settings.DecompressionMethods.Value;
+            if (settings.DecompressionMethods.HasValue)
+                handler.AutomaticDecompression = settings.DecompressionMethods.Value;
 
-            if (_settings.ClientCertificateOptions != null)
-                handler.ClientCertificateOptions = _settings.ClientCertificateOptions.Value;
+            if (settings.ClientCertificateOptions != null)
+                handler.ClientCertificateOptions = settings.ClientCertificateOptions.Value;
 
-            if (_settings.CookieContainer != null)
+            if (settings.CookieContainer != null)
             {
-                handler.CookieContainer = _settings.CookieContainer;
+                handler.CookieContainer = settings.CookieContainer;
                 handler.UseCookies = true;
             }
 
-            if (_settings.Credentials != null)
+            if (settings.Credentials != null)
             {
-                handler.Credentials = _settings.Credentials;
+                handler.Credentials = settings.Credentials;
                 handler.UseDefaultCredentials = true;
                 handler.PreAuthenticate = true;
             }
 
-            if (_settings.MaxRequestContentBufferSize.HasValue)
-                handler.MaxRequestContentBufferSize = _settings.MaxRequestContentBufferSize.Value;
+            if (settings.MaxRequestContentBufferSize.HasValue)
+                handler.MaxRequestContentBufferSize = settings.MaxRequestContentBufferSize.Value;
 
-            if (_settings.Proxy != null)
+            if (settings.Proxy != null)
             {
-                handler.Proxy = _settings.Proxy;
+                handler.Proxy = settings.Proxy;
                 handler.UseProxy = true;
             }
             

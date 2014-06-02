@@ -11,6 +11,11 @@ namespace AonWeb.FluentHttp.Handlers
         }
 
         public HttpResponseMessage Response { get; set; }
+
+        public bool IsSuccessfulResponse()
+        {
+            return IsSuccessfulResponse(Response);
+        }
     }
 
     public class HttpSentContext<TResult, TContent, TError> : HttpCallContext<TResult, TContent, TError>
