@@ -21,10 +21,10 @@ namespace AonWeb.FluentHttp.HAL
     {
         private readonly IAdvancedHttpCallBuilder<TResult, TContent, TError> _innerBuilder;
 
-        private HalCallBuilder()
+        protected HalCallBuilder()
             : this(HttpCallBuilder<TResult, TContent, TError>.Create().Advanced) { }
 
-        private HalCallBuilder(IAdvancedHttpCallBuilder<TResult, TContent, TError> builder)
+        protected HalCallBuilder(IAdvancedHttpCallBuilder<TResult, TContent, TError> builder)
         {
             _innerBuilder = builder.ConfigureMediaTypeFormatter<JsonMediaTypeFormatter>(
                 f =>
