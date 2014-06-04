@@ -6,7 +6,9 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockHttpCallBuilder<TResult, TContent, TError> : HttpCallBuilder<TResult, TContent, TError>, IMockHttpCallBuilder<TResult, TContent, TError>
+    public class MockHttpCallBuilder<TResult, TContent, TError> : 
+        HttpCallBuilder<TResult, TContent, TError>,
+        IMockBuilder<TResult, TContent, TError>
     {
         private readonly MockFormatter<TResult, TContent, TError> _formatter;
         private readonly MockHttpCallBuilder _innerBuilder;
@@ -37,63 +39,63 @@ namespace AonWeb.FluentHttp.Mocks
             return (MockHttpCallBuilder<TResult, TContent, TError>)(CreateMock().WithBaseUri(baseUri));
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> ConfigureResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
+        public IMockBuilder<TResult, TContent, TError> WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
         {
-            _formatter.ConfigureResult(resultFactory);
+            _formatter.WithResult(resultFactory);
 
             return this;
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> WithResult(TResult result)
+        public IMockBuilder<TResult, TContent, TError> WithResult(TResult result)
         {
             return WithResult(result, HttpStatusCode.OK);
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> WithResult(TResult result, HttpStatusCode statusCode)
+        public IMockBuilder<TResult, TContent, TError> WithResult(TResult result, HttpStatusCode statusCode)
         {
-            _formatter.ConfigureResult((r, c) => result);
+            _formatter.WithResult((r, c) => result);
 
             return WithResponse(new ResponseInfo(statusCode));
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> ConfigureError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
+        public IMockBuilder<TResult, TContent, TError> WithError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
         {
-            _formatter.ConfigureError(errorFactory);
+            _formatter.WithError(errorFactory);
 
             return this;
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> WithError(TError error)
+        public IMockBuilder<TResult, TContent, TError> WithError(TError error)
         {
             return WithError(error, HttpStatusCode.InternalServerError);
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> WithError(TError error, HttpStatusCode statusCode)
+        public IMockBuilder<TResult, TContent, TError> WithError(TError error, HttpStatusCode statusCode)
         {
-            _formatter.ConfigureError((r, c) => error);
+            _formatter.WithError((r, c) => error);
 
             return WithResponse(new ResponseInfo(statusCode));
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> ConfigureResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public IMockBuilder<TResult, TContent, TError> WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
-            _innerBuilder.ConfigureResponse(responseFactory);
+            _innerBuilder.WithResponse(responseFactory);
 
             return this;
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> WithResponse(HttpResponseMessage response)
+        public IMockBuilder<TResult, TContent, TError> WithResponse(HttpResponseMessage response)
         {
-            return ConfigureResponse(r => response);
+            return WithResponse(r => response);
         }
 
-        public IMockHttpCallBuilder<TResult, TContent, TError> WithResponse(ResponseInfo response)
+        public IMockBuilder<TResult, TContent, TError> WithResponse(ResponseInfo response)
         {
-            return ConfigureResponse(r => response.ToHttpResponseMessage());
+            return WithResponse(r => response.ToHttpResponseMessage());
         }
     }
 
-    public class MockHttpCallBuilder : HttpCallBuilder, IMockHttpCallBuilder
+    public class MockHttpCallBuilder : HttpCallBuilder, IMockBuilder
     {
         public MockHttpCallBuilder()
             : base(new MockHttpClientBuilder()) { }
@@ -113,21 +115,21 @@ namespace AonWeb.FluentHttp.Mocks
             return (MockHttpCallBuilder)(CreateMock().WithBaseUri(baseUri));
         }
 
-        public IMockHttpCallBuilder ConfigureResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public IMockBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
-            ConfigureClient(b => ((MockHttpClientBuilder)b).ConfigureResponse(responseFactory));
+            ConfigureClient(b => ((MockHttpClientBuilder)b).WithResponse(responseFactory));
 
             return this;
         }
 
-        public IMockHttpCallBuilder WithResponse(HttpResponseMessage response)
+        public IMockBuilder WithResponse(HttpResponseMessage response)
         {
-            return ConfigureResponse(r => response);
+            return WithResponse(r => response);
         }
 
-        public IMockHttpCallBuilder WithResponse(ResponseInfo response)
+        public IMockBuilder WithResponse(ResponseInfo response)
         {
-            return ConfigureResponse(r => response.ToHttpResponseMessage());
+            return WithResponse(r => response.ToHttpResponseMessage());
         }
     }
 }

@@ -5,7 +5,7 @@ using AonWeb.FluentHttp.Client;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockHttpClientBuilder : HttpClientBuilder
+    public class MockHttpClientBuilder : HttpClientBuilder, IHttpMocker<MockHttpClientBuilder>
     {
         private Func<HttpRequestMessage, HttpResponseMessage> _responseFactory;
 
@@ -14,16 +14,26 @@ namespace AonWeb.FluentHttp.Mocks
             var client = new MockHttpClient();
 
             if (_responseFactory != null)
-                client.ConfigureResponse(_responseFactory);
+                client.WithResponse(_responseFactory);
 
             return client;
         }
 
-        public MockHttpClientBuilder ConfigureResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public MockHttpClientBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
             _responseFactory = responseFactory;
 
             return this;
+        }
+
+        public MockHttpClientBuilder WithResponse(HttpResponseMessage response)
+        {
+            return WithResponse(r => response);
+        }
+
+        public MockHttpClientBuilder WithResponse(ResponseInfo response)
+        {
+            return WithResponse(r => response.ToHttpResponseMessage());
         }
     }
 }

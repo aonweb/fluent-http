@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
     {
         public const string DefaultListenerUri = "http://localhost:8889/";
        
-        private readonly ResponseQueue<LocalWebServerRequestInfo, LocalWebServerResponseInfo> _responses;
+        private readonly ResponseQueue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>> _responses;
         private readonly AutoResetEvent _handle;
         private readonly IList<string> _prefixes;
 
@@ -37,7 +37,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             EnableLogging = true;
             _prefixes = new List<string> { listenerUri };
             _handle = new AutoResetEvent(false);
-            _responses = new ResponseQueue<LocalWebServerRequestInfo, LocalWebServerResponseInfo>(responses);
+            _responses = new ResponseQueue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>>(r => new LocalWebServerResponseInfo(), responses);
         }
 
         public static LocalWebServer ListenInBackground()

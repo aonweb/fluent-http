@@ -9,7 +9,7 @@ using AonWeb.FluentHttp.Client;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockHttpClient : IHttpClient
+    public class MockHttpClient : IHttpClient, IHttpMocker<MockHttpClient>
     {
         private readonly HttpClient _client = new HttpClient();
 
@@ -20,19 +20,12 @@ namespace AonWeb.FluentHttp.Mocks
 
         public MockHttpClient(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
-            ConfigureResponse(responseFactory);
+            WithResponse(responseFactory);
         }
 
         public long MaxResponseContentBufferSize { get; set; }
 
         public TimeSpan Timeout { get; set; } 
-
-        public IHttpClient ConfigureResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
-        {
-            _responseFactory = responseFactory;
-
-            return this;
-        }
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
         {
@@ -70,6 +63,21 @@ namespace AonWeb.FluentHttp.Mocks
 
         public void CancelPendingRequests() { }
 
+        public MockHttpClient WithResponse(HttpResponseMessage response)
+        {
+            return WithResponse(r => response);
+        }
 
+        public MockHttpClient WithResponse(ResponseInfo response)
+        {
+            return WithResponse(r => response.ToHttpResponseMessage());
+        }
+
+        public MockHttpClient WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        {
+            _responseFactory = responseFactory;
+
+            return this;
+        }
     }
 }

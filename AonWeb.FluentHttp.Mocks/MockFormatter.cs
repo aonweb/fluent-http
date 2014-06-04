@@ -6,12 +6,14 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockFormatter<TResult, TContent, TError> : IHttpCallFormatter<TResult, TContent, TError>
+    public class MockFormatter<TResult, TContent, TError>
+        : IHttpCallFormatter<TResult, TContent, TError>,
+        IHttpTypedMocker<MockFormatter<TResult, TContent, TError>, TResult, TContent, TError>
     {
         private readonly IHttpCallFormatter<TResult, TContent, TError> _innerFormatter;
 
-        private  Func<HttpResponseMessage,HttpCallContext<TResult, TContent, TError>, TResult> _resultFactory;
-        private  Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> _errorFactory;
+        private Func<HttpResponseMessage,HttpCallContext<TResult, TContent, TError>, TResult> _resultFactory;
+        private Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> _errorFactory;
 
         public MockFormatter()
         {
@@ -39,14 +41,24 @@ namespace AonWeb.FluentHttp.Mocks
             return _innerFormatter.DeserializeError(response, context);
         }
 
-        public MockFormatter<TResult, TContent, TError> ConfigureResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
+        public MockFormatter<TResult, TContent, TError> WithResult(TResult result)
+        {
+            return WithResult((r, c) => result);
+        }
+
+        public MockFormatter<TResult, TContent, TError> WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
         {
             _resultFactory = resultFactory;
 
             return this;
         }
 
-        public MockFormatter<TResult, TContent, TError> ConfigureError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
+        public MockFormatter<TResult, TContent, TError> WithError(TError error)
+        {
+            return WithError((r, c) => error);
+        }
+
+        public MockFormatter<TResult, TContent, TError> WithError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
         {
             _errorFactory = errorFactory;
 

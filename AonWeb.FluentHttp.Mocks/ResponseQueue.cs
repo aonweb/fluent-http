@@ -3,25 +3,24 @@ using System.Collections.Generic;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class ResponseQueue<TRequest, TResponse>
-        where TResponse : new()
+    public class ResponseQueue<T>
     {
-        private readonly Queue<Func<TRequest, TResponse>> _responses;
-        private Func<TRequest, TResponse> _last;
+        private readonly Queue<T> _responses;
+        private T _last;
 
-        public ResponseQueue()
+        public ResponseQueue(T defaultFactory)
         {
-            _responses = new Queue<Func<TRequest, TResponse>>();
-            _last = request => new TResponse();
+            _responses = new Queue<T>();
+            _last = defaultFactory;
         }
 
-        public ResponseQueue(IEnumerable<Func<TRequest, TResponse>> responses)
-            :this()
+        public ResponseQueue(T defaultFactory, IEnumerable<T> responses)
+            : this(defaultFactory)
         {
             AddRange(responses);
         }
 
-        public Func<TRequest, TResponse> GetNext()
+        public T GetNext()
         {
             if (_responses.Count > 0)
                 _last = _responses.Dequeue();
@@ -29,12 +28,12 @@ namespace AonWeb.FluentHttp.Mocks
             return _last;
         }
 
-        public Func<TRequest, TResponse> Replay()
+        public T Replay()
         {
             return _last;
         }
 
-        public ResponseQueue<TRequest, TResponse> RemoveNext()
+        public ResponseQueue<T> RemoveNext()
         {
             if (_responses.Count > 0)
                 _responses.Dequeue();
@@ -42,14 +41,14 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public ResponseQueue<TRequest, TResponse> Add(Func<TRequest, TResponse> response)
+        public ResponseQueue<T> Add(T response)
         {
             _responses.Enqueue(response);
 
             return this;
         }
 
-        public ResponseQueue<TRequest, TResponse> AddRange(IEnumerable<Func<TRequest, TResponse>> responses)
+        public ResponseQueue<T> AddRange(IEnumerable<T> responses)
         {
             foreach (var response in responses)
                 Add(response);

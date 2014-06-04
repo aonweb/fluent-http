@@ -56,6 +56,8 @@
     <Compile Include="MockHttpCallBuilder.cs" />
     <Compile Include="MockHttpClient.cs" />
     <Compile Include="MockHttpClientBuilder.cs" />
+    <Compile Include="QueuedMockFormatter.cs" />
+    <Compile Include="QueuedMockHalCallBuilder.cs" />
     <Compile Include="QueuedMockHttpCallBuilder.cs" />
     <Compile Include="ResponseInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
