@@ -6,34 +6,34 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockFormatter<TResult, TContent, TError>
-        : IHttpCallFormatter<TResult, TContent, TError>,
-        IHttpTypedMocker<MockFormatter<TResult, TContent, TError>, TResult, TContent, TError>
+    public class MockFormatter
+        : IHttpCallFormatter,
+        IHttpTypedMocker<MockFormatter>
     {
-        private readonly IHttpCallFormatter<TResult, TContent, TError> _innerFormatter;
+        private readonly IHttpCallFormatter _innerFormatter;
 
-        private Func<HttpResponseMessage,HttpCallContext<TResult, TContent, TError>, TResult> _resultFactory;
-        private Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> _errorFactory;
+        private Func<HttpResponseMessage, TypedHttpCallContext, object> _resultFactory;
+        private Func<HttpResponseMessage, TypedHttpCallContext, object> _errorFactory;
 
         public MockFormatter()
         {
-            _innerFormatter = new HttpCallFormatter<TResult, TContent, TError>();
+            _innerFormatter = new HttpCallFormatter();
         }
 
-        public Task<HttpContent> CreateContent<T>(T value, HttpCallContext<TResult, TContent, TError> context)
+        public Task<HttpContent> CreateContent(object value, TypedHttpCallContext context)
         {
             return _innerFormatter.CreateContent(value, context);
         }
 
-        public Task<TResult> DeserializeResult(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context)
+        public Task<object> DeserializeResult(HttpResponseMessage response, TypedHttpCallContext context)
         {
-            if (_resultFactory != null) 
+            if (_resultFactory != null)
                 return Task.FromResult(_resultFactory(response, context));
 
             return _innerFormatter.DeserializeResult(response, context);
         }
 
-        public Task<TError> DeserializeError(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context)
+        public Task<object> DeserializeError(HttpResponseMessage response, TypedHttpCallContext context)
         {
             if (_errorFactory != null)
                 return Task.FromResult(_errorFactory(response, context));
@@ -41,28 +41,30 @@ namespace AonWeb.FluentHttp.Mocks
             return _innerFormatter.DeserializeError(response, context);
         }
 
-        public MockFormatter<TResult, TContent, TError> WithResult(TResult result)
+        public MockFormatter WithResult<TResult>(TResult result)
         {
             return WithResult((r, c) => result);
         }
 
-        public MockFormatter<TResult, TContent, TError> WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
+        public MockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
-            _resultFactory = resultFactory;
+            _resultFactory = (r, c) => resultFactory;
 
             return this;
         }
 
-        public MockFormatter<TResult, TContent, TError> WithError(TError error)
+        public MockFormatter WithError<TError>(TError error)
         {
             return WithError((r, c) => error);
         }
 
-        public MockFormatter<TResult, TContent, TError> WithError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
+        public MockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
         {
-            _errorFactory = errorFactory;
+            _errorFactory = (r, c) => errorFactory;
 
             return this;
         }
+
+
     }
 }

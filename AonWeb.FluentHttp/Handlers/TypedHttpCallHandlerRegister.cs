@@ -82,8 +82,12 @@ namespace AonWeb.FluentHttp.Handlers
         {
             var valid = genericType.IsInstanceOfType(handler);
 
+            //need to inspect context type
+
+            //and inspect its generic types
+
             if (!valid && !suppressException)
-                throw new InvalidCastException("This type ain't that type");
+                throw new InvalidCastException(string.Format("Expected type '{0}' actual type {1}", genericType, handler.GetType()));
 
             return valid;
         }

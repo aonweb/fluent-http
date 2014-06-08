@@ -28,7 +28,7 @@ namespace AonWeb.FluentHttp
         ITypedHttpCallBuilder WithContent<TContent>(Func<TContent> contentFactory, Encoding encoding, string mediaType);
         ITypedHttpCallBuilder WithDefaultResult<TResult>(TResult result);
         ITypedHttpCallBuilder WithDefaultResult<TResult>(Func<TResult> resultFactory);
-
+        ITypedHttpCallBuilder WithErrorType<TError>();
         Task<TResult> ResultAsync<TResult>();
         Task SendAsync();
 

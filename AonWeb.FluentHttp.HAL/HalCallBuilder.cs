@@ -15,45 +15,43 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.HAL
 {
-    public class HalCallBuilder<TResult, TContent, TError> : IAdvancedHalCallBuilder<TResult, TContent, TError>
-        where TResult : IHalResource
-        where TContent : IHalRequest
+    public class HalCallBuilder : IAdvancedHalCallBuilder
     {
-        private readonly IAdvancedHttpCallBuilder<TResult, TContent, TError> _innerBuilder;
+        private readonly IAdvancedTypedHttpCallBuilder _innerBuilder;
 
         protected HalCallBuilder()
-            : this(HttpCallBuilder<TResult, TContent, TError>.Create().Advanced) { }
+            : this(TypedHttpCallBuilder.Create().Advanced) { }
 
-        protected HalCallBuilder(IAdvancedHttpCallBuilder<TResult, TContent, TError> builder)
+        protected HalCallBuilder(IAdvancedTypedHttpCallBuilder builder)
         {
             _innerBuilder = builder.ConfigureMediaTypeFormatter<JsonMediaTypeFormatter>(
                 f =>
-                    {
-                        f.SerializerSettings.Converters.Add(new HalResourceConverter());
-                        f.SerializerSettings.Converters.Add(new HyperMediaLinksConverter());
-                    });
+                {
+                    f.SerializerSettings.Converters.Add(new HalResourceConverter());
+                    f.SerializerSettings.Converters.Add(new HyperMediaLinksConverter());
+                });
         }
 
-        public static IHalCallBuilder<TResult, TContent, TError> Create()
+        public static IHalCallBuilder Create()
         {
-            return new HalCallBuilder<TResult, TContent, TError>();
+            return new HalCallBuilder();
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithLink(string link)
-        {
-            _innerBuilder.WithUri(link);
-
-            return this;
-        }
-
-        public IHalCallBuilder<TResult, TContent, TError> WithLink(Uri link)
+        public IHalCallBuilder WithLink(string link)
         {
             _innerBuilder.WithUri(link);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithLink(Func<string> linkFactory)
+        public IHalCallBuilder WithLink(Uri link)
+        {
+            _innerBuilder.WithUri(link);
+
+            return this;
+        }
+
+        public IHalCallBuilder WithLink(Func<string> linkFactory)
         {
             if (linkFactory == null)
                 throw new ArgumentNullException("linkFactory");
@@ -61,7 +59,7 @@ namespace AonWeb.FluentHttp.HAL
             return WithLink(linkFactory());
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithLink(Func<Uri> linkFactory)
+        public IHalCallBuilder WithLink(Func<Uri> linkFactory)
         {
             if (linkFactory == null)
                 throw new ArgumentNullException("linkFactory");
@@ -69,180 +67,196 @@ namespace AonWeb.FluentHttp.HAL
             return WithLink(linkFactory());
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key, string tokenKey, object tokenValue)
+        public IHalCallBuilder WithLink(IHalResource resource, string key, string tokenKey, object tokenValue)
         {
             return WithLink(resource.GetLink(key, tokenKey, tokenValue));
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithLink(IHalResource resource, string key, IDictionary<string, object> tokens)
+        public IHalCallBuilder WithLink(IHalResource resource, string key, IDictionary<string, object> tokens)
         {
             return WithLink(resource.GetLink(key, tokens));
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithQueryString(string name, string value)
+        public IHalCallBuilder WithQueryString(string name, string value)
         {
             _innerBuilder.WithQueryString(name, value);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithQueryString(NameValueCollection values)
+        public IHalCallBuilder WithQueryString(NameValueCollection values)
         {
             _innerBuilder.WithQueryString(values);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> AsGet()
+        public IHalCallBuilder AsGet()
         {
             return WithMethod(HttpMethod.Get);
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> AsPut()
+        public IHalCallBuilder AsPut()
         {
             return WithMethod(HttpMethod.Put);
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> AsPost()
+        public IHalCallBuilder AsPost()
         {
             return WithMethod(HttpMethod.Post);
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> AsDelete()
+        public IHalCallBuilder AsDelete()
         {
             return WithMethod(HttpMethod.Delete);
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> AsPatch()
+        public IHalCallBuilder AsPatch()
         {
             return WithMethod(new HttpMethod("PATCH"));
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> AsHead()
+        public IHalCallBuilder AsHead()
         {
             return WithMethod(HttpMethod.Head);
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithContentEncoding(Encoding encoding)
+        public IAdvancedHalCallBuilder WithContentEncoding(Encoding encoding)
         {
             _innerBuilder.WithContentEncoding(encoding);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType)
+        public IAdvancedHalCallBuilder WithMediaType(string mediaType)
         {
             _innerBuilder.WithMediaType(mediaType);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithMethod(string method)
+        public IAdvancedHalCallBuilder WithMethod(string method)
         {
             _innerBuilder.WithMethod(method);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method)
+        public IAdvancedHalCallBuilder WithMethod(HttpMethod method)
         {
             _innerBuilder.WithMethod(method);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithAcceptHeader(string mediaType)
+        public IAdvancedHalCallBuilder WithAcceptHeader(string mediaType)
         {
             _innerBuilder.WithAcceptHeader(mediaType);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithAcceptCharSet(Encoding encoding)
+        public IAdvancedHalCallBuilder WithAcceptCharSet(Encoding encoding)
         {
             _innerBuilder.WithAcceptCharSet(encoding);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithAcceptCharSet(string charSet)
+        public IAdvancedHalCallBuilder WithAcceptCharSet(string charSet)
         {
             _innerBuilder.WithAcceptCharSet(charSet);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content)
+        public IHalCallBuilder WithContent<TContent>(TContent content)
+            where TContent : IHalRequest
         {
             _innerBuilder.WithContent(CreateContentFactoryWrapper(content));
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding)
+        public IHalCallBuilder WithContent<TContent>(TContent content, Encoding encoding)
+            where TContent : IHalRequest
         {
             _innerBuilder.WithContent(CreateContentFactoryWrapper(content), encoding);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType)
+        public IHalCallBuilder WithContent<TContent>(TContent content, Encoding encoding, string mediaType)
+            where TContent : IHalRequest
         {
             _innerBuilder.WithContent(CreateContentFactoryWrapper(content), encoding, mediaType);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory)
+        public IHalCallBuilder WithContent<TContent>(Func<TContent> contentFactory)
+            where TContent : IHalRequest
         {
             _innerBuilder.WithContent(CreateContentFactoryWrapper(contentFactory));
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding)
+        public IHalCallBuilder WithContent<TContent>(Func<TContent> contentFactory, Encoding encoding)
+            where TContent : IHalRequest
         {
             _innerBuilder.WithContent(CreateContentFactoryWrapper(contentFactory), encoding);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding, string mediaType)
+        public IHalCallBuilder WithContent<TContent>(Func<TContent> contentFactory, Encoding encoding, string mediaType)
+            where TContent : IHalRequest
         {
             _innerBuilder.WithContent(CreateContentFactoryWrapper(contentFactory), encoding, mediaType);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(TResult result)
+        public IHalCallBuilder WithDefaultResult<TResult>(TResult result)
+            where TResult : IHalResource
         {
             _innerBuilder.WithDefaultResult(result);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFactory)
+        public IHalCallBuilder WithDefaultResult<TResult>(Func<TResult> resultFactory)
+            where TResult : IHalResource
         {
             _innerBuilder.WithDefaultResult(resultFactory);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration)
+        public IHalCallBuilder WithErrorType<TError>()
+        {
+            _innerBuilder.WithErrorType<TError>();
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder ConfigureClient(Action<IHttpClientBuilder> configuration)
         {
             _innerBuilder.ConfigureClient(configuration);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithMediaTypeFormatter(MediaTypeFormatter formatter)
+        public IAdvancedHalCallBuilder WithMediaTypeFormatter(MediaTypeFormatter formatter)
         {
             _innerBuilder.WithMediaTypeFormatter(formatter);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure) where TFormatter : MediaTypeFormatter
+        public IAdvancedHalCallBuilder ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure)
+            where TFormatter : MediaTypeFormatter
         {
 
             _innerBuilder.ConfigureMediaTypeFormatter(configure);
@@ -250,42 +264,51 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithHandler(IHttpCallHandler<TResult, TContent, TError> handler)
+        public IAdvancedHalCallBuilder WithHandler<TResult, TContent, TError>(ITypedHttpCallHandler handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest
         {
-            _innerBuilder.WithHandler(handler);
+            _innerBuilder.WithHandler<TResult, TContent, TError>(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler<TResult, TContent, TError>
+        public IAdvancedHalCallBuilder WithHandler(ITypedHttpCallHandler handler)
+        {
+
+            return WithHandler<IHalResource, IHalRequest, object>(handler);
+        }
+
+        public IAdvancedHalCallBuilder ConfigureHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler
         {
             _innerBuilder.ConfigureHandler(configure);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler<TResult, TContent, TError>
+        public IAdvancedHalCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
         {
             _innerBuilder.TryConfigureHandler(configure);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
+        public IAdvancedHalCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
             _innerBuilder.WithSuccessfulResponseValidator(validator);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithExceptionFactory(Func<HttpErrorContext<TResult, TContent, TError>, Exception> factory)
+        public IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory)
         {
             _innerBuilder.WithExceptionFactory(factory);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true)
+        public IAdvancedHalCallBuilder WithCaching(bool enabled = true)
         {
 
             _innerBuilder.WithCaching(enabled);
@@ -293,14 +316,14 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true)
+        public IAdvancedHalCallBuilder WithNoCache(bool nocache = true)
         {
             _innerBuilder.WithNoCache(nocache);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentResources(params IHalResource[] resources)
+        public IAdvancedHalCallBuilder WithDependentResources(params IHalResource[] resources)
         {
             var uris = resources.Select(r => r.Links.Self());
 
@@ -309,14 +332,14 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Uri link)
+        public IAdvancedHalCallBuilder WithDependentLink(Uri link)
         {
             _innerBuilder.WithDependentUri(link);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Func<Uri> linkFactory)
+        public IAdvancedHalCallBuilder WithDependentLink(Func<Uri> linkFactory)
         {
             if (linkFactory == null)
                 throw new ArgumentNullException("linkFactory");
@@ -326,179 +349,195 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest
         {
             _innerBuilder.OnSending(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<TResult, TContent>> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest
         {
             _innerBuilder.OnSending(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(Func<HttpSendingContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnSending<TResult, TContent>(Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest
         {
             _innerBuilder.OnSending(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest
         {
             _innerBuilder.OnSending(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(Action<HttpSentContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler)
+            where TResult : IHalResource
         {
             _innerBuilder.OnSent(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnSent<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpSentContext<TResult>> handler)
+            where TResult : IHalResource
         {
             _innerBuilder.OnSent(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(Func<HttpSentContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnSent<TResult>(Func<TypedHttpSentContext<TResult>, Task> handler)
+            where TResult : IHalResource
         {
             _innerBuilder.OnSent(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnSent<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSentContext<TResult>, Task> handler)
+            where TResult : IHalResource
         {
             _innerBuilder.OnSent(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(Action<HttpResultContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler)
+            where TResult : IHalResource
         {
             _innerBuilder.OnResult(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Action<HttpResultContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnResult<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpResultContext<TResult>> handler)
+            where TResult : IHalResource
         {
             _innerBuilder.OnResult(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(Func<HttpResultContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnResult<TResult>(Func<TypedHttpResultContext<TResult>, Task> handler) where TResult : IHalResource
         {
             _innerBuilder.OnResult(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Func<HttpResultContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler)
+            where TResult : IHalResource
         {
             _innerBuilder.OnResult(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(Action<HttpErrorContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler)
         {
             _innerBuilder.OnError(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Action<HttpErrorContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpCallErrorContext<TError>> handler)
         {
             _innerBuilder.OnError(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(Func<HttpErrorContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnError<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler)
         {
             _innerBuilder.OnError(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Func<HttpErrorContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler)
         {
             _innerBuilder.OnError(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(Action<HttpExceptionContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnException(Action<TypedHttpCallExceptionContext> handler)
         {
             _innerBuilder.OnException(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext<TResult, TContent, TError>> handler)
+        public IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpCallExceptionContext> handler)
         {
             _innerBuilder.OnException(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnException(Func<TypedHttpCallExceptionContext, Task> handler)
         {
             _innerBuilder.OnException(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler)
         {
             _innerBuilder.OnException(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithAutoDecompression(bool enabled = true)
+        public IAdvancedHalCallBuilder WithAutoDecompression(bool enabled = true)
         {
             _innerBuilder.WithAutoDecompression(enabled);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithSuppressCancellationErrors(bool suppress = true)
+        public IAdvancedHalCallBuilder WithSuppressCancellationErrors(bool suppress = true)
         {
             _innerBuilder.WithSuppressCancellationErrors(suppress);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> WithTimeout(TimeSpan? timeout)
+        public IAdvancedHalCallBuilder WithTimeout(TimeSpan? timeout)
         {
             _innerBuilder.WithTimeout(timeout);
 
             return this;
         }
 
-        public IHalCallBuilder<TResult, TContent, TError> CancelRequest()
+        public IHalCallBuilder CancelRequest()
         {
             _innerBuilder.CancelRequest();
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder<TResult, TContent, TError> Advanced { get { return this; } }
+        public IAdvancedHalCallBuilder Advanced { get { return this; } }
 
-        public async Task<TResult> ResultAsync()
+        public async Task<TResult> ResultAsync<TResult>()
+            where TResult : IHalResource
         {
-            return await _innerBuilder.ResultAsync().ConfigureAwait(false);
+            return await _innerBuilder.ResultAsync<TResult>().ConfigureAwait(false);
         }
 
         public async Task SendAsync()
@@ -506,7 +545,8 @@ namespace AonWeb.FluentHttp.HAL
             await _innerBuilder.SendAsync().ConfigureAwait(false);
         }
 
-        private Func<TContent> CreateContentFactoryWrapper(TContent content)
+        private Func<TContent> CreateContentFactoryWrapper<TContent>(TContent content)
+            where TContent : IHalRequest
         {
             return () =>
             {
@@ -517,7 +557,8 @@ namespace AonWeb.FluentHttp.HAL
             };
         }
 
-        private Func<TContent> CreateContentFactoryWrapper(Func<TContent> contentFactory)
+        private Func<TContent> CreateContentFactoryWrapper<TContent>(Func<TContent> contentFactory)
+            where TContent : IHalRequest
         {
             if (contentFactory == null)
                 throw new ArgumentNullException("contentFactory");
@@ -530,6 +571,6 @@ namespace AonWeb.FluentHttp.HAL
 
                 return content;
             };
-        } 
+        }
     }
 }

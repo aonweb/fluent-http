@@ -7,36 +7,46 @@ using AonWeb.FluentHttp.HAL.Representations;
 
 namespace AonWeb.FluentHttp.HAL
 {
-    public interface IHalCallBuilder<TResult, TContent, TError>
-        where TResult : IHalResource
-        where TContent : IHalRequest
+    public interface IHalCallBuilder
     {
-        IHalCallBuilder<TResult, TContent, TError> WithLink(string link);
-        IHalCallBuilder<TResult, TContent, TError> WithLink(Uri link);
-        IHalCallBuilder<TResult, TContent, TError> WithLink(Func<string> linkFactory);
-        IHalCallBuilder<TResult, TContent, TError> WithLink(Func<Uri> linkFactory);
-        IHalCallBuilder<TResult, TContent, TError> WithQueryString(string name, string value);
-        IHalCallBuilder<TResult, TContent, TError> WithQueryString(NameValueCollection values);
-        IHalCallBuilder<TResult, TContent, TError> AsGet();
-        IHalCallBuilder<TResult, TContent, TError> AsPut();
-        IHalCallBuilder<TResult, TContent, TError> AsPost();
-        IHalCallBuilder<TResult, TContent, TError> AsDelete();
-        IHalCallBuilder<TResult, TContent, TError> AsPatch();
-        IHalCallBuilder<TResult, TContent, TError> AsHead();
-        IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content);
-        IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding);
-        IHalCallBuilder<TResult, TContent, TError> WithContent(TContent content, Encoding encoding, string mediaType);
-        IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory);
-        IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding);
-        IHalCallBuilder<TResult, TContent, TError> WithContent(Func<TContent> contentFactory, Encoding encoding, string mediaType);
-        IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(TResult result);
-        IHalCallBuilder<TResult, TContent, TError> WithDefaultResult(Func<TResult> resultFunc);
+        IHalCallBuilder WithLink(string link);
+        IHalCallBuilder WithLink(Uri link);
+        IHalCallBuilder WithLink(Func<string> linkFactory);
+        IHalCallBuilder WithLink(Func<Uri> linkFactory);
+        IHalCallBuilder WithQueryString(string name, string value);
+        IHalCallBuilder WithQueryString(NameValueCollection values);
+        IHalCallBuilder AsGet();
+        IHalCallBuilder AsPut();
+        IHalCallBuilder AsPost();
+        IHalCallBuilder AsDelete();
+        IHalCallBuilder AsPatch();
+        IHalCallBuilder AsHead();
+        IHalCallBuilder WithContent<TContent>(TContent content)
+            where TContent : IHalRequest;
+        IHalCallBuilder WithContent<TContent>(TContent content, Encoding encoding)
+            where TContent : IHalRequest;
+        IHalCallBuilder WithContent<TContent>(TContent content, Encoding encoding, string mediaType)
+            where TContent : IHalRequest;
+        IHalCallBuilder WithContent<TContent>(Func<TContent> contentFactory)
+            where TContent : IHalRequest;
+        IHalCallBuilder WithContent<TContent>(Func<TContent> contentFactory, Encoding encoding)
+            where TContent : IHalRequest;
+        IHalCallBuilder WithContent<TContent>(Func<TContent> contentFactory, Encoding encoding, string mediaType)
+            where TContent : IHalRequest;
+        IHalCallBuilder WithDefaultResult<TResult>(TResult result)
+            where TResult : IHalResource;
+        IHalCallBuilder WithDefaultResult<TResult>(Func<TResult> resultFactory)
+            where TResult : IHalResource;
 
-        Task<TResult> ResultAsync();
+        IHalCallBuilder WithErrorType<TError>();
+
+        Task<TResult> ResultAsync<TResult>()
+            where TResult : IHalResource;
+
         Task SendAsync();
 
-        IHalCallBuilder<TResult, TContent, TError> CancelRequest();
+        IHalCallBuilder CancelRequest();
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> Advanced { get; }
+        IAdvancedHalCallBuilder Advanced { get; }
     }
 }

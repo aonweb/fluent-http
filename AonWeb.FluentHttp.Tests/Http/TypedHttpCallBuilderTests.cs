@@ -119,7 +119,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public void WhenComplexTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
 
-                var builder = MockHttpCallBuilder<TestResult, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+                var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
                 //arrange
                 builder.WithResponse(new ResponseInfo
                 {
@@ -129,10 +129,8 @@ namespace AonWeb.FluentHttp.Tests.Http
                     Body = TestResultString
                 });
 
-
-
                 //act
-                var actual = builder.ResultAsync().Result;
+                var actual = builder.ResultAsync<TestResult>().Result;
 
                 Assert.AreEqual(TestResultValue, actual);
         }
@@ -140,7 +138,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenSimpleTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockHttpCallBuilder<bool, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 builder.WithResponse(new ResponseInfo
@@ -153,7 +151,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync().Result;
+                var actual = builder.ResultAsync<bool>().Result;
 
                 Assert.IsTrue(actual);
         }
@@ -161,7 +159,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockHttpCallBuilder<string, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 var expected = "some string data";
@@ -175,7 +173,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync().Result;
+                var actual = builder.ResultAsync<string>().Result;
 
                 Assert.AreEqual(expected, actual);
         }
@@ -183,7 +181,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenStringTypedGet_WithPlainTextResponseResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockHttpCallBuilder<string, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
             //arrange
             var expected = "some string data";
@@ -197,7 +195,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
             //act
-            var actual = builder.ResultAsync().Result;
+            var actual = builder.ResultAsync<string>().Result;
 
             Assert.AreEqual(expected, actual);
         }
@@ -205,7 +203,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenEmptyStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockHttpCallBuilder<string, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 builder.WithResponse(new ResponseInfo
@@ -217,7 +215,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync().Result;
+                var actual = builder.ResultAsync<string>().Result;
 
                 Assert.IsNullOrEmpty(actual);
         }
@@ -225,7 +223,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenEmptyTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockHttpCallBuilder<TestResult, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 builder.WithResponse(new ResponseInfo
@@ -237,7 +235,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync().Result;
+                var actual = builder.ResultAsync<TestResult>().Result;
 
                 Assert.IsNull(actual);
         }
@@ -249,14 +247,14 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenPostingComplexType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, TestResult, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 var expected = TestResultString;
                 builder.WithResponse(new ResponseInfo());
 
                 //arrange
                 string actual = null;
-                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSending<EmptyResult, TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
                 builder.WithContent(() => TestResultValue).AsPost().SendAsync().Wait();
@@ -267,14 +265,14 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenPuttingSimpleTyped_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, bool, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 var expected = "true";
                 builder.WithResponse(new ResponseInfo());
 
                 string actual = null;
-                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSending<EmptyResult, bool>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
                 builder.WithContent(() => true).AsPut().SendAsync().Wait();
@@ -285,17 +283,16 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenPostingStringType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, string, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 var expected = "some string data";
                 builder.WithResponse(new ResponseInfo());
 
                 string actual = null;
-                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSending<EmptyResult, string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                //act
-                var result = await builder.WithContent(() => expected).AsPost().ResultAsync();
+                await builder.WithContent(() => expected).AsPost().SendAsync();
 
                 Assert.AreEqual("\"" + expected + "\"", actual);
         }
@@ -303,17 +300,17 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenPostingEmptyStringType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, string, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 var expected = "null";
                 builder.WithResponse(new ResponseInfo());
 
                 string actual = null;
-                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSending<EmptyResult, TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(() => null).AsPost().SendAsync().Wait();
+                builder.WithContent<string>(() => null).AsPost().SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
         }
@@ -321,17 +318,17 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WhenPostingEmptyType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, TestResult, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 var expected = "null";
                 builder.WithResponse(new ResponseInfo());
 
                 //arrange
                 string actual = null;
-                builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSending<EmptyResult, TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(() => null).AsPost().SendAsync().Wait();
+                builder.WithContent<TestResult>(() => null).AsPost().SendAsync().Wait();
 
                 Assert.AreEqual(expected, actual);
         }
@@ -343,7 +340,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenCallFailsAndErrorIsComplexType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, TestResult>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 builder.WithResponse(new ResponseInfo
@@ -357,7 +354,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 try
                 {
-                    await builder.ResultAsync();
+                    await builder.WithErrorType<TestResult>().ResultAsync<EmptyResult>();
                     Assert.Fail();
                 }
                 catch (HttpErrorException<TestResult> ex)
@@ -369,7 +366,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenCallFailsAndErrorIsSimpleTyped_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, bool>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 builder.WithResponse(new ResponseInfo
@@ -383,7 +380,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 try
                 {
-                    await builder.ResultAsync();
+                    await builder.WithErrorType<bool>().ResultAsync<EmptyResult>();
                     Assert.Fail();
                 }
                 catch (HttpErrorException<bool> ex)
@@ -395,7 +392,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenCallFailsAndErrorIsStringType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, string>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 var expected = "some string data";
@@ -410,7 +407,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 try
                 {
-                    await builder.ResultAsync();
+                    await builder.WithErrorType<string>().ResultAsync<EmptyResult>();
                     Assert.Fail();
                 }
                 catch (HttpErrorException<string> ex)
@@ -422,7 +419,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenCallFailsAndErrorIsEmptyStringType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, string>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
 
@@ -437,7 +434,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 try
                 {
-                    await builder.ResultAsync();
+                    await builder.WithErrorType<string>().ResultAsync<EmptyResult>();
                     Assert.Fail();
                 }
                 catch (HttpErrorException<string> ex)
@@ -449,7 +446,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenCallFailsAndErrorIsEmptyType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, TestResult>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 builder.WithResponse(new ResponseInfo
@@ -463,7 +460,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 try
                 {
-                    await builder.ResultAsync();
+                    await builder.WithErrorType<TestResult>().ResultAsync<EmptyResult>();
                     Assert.Fail();
                 }
                 catch (HttpErrorException<TestResult> ex)

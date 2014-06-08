@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using AonWeb.FluentHttp.Client;
-using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 

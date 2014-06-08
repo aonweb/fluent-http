@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Mocks;
-using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
@@ -115,13 +114,13 @@ namespace AonWeb.FluentHttp.Tests.Http
         public void WithResultExpectResultReturned()
         {
 
-                var builder = MockHttpCallBuilder<TestResult, EmptyRequest, EmptyError>.CreateMock(TestUriString);
+                var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
                 //arrange
                 builder.WithResult(TestResultValue);
 
                 //act
-                var actual = builder.ResultAsync().Result;
+                var actual = builder.ResultAsync<TestResult>().Result;
 
                 Assert.AreEqual(TestResultValue, actual);
         }
@@ -130,14 +129,14 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WithErrorExpectResultReturned()
         {
 
-            var builder = MockHttpCallBuilder<EmptyResult, EmptyRequest, TestResult>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
             //arrange
             builder.WithError(TestResultValue);
 
             TestResult actual = null;
 
-            builder.OnError(ctx => actual = ctx.Error);
+            builder.OnError<TestResult>(ctx => actual = ctx.Error);
 
             //act
             try
@@ -154,13 +153,13 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void WithContent_ExpectNoExceptions()
         {
-            var builder = MockHttpCallBuilder<TestResult, TestResult, EmptyError>.CreateMock(TestUriString);
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
             //arrange
             builder.WithResult(TestResultValue);
 
             //act
-            var actual = builder.WithContent(() => TestResultValue).AsPost().ResultAsync().Result;
+            var actual = builder.WithContent(() => TestResultValue).AsPost().ResultAsync<TestResult>().Result;
 
             Assert.AreEqual(TestResultValue, actual);
         }

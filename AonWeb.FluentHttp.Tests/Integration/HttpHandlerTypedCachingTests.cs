@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Caching;
-using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 
 using NUnit.Framework;
@@ -91,7 +90,7 @@ namespace AonWeb.FluentHttp.Tests.Integration
                 {
                     return true;
                 }
-                if (obj.GetType() != this.GetType())
+                if (obj.GetType() != GetType())
                 {
                     return false;
                 }
@@ -167,12 +166,12 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 }.AddPrivateCacheHeader())
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
-                var builder = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var builder = TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri);
 
-                var result1 =  builder.ResultAsync().Result;
+                var result1 = builder.ResultAsync<TestResult>().Result;
 
-                var result2 =  builder.ResultAsync().Result;
+                var result2 = builder.ResultAsync<TestResult>().Result;
 
                 Assert.AreEqual(result1, result2);
             }
@@ -187,13 +186,13 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 }.AddPrivateCacheHeader())
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
-                var result1 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result1 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
-                var result2 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result2 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
 
                 Assert.AreEqual(result1, result2);
@@ -210,14 +209,14 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
                 var result1 =  Task.Factory.StartNew(() =>
-                     HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                     TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result).Result;
+                    .ResultAsync<TestResult>().Result).Result;
 
                 var result2 =  Task.Factory.StartNew(() =>
-                     HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                     TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result).Result;
+                    .ResultAsync<TestResult>().Result).Result;
 
                 Assert.AreEqual(result1, result2);
             }
@@ -233,13 +232,13 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 })
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 });
 
-                var result1 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result1 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
-                var result2 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result2 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
             }
@@ -255,13 +254,13 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 })
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 });
 
-                var result1 =  HttpCallBuilder<CacheableTestResult, EmptyRequest, EmptyError>
+                var result1 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<CacheableTestResult>().Result;
 
-                var result2 =  HttpCallBuilder<CacheableTestResult, EmptyRequest, EmptyError>
+                var result2 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<CacheableTestResult>().Result;
 
                 Assert.AreEqual(result1, result2);
             }
@@ -277,13 +276,13 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 })
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 });
 
-                var result1 =  HttpCallBuilder<ExpiredTestResult, EmptyRequest, EmptyError>
+                var result1 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<ExpiredTestResult>().Result;
 
-                var result2 =  HttpCallBuilder<ExpiredTestResult, EmptyRequest, EmptyError>
+                var result2 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<ExpiredTestResult>().Result;
 
                 Assert.AreEqual(result1, result2);
             }
@@ -299,15 +298,15 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 }.AddPrivateCacheHeader())
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
-                var result1 = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result1 = TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
                     .Advanced.WithCaching(false)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
-                var result2 = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result2 = TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
                     .Advanced.WithCaching(false)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
 
 
@@ -326,19 +325,19 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader())
                     .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 }.AddPrivateCacheHeader());
 
-                var result1 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result1 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
-                var result2 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result2 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
                     .Advanced.WithNoCache()
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
-                var result3 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result3 =  TypedHttpCallBuilder
                    .Create(LocalWebServer.DefaultListenerUri)
                    .Advanced.WithNoCache()
-                   .ResultAsync().Result;
+                   .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
                 Assert.AreNotEqual(result2, result3);
@@ -355,13 +354,13 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(new LocalWebServerResponseInfo { Body = TestResultString1 }.AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = TestResultString2 }.AddNoCacheHeader());
 
-                var result1 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result1 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
-                var result2 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result2 =  TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
             }
@@ -378,14 +377,14 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
-                var result1 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri)
-                        .ResultAsync().Result;
+                var result1 =  TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
+                        .ResultAsync<TestResult>().Result;
 
-                var invalidatingResult =  HttpCallBuilder<EmptyResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri).AsPost()
-                        .ResultAsync().Result;
+                TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri).AsPost()
+                        .SendAsync().Wait();
 
-                var result2 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri)
-                        .ResultAsync().Result;
+                var result2 =  TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
+                        .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
             }
@@ -402,14 +401,14 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
-                var result1 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri)
-                        .ResultAsync().Result;
+                var result1 =  TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
+                        .ResultAsync<TestResult>().Result;
 
-                var invalidatingResult =  HttpCallBuilder<EmptyResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri).AsPut()
-                        .ResultAsync().Result;
+                TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri).AsPut()
+                        .SendAsync().Wait();
 
-                var result2 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri)
-                        .ResultAsync().Result;
+                var result2 =  TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
+                        .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
             }
@@ -426,14 +425,14 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
-                var result1 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri)
-                        .ResultAsync().Result;
+                var result1 =  TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
+                        .ResultAsync<TestResult>().Result;
 
-                var invalidatingResult =  HttpCallBuilder<EmptyResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri).AsPatch()
-                        .ResultAsync().Result;
+                TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri).AsPatch()
+                        .SendAsync().Wait();
 
-                var result2 =  HttpCallBuilder<TestResult, EmptyRequest, EmptyError>.Create(LocalWebServer.DefaultListenerUri)
-                        .ResultAsync().Result;
+                var result2 =  TypedHttpCallBuilder.Create(LocalWebServer.DefaultListenerUri)
+                        .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
             }
@@ -449,18 +448,18 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
 
-                var result1 = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result1 = TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
-                var invalidatingResult = HttpCallBuilder<EmptyResult, EmptyRequest, EmptyError>
+                TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
                     .AsDelete()
-                    .ResultAsync().Result;
+                    .SendAsync().Wait();
 
-                var result2 = HttpCallBuilder<TestResult, EmptyRequest, EmptyError>
+                var result2 = TypedHttpCallBuilder
                     .Create(LocalWebServer.DefaultListenerUri)
-                    .ResultAsync().Result;
+                    .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
             }

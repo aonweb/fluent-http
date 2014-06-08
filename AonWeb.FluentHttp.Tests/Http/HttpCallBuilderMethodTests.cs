@@ -32,7 +32,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public void Create_ReturnsBuilder()
         {
-            var builder = HttpCallBuilder.Create();
+            var builder = TypedHttpCallBuilder.Create();
 
             Assert.NotNull(builder);
         }

@@ -1,6 +1,4 @@
 ﻿using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Representations;
-using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 using AonWeb.FluentHttp.Tests.Helpers.HAL;
 
@@ -33,8 +31,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 server
                     .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestResourceJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder<TestResource, EmptyHalRequest, EmptyError>.Create()
-                    .WithLink(uri).ResultAsync().Result;
+                var result = HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestResource>().Result;
 
                 Assert.NotNull(result);
                 Assert.AreEqual("Response1", result.Result);
@@ -52,8 +50,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 server
                     .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestResourceWithLinksJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder<TestResourceWithLinks, EmptyHalRequest, EmptyError>.Create()
-                    .WithLink(uri).ResultAsync().Result;
+                var result = HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestResourceWithLinks>().Result;
 
                 Assert.NotNull(result);
                 Assert.AreEqual("Response1", result.Result);
@@ -69,8 +67,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
                 server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder<TestListResource, EmptyHalRequest, EmptyError>.Create()
-                    .WithLink(uri).ResultAsync().Result;
+                var result = HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListResource>().Result;
 
                 Assert.NotNull(result);
                 Assert.AreEqual("http://localhost:8889/list/1", result.Links.Self().ToString());

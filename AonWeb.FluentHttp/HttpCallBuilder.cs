@@ -15,7 +15,7 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp
 {
-    public class HttpCallBuilder : IChildHttpCallBuilder, IRecursiveHttpCallBuilder, IAdvancedHttpCallBuilder
+    public class HttpCallBuilder : IChildHttpCallBuilder, IRecursiveHttpCallBuilder
     {
         private readonly IHttpClientBuilder _clientBuilder;
         private readonly HttpCallBuilderSettings _settings;

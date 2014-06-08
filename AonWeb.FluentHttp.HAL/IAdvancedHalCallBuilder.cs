@@ -10,63 +10,82 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.HAL
 {
-    public interface IAdvancedHalCallBuilder<TResult, TContent, TError> : IHalCallBuilder<TResult, TContent, TError>
-        where TResult : IHalResource
-        where TContent : IHalRequest
+    public interface IAdvancedHalCallBuilder : IHalCallBuilder
     {
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithContentEncoding(Encoding encoding);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithMethod(string method);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithAcceptHeader(string mediaType);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithAcceptCharSet(Encoding encoding);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithAcceptCharSet(string charSet);
+        IAdvancedHalCallBuilder WithContentEncoding(Encoding encoding);
+        IAdvancedHalCallBuilder WithMediaType(string mediaType);
+        IAdvancedHalCallBuilder WithMethod(string method);
+        IAdvancedHalCallBuilder WithMethod(HttpMethod method);
+        IAdvancedHalCallBuilder WithAcceptHeader(string mediaType);
+        IAdvancedHalCallBuilder WithAcceptCharSet(Encoding encoding);
+        IAdvancedHalCallBuilder WithAcceptCharSet(string charSet);
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithMediaTypeFormatter(MediaTypeFormatter formatter);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure)
+        IAdvancedHalCallBuilder ConfigureClient(Action<IHttpClientBuilder> configuration);
+        IAdvancedHalCallBuilder WithMediaTypeFormatter(MediaTypeFormatter formatter);
+        IAdvancedHalCallBuilder ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure)
             where TFormatter : MediaTypeFormatter;
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithHandler(IHttpCallHandler<TResult, TContent, TError> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> ConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler<TResult, TContent, TError>;
-        IAdvancedHalCallBuilder<TResult, TContent, TError> TryConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler<TResult, TContent, TError>;
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithExceptionFactory(Func<HttpErrorContext<TResult, TContent, TError>, Exception> factory);
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentResources(params IHalResource[] resources);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Uri link);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithDependentLink(Func<Uri> linkFactory);
+        IAdvancedHalCallBuilder WithHandler<TResult, TContent, TError>(ITypedHttpCallHandler handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest;
+        IAdvancedHalCallBuilder WithHandler(ITypedHttpCallHandler handler);
+        IAdvancedHalCallBuilder ConfigureHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler;
+        IAdvancedHalCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler;
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(Func<HttpSendingContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext<TResult, TContent, TError>, Task> handler);
+        IAdvancedHalCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
+        IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory);
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(Action<HttpSentContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(Func<HttpSentContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext<TResult, TContent, TError>, Task> handler);
+        IAdvancedHalCallBuilder WithCaching(bool enabled = true);
+        IAdvancedHalCallBuilder WithNoCache(bool nocache = true);
+        IAdvancedHalCallBuilder WithDependentResources(params IHalResource[] resources);
+        IAdvancedHalCallBuilder WithDependentLink(Uri link);
+        IAdvancedHalCallBuilder WithDependentLink(Func<Uri> linkFactory);
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(Action<HttpResultContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Action<HttpResultContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(Func<HttpResultContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Func<HttpResultContext<TResult, TContent, TError>, Task> handler);
+        IAdvancedHalCallBuilder OnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest;
+        IAdvancedHalCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<TResult, TContent>> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest;
+        IAdvancedHalCallBuilder OnSending<TResult, TContent>(Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest;
+        IAdvancedHalCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+            where TResult : IHalResource
+            where TContent : IHalRequest;
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(Action<HttpErrorContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Action<HttpErrorContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(Func<HttpErrorContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Func<HttpErrorContext<TResult, TContent, TError>, Task> handler);
+        IAdvancedHalCallBuilder OnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnSent<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpSentContext<TResult>> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnSent<TResult>(Func<TypedHttpSentContext<TResult>, Task> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnSent<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSentContext<TResult>, Task> handler)
+            where TResult : IHalResource;
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(Action<HttpExceptionContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext<TResult, TContent, TError>> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
+        IAdvancedHalCallBuilder OnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnResult<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpResultContext<TResult>> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnResult<TResult>(Func<TypedHttpResultContext<TResult>, Task> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler)
+            where TResult : IHalResource;
 
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithAutoDecompression(bool enabled = true);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithSuppressCancellationErrors(bool suppress = true);
-        IAdvancedHalCallBuilder<TResult, TContent, TError> WithTimeout(TimeSpan? timeout);
+        IAdvancedHalCallBuilder OnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
+        IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpCallErrorContext<TError>> handler);
+        IAdvancedHalCallBuilder OnError<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler);
+        IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler);
+
+        IAdvancedHalCallBuilder OnException(Action<TypedHttpCallExceptionContext> handler);
+        IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpCallExceptionContext> handler);
+        IAdvancedHalCallBuilder OnException(Func<TypedHttpCallExceptionContext, Task> handler);
+        IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler);
+
+        IAdvancedHalCallBuilder WithAutoDecompression(bool enabled = true);
+        IAdvancedHalCallBuilder WithSuppressCancellationErrors(bool suppress = true);
+        IAdvancedHalCallBuilder WithTimeout(TimeSpan? timeout);
     }
 }

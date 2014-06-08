@@ -13,22 +13,25 @@ namespace AonWeb.FluentHttp.Mocks
         T WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory);
     }
 
-    public interface IHttpTypedMocker<out T, TResult, TContent, TError>
-        where T : IHttpTypedMocker<T, TResult, TContent, TError>
+    public interface IHttpTypedMocker<out T>
+        where T : IHttpTypedMocker<T>
     {
-        T WithResult(TResult result);
-        T WithError(TError error);
-        T WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory);
-        T WithError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory);
+        T WithResult<TResult>(TResult result);
+        T WithError<TError>(TError error);
+        T WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory);
+        T WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory);
     }
 
-    public interface IMockBuilder : IHttpMocker<IMockBuilder> { }
+    public interface IMockBuilder<out T> : IHttpMocker<T>
+    where T : IMockBuilder<T> { }
 
-    public interface IMockBuilder<TResult, TContent, TError> :
-        IHttpTypedMocker<IMockBuilder<TResult, TContent, TError>, TResult, TContent, TError>,
-        IHttpMocker<IMockBuilder<TResult, TContent, TError>>
+    public interface IMockTypedBuilder<out T> :
+        IHttpTypedMocker<T>,
+        IHttpMocker<T>
+        where T : IMockTypedBuilder<T>
+
     {
-        IMockBuilder<TResult, TContent, TError> WithResult(TResult result, HttpStatusCode statusCode);
-        IMockBuilder<TResult, TContent, TError> WithError(TError error, HttpStatusCode statusCode);
+        T WithResult<TResult>(TResult result, HttpStatusCode statusCode);
+        T WithError<TError>(TError error, HttpStatusCode statusCode);
     }
 }

@@ -44,7 +44,7 @@ namespace AonWeb.FluentHttp
             DefaultHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
             DefaultResultType = typeof(string);
             DefaultErrorType = typeof(string);
-            DefaultContentType = typeof(string);
+            DefaultContentType = typeof(IEmptyRequest);
 
             //Client Defaults
             AutoDecompressionEnabled = true;

@@ -39,32 +39,32 @@ namespace AonWeb.FluentHttp.Mocks
         }
     }
 
-    public class QueuedMockHttpCallBuilder<TResult, TContent, TError> :
-        HttpCallBuilder<TResult, TContent, TError>,
+    public class QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> :
+        TypedHttpCallBuilder<TResult, TContent, TError>,
         IMockBuilder<TResult, TContent, TError>
     {
         private readonly QueuedMockFormatter<TResult, TContent, TError> _formatter;
         private readonly QueuedMockHttpCallBuilder _innerBuilder;
 
-        protected internal QueuedMockHttpCallBuilder()
+        protected internal QueuedMockTypedHttpCallBuilder()
         {
             _innerBuilder = new QueuedMockHttpCallBuilder();
             _formatter = new QueuedMockFormatter<TResult, TContent, TError>();
         }
 
-        public static QueuedMockHttpCallBuilder<TResult, TContent, TError> CreateMock()
+        public static QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> CreateMock()
         {
-            return new QueuedMockHttpCallBuilder<TResult, TContent, TError>();
+            return new QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>();
         }
 
-        public static QueuedMockHttpCallBuilder<TResult, TContent, TError> CreateMock(string baseUri)
+        public static QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> CreateMock(string baseUri)
         {
-            return (QueuedMockHttpCallBuilder<TResult, TContent, TError>)(CreateMock().WithBaseUri(baseUri));
+            return (QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>)(CreateMock().WithBaseUri(baseUri));
         }
 
-        public static QueuedMockHttpCallBuilder<TResult, TContent, TError> CreateMock(Uri baseUri)
+        public static QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> CreateMock(Uri baseUri)
         {
-            return (QueuedMockHttpCallBuilder<TResult, TContent, TError>)(CreateMock().WithBaseUri(baseUri));
+            return (QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>)(CreateMock().WithBaseUri(baseUri));
         }
 
         public IMockBuilder<TResult, TContent, TError> WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)

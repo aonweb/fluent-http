@@ -2,6 +2,9 @@
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Threading;
+
+using Moq;
+
 using NUnit.Framework;
 
 namespace AonWeb.FluentHttp.Tests.Http

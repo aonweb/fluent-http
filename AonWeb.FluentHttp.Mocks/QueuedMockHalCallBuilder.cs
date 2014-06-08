@@ -14,11 +14,11 @@ namespace AonWeb.FluentHttp.Mocks
         where TResult : IHalResource
         where TContent : IHalRequest
     {
-        private readonly QueuedMockHttpCallBuilder<TResult, TContent, TError> _innerBuilder;
+        private readonly QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> _innerBuilder;
 
         protected QueuedMockHalCallBuilder()
         {
-            _innerBuilder = new QueuedMockHttpCallBuilder<TResult, TContent, TError>();
+            _innerBuilder = new QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>();
         }
 
         public static QueuedMockHalCallBuilder<TResult, TContent, TError> CreateMock()

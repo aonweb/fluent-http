@@ -43,14 +43,14 @@ namespace AonWeb.FluentHttp.Tests.HAL
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestResourceJson2 }.AddPrivateCacheHeader());
 
-                var result1 = HalCallBuilder<TestResource, EmptyHalRequest, EmptyError>.Create()
-                    .WithLink(nonCanonicalUri).ResultAsync().Result;
+                var result1 = HalCallBuilder.Create()
+                    .WithLink(nonCanonicalUri).ResultAsync<TestResource>().Result;
 
-                HalCallBuilder<EmptyHalResult, EmptyHalRequest, EmptyError>.Create()
+                HalCallBuilder.Create()
                     .WithLink(canonicalUri).AsPut().SendAsync().Wait();
 
-                var result2 = HalCallBuilder<TestResource, EmptyHalRequest, EmptyError>.Create()
-                    .WithLink(nonCanonicalUri).ResultAsync().Result;
+                var result2 = HalCallBuilder.Create()
+                    .WithLink(nonCanonicalUri).ResultAsync<TestResource>().Result;
 
                 Assert.NotNull(result1);
                 Assert.NotNull(result2);
@@ -73,14 +73,14 @@ namespace AonWeb.FluentHttp.Tests.HAL
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson2 }.AddPrivateCacheHeader());
 
-                var result1 = HalCallBuilder<TestListResource, EmptyHalRequest, EmptyError>.Create()
-                    .WithLink(listUri).ResultAsync().Result;
+                var result1 = HalCallBuilder.Create()
+                    .WithLink(listUri).ResultAsync<TestListResource>().Result;
 
-                HalCallBuilder<EmptyHalResult, EmptyHalRequest, EmptyError>.Create()
+                HalCallBuilder.Create()
                     .WithLink(canonicalUri).AsPut().SendAsync().Wait();
 
-                var result2 = HalCallBuilder<TestListResource, EmptyHalRequest, EmptyError>.Create()
-                    .WithLink(listUri).ResultAsync().Result;
+                var result2 = HalCallBuilder.Create()
+                    .WithLink(listUri).ResultAsync<TestListResource>().Result;
 
 
                 Assert.AreNotEqual(result1.Results[0].Result, result2.Results[0].Result);
