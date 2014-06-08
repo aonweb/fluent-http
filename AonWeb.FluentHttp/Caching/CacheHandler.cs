@@ -8,23 +8,23 @@ using System.Threading.Tasks;
 namespace AonWeb.FluentHttp.Caching
 {
 
-    public class CacheHandler<TResult, TContent, TError> : CacheHandlerBase<TResult>, IHttpCallHandler<TResult, TContent, TError>
+    public class TypedCacheHandler : CacheHandlerBase<object>, IBoxedHttpCallHandler
     {
-        public CacheHandler() { }
+        public TypedCacheHandler() { }
 
-        protected CacheHandler(CacheSettings<TResult> settings)
+        protected TypedCacheHandler(CacheSettings<object> settings)
             : base(settings) { }
 
         #region Configuration Methods
 
-        public CacheHandler<TResult, TContent, TError> WithCaching(bool enabled = true)
+        public TypedCacheHandler WithCaching(bool enabled = true)
         {
             Settings.Enabled = enabled;
 
             return this;
         }
 
-        public CacheHandler<TResult, TContent, TError> WithDependentUris(IEnumerable<Uri> uris)
+        public TypedCacheHandler WithDependentUris(IEnumerable<Uri> uris)
         {
             foreach (var uri in uris)
             {
@@ -34,7 +34,7 @@ namespace AonWeb.FluentHttp.Caching
             return this;
         }
 
-        public CacheHandler<TResult, TContent, TError> WithDependentUri(Uri uri)
+        public TypedCacheHandler WithDependentUri(Uri uri)
         {
             uri = uri.NormalizeUri();
             if (uri != null && !Settings.DependentUris.Contains(uri))
@@ -47,7 +47,7 @@ namespace AonWeb.FluentHttp.Caching
 
         #region IHttpCallHandler Implementation
 
-        public async Task OnSending(HttpSendingContext<TResult, TContent, TError> context)
+        public async Task OnSending(TypedHttpSendingContext<object, object> context)
         {
             var cacheContext = CreateCacheContext(context, context.Request);
 
@@ -57,7 +57,7 @@ namespace AonWeb.FluentHttp.Caching
                 context.Result = cacheContext.Result;
         }
 
-        public Task OnSent(HttpSentContext<TResult, TContent, TError> context)
+        public Task OnSent(TypedHttpSentContext<object> context)
         {
             var cacheContext = CreateCacheContext(context, context.Response);
 
@@ -69,7 +69,7 @@ namespace AonWeb.FluentHttp.Caching
             return Helper.TaskComplete;
         }
 
-        public async Task OnResult(HttpResultContext<TResult, TContent, TError> context)
+        public async Task OnResult(TypedHttpResultContext<object> context)
         {
             var cacheContext = CreateCacheContext(context, context.Response);
             
@@ -81,8 +81,44 @@ namespace AonWeb.FluentHttp.Caching
         #region Unimplemented IHttpCallHandler Methods
 
         // TODO: invalidate caches for uri on error or exception?
-        public Task OnError(HttpErrorContext<TResult, TContent, TError> context) { return Helper.TaskComplete; }
-        public Task OnException(HttpExceptionContext<TResult, TContent, TError> context) { return Helper.TaskComplete; }
+        public Task OnError(TypedHttpCallErrorContext<object> context) { return Helper.TaskComplete; }
+
+        Task ITypedHttpCallHandler.OnSending<TResult, TContent>(TypedHttpSendingContext<TResult, TContent> context)
+        {
+            var boxedContext = context as TypedHttpSendingContext<object, object>;
+
+            if (boxedContext == null)
+                boxedContext = new TypedHttpSendingContext<object, object>(context, context.Request, context.Content, context.HasContent);
+
+            return OnSending(boxedContext);
+        }
+
+        Task ITypedHttpCallHandler.OnSent<TResult>(TypedHttpSentContext<TResult> context)
+        {
+            var boxedContext = context as TypedHttpSentContext<object>;
+
+            if (boxedContext == null)
+                boxedContext = new TypedHttpSentContext<object>(context, context.Response);
+
+            return OnSent(boxedContext);
+        }
+
+        Task ITypedHttpCallHandler.OnResult<TResult>(TypedHttpResultContext<TResult> context)
+        {
+            var boxedContext = context as TypedHttpResultContext<object>;
+
+            if (boxedContext == null)
+                boxedContext = new TypedHttpResultContext<object>(context, context.Response, context.Result);
+
+            return OnResult(boxedContext);
+        }
+
+        Task ITypedHttpCallHandler.OnError<TError>(TypedHttpCallErrorContext<TError> context)
+        {
+            return Helper.TaskComplete;
+        }
+
+        public Task OnException(TypedHttpCallExceptionContext context) { return Helper.TaskComplete; }
 
         #endregion
     }

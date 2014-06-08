@@ -77,18 +77,30 @@
     <Compile Include="Handlers\HttpCallHandler.cs" />
     <Compile Include="Handlers\HttpCallHandlerPriority.cs" />
     <Compile Include="Handlers\HttpCallHandlerRegister.cs" />
+    <Compile Include="Handlers\HttpCallHandlerResult.cs" />
     <Compile Include="Handlers\HttpCallHandlerType.cs" />
-    <Compile Include="Handlers\HttpErrorContext.cs" />
+    <Compile Include="Handlers\IHttpCallContext.cs" />
+    <Compile Include="Handlers\TypedHttpCallContext.cs" />
+    <Compile Include="Handlers\TypedHttpCallHandlerContext.cs" />
+    <Compile Include="Handlers\TypedHttpCallHandlerRegister.cs" />
+    <Compile Include="Handlers\TypedHttpCallErrorContext.cs" />
     <Compile Include="Handlers\HttpExceptionContext.cs" />
     <Compile Include="Handlers\HttpRedirectContext.cs" />
     <Compile Include="Exceptions\HttpErrorException.cs" />
     <Compile Include="Exceptions\MaximumAutoRedirectsException.cs" />
-    <Compile Include="Handlers\HttpResultContext.cs" />
+    <Compile Include="Handlers\TypedHttpResultContext.cs" />
     <Compile Include="Handlers\HttpSendingContext.cs" />
     <Compile Include="Handlers\HttpSentContext.cs" />
     <Compile Include="Handlers\IHttpCallHandler.cs" />
     <Compile Include="Handlers\FollowLocationHandler.cs" />
+    <Compile Include="Handlers\TypedHttpCallExceptionContext.cs" />
+    <Compile Include="Handlers\TypedHttpSendingContext.cs" />
+    <Compile Include="Handlers\TypedHttpSentContext.cs" />
     <Compile Include="HttpCallBuilder.cs" />
+    <Compile Include="HttpCallErrorContext.cs" />
+    <Compile Include="IAdvancedTypedHttpCallBuilder.cs" />
+    <Compile Include="ITypedHttpCallBuilder.cs" />
+    <Compile Include="TypedHttpCallBuilder.cs" />
     <Compile Include="Client\HttpClientWrapper.cs" />
     <Compile Include="Client\IHttpClient.cs" />
     <Compile Include="Client\IHttpClientBuilder.cs" />
@@ -115,6 +127,7 @@
       <DependentUpon>SR.resx</DependentUpon>
     </Compile>
     <Compile Include="Helper.cs" />
+    <Compile Include="TypedHttpCallBuilderSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

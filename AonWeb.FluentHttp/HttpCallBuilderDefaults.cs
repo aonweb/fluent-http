@@ -42,6 +42,9 @@ namespace AonWeb.FluentHttp
             DefaultContentEncoding = Encoding.UTF8;
             DefaultMediaTypeFormatters = new MediaTypeFormatterCollection().FluentAdd(new StringMediaFormatter());
             DefaultHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
+            DefaultResultType = typeof(string);
+            DefaultErrorType = typeof(string);
+            DefaultContentType = typeof(string);
 
             //Client Defaults
             AutoDecompressionEnabled = true;
@@ -112,6 +115,9 @@ namespace AonWeb.FluentHttp
         public static string DefaultMediaType { get; set; }
         public static HashSet<HttpStatusCode> ValidStatusCodes { get; private set; }
         public static Func<HttpResponseMessage, bool> DefaultSuccessfulResponseValidator { get; set; }
+        public static Type DefaultResultType { get; set; }
+        public static Type DefaultErrorType { get; set; }
+        public static Type DefaultContentType { get; set; }
 
         public static bool CachingEnabled { get; set; }
         public static TimeSpan DefaultCacheExpiration { get; set; }
@@ -147,14 +153,18 @@ namespace AonWeb.FluentHttp
             return ValidStatusCodes.Contains(response.StatusCode);
         }
 
-        public static Exception DefaultExceptionFactory<TResult, TContent, TError>(HttpErrorContext<TResult, TContent, TError> context)
+        public static Exception DefaultExceptionFactory(HttpCallErrorContext context)
         {
-            return new HttpErrorException<TError>(context.Error, context.StatusCode);
+            var openExType = typeof(HttpErrorException<>);
+
+            var exType = openExType.MakeGenericType(context.ErrorType);
+
+            return (Exception)Activator.CreateInstance(exType, context.Error, context.StatusCode);
         }
 
-        public static TResult DefaultResultFactory<TResult>()
+        public static object DefaultResultFactory(Type type)
         {
-            return default(TResult);
+            return Helper.GetDefaultValueForType(type);
         }
     }
 }

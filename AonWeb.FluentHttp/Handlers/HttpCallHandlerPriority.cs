@@ -2,6 +2,7 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public enum HttpCallHandlerPriority
     {
+        Parallel = 0,
         First = 1,
         High = 2,
         Default = 3,

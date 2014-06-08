@@ -21,7 +21,7 @@ namespace AonWeb.FluentHttp.Handlers
     }
 
     [ExcludeFromCodeCoverage]
-    public abstract class HttpCallHandler<TResult, TContent, TError> : IHttpCallHandler<TResult, TContent, TError>
+    public abstract class TypedHttpCallHandler : ITypedHttpCallHandler
     {
         private bool _enabled = true;
 
@@ -32,11 +32,11 @@ namespace AonWeb.FluentHttp.Handlers
             return HttpCallHandlerPriority.Default;
         }
 
-        public virtual Task OnSending(HttpSendingContext<TResult, TContent, TError> context)     { return Helper.TaskComplete; }
-        public virtual Task OnSent(HttpSentContext<TResult, TContent, TError> context)           { return Helper.TaskComplete; }
-        public virtual Task OnResult(HttpResultContext<TResult, TContent, TError> context)         { return Helper.TaskComplete; }
-        public virtual Task OnError(HttpErrorContext<TResult, TContent, TError> context)         { return Helper.TaskComplete; }
-        public virtual Task OnException(HttpExceptionContext<TResult, TContent, TError> context) { return Helper.TaskComplete; }
+        public virtual Task OnSending<TResult, TContent>(TypedHttpSendingContext<TResult, TContent> context) { return Helper.TaskComplete; }
+        public virtual Task OnSent<TResult>(TypedHttpSentContext<TResult> context) { return Helper.TaskComplete; }
+        public virtual Task OnResult<TResult>(TypedHttpResultContext<TResult> context) { return Helper.TaskComplete; }
+        public virtual Task OnError<TError>(TypedHttpCallErrorContext<TError> context) { return Helper.TaskComplete; }
+        public virtual Task OnException(TypedHttpCallExceptionContext context) { return Helper.TaskComplete; }
     }
 
 }

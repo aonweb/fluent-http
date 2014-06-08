@@ -1,18 +1,19 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
-
 using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp
 {
-    public class HttpCallFormatter<TResult, TContent, TError> : IHttpCallFormatter<TResult, TContent, TError>
+    public class HttpCallFormatter : IHttpCallFormatter
     {
-        public async Task<HttpContent> CreateContent<T>(T value, HttpCallContext<TResult, TContent, TError> context)
+        public async Task<HttpContent> CreateContent(object value, TypedHttpCallContext context)
         {
-            var type = typeof(T);
+            var type = context.ContentType;
             var mediaType = context.MediaType;
             var header = new MediaTypeHeaderValue(mediaType);
             var formatter = context.MediaTypeFormatters.FindWriter(type, header);
@@ -33,31 +34,49 @@ namespace AonWeb.FluentHttp
             return content;
         }
 
-        public Task<TResult> DeserializeResult(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context)
+        public Task<object> DeserializeResult(HttpResponseMessage response, TypedHttpCallContext context)
         {
-            return DeserializeResponse<TResult>(response, context);
+            return DeserializeResponse(response, context.ResultType, context.MediaTypeFormatters, context.TokenSource.Token);
         }
 
-        public Task<TError> DeserializeError(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context)
+        public Task<object> DeserializeError(HttpResponseMessage response, TypedHttpCallContext context)
         {
-            return DeserializeResponse<TError>(response, context);
+            return DeserializeResponse(response, context.ErrorType, context.MediaTypeFormatters, context.TokenSource.Token);
         }
 
-        private static async Task<T> DeserializeResponse<T>(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context)
+        private static async Task<object> DeserializeResponse(HttpResponseMessage response, Type type, MediaTypeFormatterCollection formatters, CancellationToken token)
         {
-            if (typeof(HttpResponseMessage).IsAssignableFrom(typeof(T))) 
-                return (T)(object)response; // ugh :(
+            if (typeof(HttpResponseMessage).IsAssignableFrom(type)) 
+                return response; // ugh :(
 
-            if (response.Content == null) 
-                return default(T);
+            var content = response.Content;
 
-            if (typeof(Stream).IsAssignableFrom(typeof(T))) 
-                return (T)(object)await response.Content.ReadAsStreamAsync(); // ugh :(
+            if (content == null) 
+                return Helper.GetDefaultValueForType(type);
 
-            if (typeof(byte[]).IsAssignableFrom(typeof(T)))
-                return (T)(object)await response.Content.ReadAsByteArrayAsync(); // ugh :(
+            if (typeof(Stream).IsAssignableFrom(type))
+                return await content.ReadAsStreamAsync();
 
-            return await response.Content.ReadAsAsync<T>(context.MediaTypeFormatters);
+            if (typeof(byte[]).IsAssignableFrom(type))
+                return await content.ReadAsByteArrayAsync();
+
+            var mediaType = content.Headers.ContentType ?? new MediaTypeHeaderValue("application/octet-stream");
+
+            var formatter = formatters.FindReader(type, mediaType);
+
+            if (formatter == null)
+            {
+                if (content.Headers.ContentLength == 0)
+                    return Helper.GetDefaultValueForType(type);
+
+                throw new UnsupportedMediaTypeException(string.Format("No MediaTypeFormatter is available to read an object of type '{0}' from content with media type '{1}'", type.Name, mediaType.MediaType), mediaType);
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            var stream = await content.ReadAsStreamAsync();
+
+            return await formatter.ReadFromStreamAsync(type, stream, content, null, token);
         }
     }
 }

@@ -1,9 +1,5 @@
 ﻿using System.Collections;
-using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 using AonWeb.FluentHttp.Handlers;
 using System;
 using System.Collections.Generic;
@@ -115,47 +111,10 @@ namespace AonWeb.FluentHttp
         }
 
         private bool IsUriSet { get; set; }
-    }
 
-    public class HttpCallBuilderSettings<TResult, TContent, TError>
-    {
-        private readonly IDictionary _items;
-
-        public HttpCallBuilderSettings()
+        public void ApplySettings(TypedHttpCallBuilderSettings settings)
         {
-            _items = new HybridDictionary();
-            DeserializeResult = true;
-            MediaType = HttpCallBuilderDefaults.DefaultMediaType;
-            ContentEncoding = HttpCallBuilderDefaults.DefaultContentEncoding;
-            MediaTypeFormatters = new MediaTypeFormatterCollection(HttpCallBuilderDefaults.DefaultMediaTypeFormatters);
-
-            Handler = new HttpCallHandlerRegister<TResult, TContent, TError>();
-
-            SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>
-            {
-                HttpCallBuilderDefaults.DefaultSuccessfulResponseValidator
-            };
-
-            ExceptionFactory = HttpCallBuilderDefaults.DefaultExceptionFactory;
-            DefaultResultFactory = HttpCallBuilderDefaults.DefaultResultFactory<TResult>;
-        }
-
-        public bool DeserializeResult { get; set; }
-        public IDictionary Items { get { return _items; } }
-        public Func<TContent> ContentFactory { get; set; }
-        public string MediaType { get; set; }
-        public Encoding ContentEncoding { get; set; }
-        public MediaTypeFormatterCollection MediaTypeFormatters { get; set; }
-        public HttpCallHandlerRegister<TResult, TContent, TError> Handler { get; private set; }
-        public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
-        public Func<HttpErrorContext<TResult, TContent, TError>, Exception> ExceptionFactory { get; set; }
-
-        public Func<TResult> DefaultResultFactory { get; set; }
-
-        public void Reset()
-        {
-            _items.Clear();
-            DeserializeResult = true;
+            settings.TokenSource = TokenSource;
         }
     }
 }

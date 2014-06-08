@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Client;
@@ -14,6 +13,8 @@ namespace AonWeb.FluentHttp
     {
         HttpRequestMessage CreateRequest();
         Task<HttpResponseMessage> ResultFromRequestAsync(HttpRequestMessage request);
+
+        void ApplySettings(TypedHttpCallBuilderSettings settings);
     }
 
     public interface IRecursiveHttpCallBuilder : IAdvancedHttpCallBuilder
@@ -21,9 +22,9 @@ namespace AonWeb.FluentHttp
         Task<HttpResponseMessage> RecursiveResultAsync();
     }
 
-    public interface IRecursiveHttpCallBuilder<TResult, TContent, TError> : IAdvancedHttpCallBuilder<TResult, TContent, TError>
+    public interface IRecursiveTypedHttpCallBuilder : IAdvancedTypedHttpCallBuilder
     {
-        Task<TResult> RecursiveResultAsync();
+        Task<TResult> RecursiveResultAsync<TResult>();
     }
 
     public interface IAdvancedHttpCallBuilder : IHttpCallBuilder
@@ -73,68 +74,5 @@ namespace AonWeb.FluentHttp
         IAdvancedHttpCallBuilder WithAutoDecompression(bool enabled = true);
         IAdvancedHttpCallBuilder WithSuppressCancellationErrors(bool suppress = true);
         IAdvancedHttpCallBuilder WithTimeout(TimeSpan? timeout);
-    }
-
-    public interface IAdvancedHttpCallBuilder<TResult, TContent, TError> : IHttpCallBuilder<TResult, TContent, TError>
-    {
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithScheme(string scheme);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithHost(string host);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithPort(int port);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithPath(string absolutePathAndQuery);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithContentEncoding(Encoding encoding);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMediaType(string mediaType);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMethod(string method);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMethod(HttpMethod method);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAcceptHeader(string mediaType);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(Encoding encoding);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAcceptCharSet(string charSet);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> ConfigureClient(Action<IHttpClientBuilder> configuration);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithMediaTypeFormatter(MediaTypeFormatter formatter);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> ConfigureMediaTypeFormatter<TFormatter>(Action<TFormatter> configure)
-            where TFormatter : MediaTypeFormatter;
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithHandler(IHttpCallHandler<TResult, TContent, TError> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> ConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler<TResult, TContent, TError>;
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> TryConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler<TResult, TContent, TError>;
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithExceptionFactory(Func<HttpErrorContext<TResult, TContent, TError>, Exception> factory);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithCaching(bool enabled = true);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithNoCache(bool nocache = true);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUri(Uri uri);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithDependentUris(IEnumerable<Uri> uris);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(Action<HttpSendingContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(Func<HttpSendingContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext<TResult, TContent, TError>, Task> handler);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(Action<HttpSentContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(Func<HttpSentContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext<TResult, TContent, TError>, Task> handler);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(Action<HttpResultContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Action<HttpResultContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(Func<HttpResultContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnResult(HttpCallHandlerPriority priority, Func<HttpResultContext<TResult, TContent, TError>, Task> handler);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(Action<HttpErrorContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Action<HttpErrorContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(Func<HttpErrorContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnError(HttpCallHandlerPriority priority, Func<HttpErrorContext<TResult, TContent, TError>, Task> handler);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(Action<HttpExceptionContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext<TResult, TContent, TError>> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext<TResult, TContent, TError>, Task> handler);
-
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithAutoDecompression(bool enabled = true);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithSuppressCancellationErrors(bool suppress = true);
-        IAdvancedHttpCallBuilder<TResult, TContent, TError> WithTimeout(TimeSpan? timeout);
     }
 }

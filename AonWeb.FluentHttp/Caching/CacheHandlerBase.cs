@@ -8,7 +8,7 @@ namespace AonWeb.FluentHttp.Caching
     // for whatever reason, I couldn't get the inmemory cache in the HttpClientHandler / CachingHandler 
     // to play nice with call / client builders, and the cache kept disappearing
     // additionally I need an implementation that allows for deserialized object level caching in addition to http response caching
-    // so I implemented a cachehandler that plugs in to the HttpCallBuilder higher up,
+    // so I implemented a cachehandler that plugs in to the TypedHttpCallBuilder higher up,
     // but the base logic for cache validation / invalidation was based off CacheCow
     public abstract class CacheHandlerBase<TResult>
     {

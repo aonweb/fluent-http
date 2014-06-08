@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -5,12 +6,12 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp
 {
-    public interface IHttpCallFormatter<TResult, TContent, TError>
+    public interface IHttpCallFormatter
     {
-        Task<HttpContent> CreateContent<T>(T value, HttpCallContext<TResult, TContent, TError> context);
+        Task<HttpContent> CreateContent(object value, TypedHttpCallContext context);
 
-        Task<TResult> DeserializeResult(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context);
+        Task<object> DeserializeResult(HttpResponseMessage response, TypedHttpCallContext context);
 
-        Task<TError> DeserializeError(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context);
+        Task<object> DeserializeError(HttpResponseMessage response, TypedHttpCallContext context);
     }
 }

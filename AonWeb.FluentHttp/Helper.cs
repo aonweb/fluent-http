@@ -145,7 +145,7 @@ namespace AonWeb.FluentHttp
             var key = string.Join("-", keyParts);
 
             var bytes = Encoding.UTF8.GetBytes(key);
- 
+
             var hash = SHA1.Create().ComputeHash(bytes);
 
             return Convert.ToBase64String(hash);
@@ -176,6 +176,14 @@ namespace AonWeb.FluentHttp
             where T : class
         {
             return headers.AddDistinct(h => string.Equals(prop(h), value, StringComparison.OrdinalIgnoreCase), value);
+        }
+
+        public static object GetDefaultValueForType(Type type)
+        {
+            if (type.IsValueType)
+                return Activator.CreateInstance(type);
+
+            return null;
         }
     }
 }
