@@ -26,6 +26,11 @@ namespace AonWeb.FluentHttp.Handlers
             _settings.ValidateSettings();
         }
 
+        public Type ResultType
+        {
+            get { return typeof(HttpResponseMessage); }
+        }
+
         public Func<HttpContent> ContentFactory { get { return _settings.ContentFactory; } }
 
         public HttpMethod Method { get { return _settings.Method; } }

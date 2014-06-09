@@ -7,7 +7,7 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class CacheHandlerDefaults
     {
-        public static bool CacheValidator(CacheContextBase context)
+        public static bool CacheValidator(CacheContext context)
         {
             if (!context.Enabled)
                 return false;
@@ -31,7 +31,7 @@ namespace AonWeb.FluentHttp.Caching
             return true;
         }
 
-        public static bool RevalidateValidator(CacheContextBase context)
+        public static bool RevalidateValidator(CacheContext context)
         {
             if (!context.Enabled)
                 return false;
@@ -44,7 +44,7 @@ namespace AonWeb.FluentHttp.Caching
             return context.ResponseInfo != null && context.ResponseInfo.StatusCode == HttpStatusCode.NotModified;
         }
 
-        public static ResponseValidationResult ResponseValidator(CacheContextBase context)
+        public static ResponseValidationResult ResponseValidator(CacheContext context)
         {
             //This is almost verbatim from the CacheCow CachingHandler's ResponseValidator func
 
@@ -87,7 +87,7 @@ namespace AonWeb.FluentHttp.Caching
             return ResponseValidationResult.OK;
         }
 
-        public static bool AllowStaleResultValidator(CacheContextBase context)
+        public static bool AllowStaleResultValidator(CacheContext context)
         {
             var request = context.Request;
             var responseInfo = context.ResponseInfo;

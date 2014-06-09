@@ -111,13 +111,16 @@ namespace AonWeb.FluentHttp.Tests.Http
             #endregion
         }
 
-        #endregion
+        public class SubTestResult : TestResult
+        {
+            public bool SubBoolProperty { get; set; }
+        }
 
-        //IncorrectTypes_ExpectException
+        #endregion
 
         [Test]
         [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenReultAndHandlerTypesMismatch_ExpectException()
+        public async Task WhenResultAndSendingHandlerTypesMismatch_ExpectException()
         {
 
             var builder = TypedHttpCallBuilder.Create(TestUriString);
@@ -128,18 +131,252 @@ namespace AonWeb.FluentHttp.Tests.Http
             Assert.Fail();
         }
 
-        //IncorrectTypesAndSuppressTypeException_ExpectException
+        [Test]
+        public async Task WhenResultAndSendingTypesMismatchAndSuppressTypeException_ExpectResult()
+        {
 
-        //SubType_ExpectSuccess
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
 
-        //ObjectType_ExpectSuccess
+            //act
+            var actual = await builder.Advanced.WithSuppressTypeMismatchExceptions().OnSendingWithResult<Uri>(ctx => { }).ResultAsync<TestResult>();
 
-        //TypeSetMultipleTimes_ExpectLastWins
+            Assert.NotNull(actual);
+        }
 
-        //DefaultResultDoesNotMatchResult_ExpectException
+        [Test]
+        [ExpectedException(typeof(TypeMismatchException))]
+        public async Task WhenContentAndSendingHandlerTypesMismatch_ExpectException()
+        {
 
-        //DefaultResultDoesNotMatchResultAndSuppressTypeException_ExpectSuccess
+            var builder = TypedHttpCallBuilder.Create(TestUriString);
 
+            //act
+            await builder.WithContent(TestResultValue).AsPost().Advanced.OnSendingWithContent<Uri>(ctx => { }).ResultAsync<TestResult>();
+
+            Assert.Fail();
+        }
+
+        [Test]
+        public async Task WhenContentAndSendingHandlerTypesMismatchAndSuppressTypeException_ExpectResult()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var actual = await builder.WithContent(TestResultValue)
+                .AsPost()
+                .Advanced
+                .WithSuppressTypeMismatchExceptions().OnSendingWithContent<Uri>(ctx => { }).ResultAsync<TestResult>();
+
+            Assert.NotNull(actual);
+        }
+
+        [Test]
+        [ExpectedException(typeof(TypeMismatchException))]
+        public async Task WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+
+            //act
+            await builder.WithErrorType<TestResult>().Advanced.OnError<Uri>(ctx => { }).ResultAsync<TestResult>();
+
+            Assert.Fail();
+        }
+
+        [Test]
+        public async Task WhenErrorAndErrorHandlerTypesMismatchAndSuppressTypeException_ExpectResult()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+
+            //act
+            var actual = await builder
+                .WithErrorType<TestResult>()
+                .Advanced
+                .WithExceptionFactory(context => null)
+                .WithSuppressTypeMismatchExceptions()
+                .OnError<Uri>(ctx => { })
+                .ResultAsync<TestResult>();
+
+            Assert.IsNull(actual);
+        }
+
+        [Test]
+        [ExpectedException(typeof(TypeMismatchException))]
+        public async Task WhenDefaultResultAndResultTypesMismatch_ExpectException()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+
+            //act
+            await builder.WithDefaultResult(TestResultValue).Advanced.WithExceptionFactory(context => null).ResultAsync<Uri>();
+
+            Assert.Fail();
+        }
+
+        [Test]
+        public async Task WhenDefaultResultAndResultTypesMismatchAndSuppressTypeException_ExpectNullResult()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+
+            //act
+            var actual = await builder.WithDefaultResult(TestResultValue)
+                 .Advanced.WithSuppressTypeMismatchExceptions()
+                 .WithExceptionFactory(context => null)
+                 .ResultAsync<Uri>();
+
+            Assert.IsNull(actual);
+        }
+
+        [Test]
+        public async Task WhenHandlerIsSubTypeOfResult_ExpectSuccess()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo { Body = TestResultString });
+
+            //act
+            var called = false;
+            var result = await builder
+                .Advanced
+                .OnResult<TestResult>(ctx => { called = true; })
+                .ResultAsync<SubTestResult>();
+
+            Assert.NotNull(result);
+            Assert.IsTrue(called);
+        }
+
+        [Test]
+        [ExpectedException(typeof(TypeMismatchException))]
+        public async Task WhenHandlerIsSuperTypeOfResult_ExpectException()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var actual = await builder
+                .Advanced
+                .OnResult<SubTestResult>(ctx => { })
+                .ResultAsync<TestResult>();
+
+            Assert.IsNull(actual);
+        }
+
+        [Test]
+        public async Task WhenSendingContentHandlerIsObjectType_ExpectSuccess()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var called = false;
+            var result = await builder.WithContent(TestResultValue)
+                .AsPost()
+                .Advanced
+                .OnSendingWithContent<object>(ctx => { called = true; })
+                .ResultAsync<TestResult>();
+
+            Assert.NotNull(result);
+            Assert.IsTrue(called);
+        }
+
+        [Test]
+        public async Task WhenSendingResultHandlerIsObjectType_ExpectSuccess()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var called = false;
+            var result = await builder.WithContent(TestResultValue)
+                .AsPost()
+                .Advanced
+                .OnSendingWithResult<object>(ctx => { called = true; })
+                .ResultAsync<TestResult>();
+
+            Assert.NotNull(result);
+            Assert.IsTrue(called);
+        }
+
+        [Test]
+        public async Task WhenSentHandlerIsObjectType_ExpectSuccess()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var called = false;
+            var result = await builder.WithContent(TestResultValue)
+                .AsPost()
+                .Advanced
+                .OnSent<object>(ctx => { called = true; })
+                .ResultAsync<TestResult>();
+
+            Assert.NotNull(result);
+            Assert.IsTrue(called);
+        }
+
+        [Test]
+        public async Task WhenResultHandlerIsObjectType_ExpectSuccess()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var called = false;
+            var result = await builder
+                .Advanced
+                .OnResult<object>(ctx => { called = true; })
+                .ResultAsync<TestResult>();
+
+            Assert.NotNull(result);
+            Assert.IsTrue(called);
+        }
+
+        [Test]
+        public async Task WhenErrorHandlerIsObjectType_ExpectSuccess()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+
+            //act
+            var called = false;
+            var result = await builder
+                .Advanced
+                .OnError<object>(ctx => { called = true; })
+                .WithExceptionFactory(context => null)
+                .ResultAsync<SubTestResult>();
+
+            Assert.Null(result);
+            Assert.IsTrue(called);
+        }
+
+        [Test]
+        public async Task WhenErrorTypeSetMultipleTimes_ExpectLastWins()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+
+            //act
+            Type type = null;
+            TestResult error = null;
+            var result = await builder
+                .WithErrorType<Uri>()
+                .WithErrorType<string>()
+                .WithErrorType<TestResult>()
+                .Advanced
+                .OnError<object>(ctx =>
+                {
+                    type = ctx.ErrorType;
+                    error = ctx.Error as TestResult;
+                })
+                .WithExceptionFactory(context => null)
+                .ResultAsync<TestResult>();
+
+            Assert.NotNull(error);
+            Assert.AreEqual(typeof(TestResult), type);
+        }
 
     }
 }

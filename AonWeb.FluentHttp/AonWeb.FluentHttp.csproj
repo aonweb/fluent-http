@@ -55,7 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Caching\CacheContext.cs" />
-    <Compile Include="Caching\CacheContextBase.cs" />
     <Compile Include="Caching\CachedItem.cs" />
     <Compile Include="Caching\CacheHandler.cs" />
     <Compile Include="Caching\CacheHandlerBase.cs" />
@@ -78,7 +77,7 @@
     <Compile Include="Handlers\HttpCallHandler.cs" />
     <Compile Include="Handlers\HttpCallHandlerPriority.cs" />
     <Compile Include="Handlers\HttpCallHandlerRegister.cs" />
-    <Compile Include="Handlers\HttpCallHandlerResult.cs" />
+    <Compile Include="Handlers\ModifyTracker.cs" />
     <Compile Include="Handlers\HttpCallHandlerType.cs" />
     <Compile Include="Handlers\IHttpCallContext.cs" />
     <Compile Include="Handlers\TypedHttpCallContext.cs" />

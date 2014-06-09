@@ -1,26 +1,26 @@
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class HttpCallHandlerResult : HttpCallHandlerResult<object>
+    public class ModifyTracker : ModifyTracker<object>
     {
-        public HttpCallHandlerResult() { }
+        public ModifyTracker() { }
 
-        public HttpCallHandlerResult(object value)
+        public ModifyTracker(object value)
             : base(value) { }
 
-        internal HttpCallHandlerResult(object value, bool modified)
+        internal ModifyTracker(object value, bool modified)
             : base(value)
         {
             Modified = modified;
         }
     }
 
-    public class HttpCallHandlerResult<T>
+    public class ModifyTracker<T>
     {
         private T _value;
 
-        public HttpCallHandlerResult() { }
+        public ModifyTracker() { }
 
-        public HttpCallHandlerResult(T value)
+        public ModifyTracker(T value)
         {
             _value = value;
         }
@@ -40,9 +40,9 @@ namespace AonWeb.FluentHttp.Handlers
             }
         }
 
-        public HttpCallHandlerResult ToResult()
+        public ModifyTracker ToResult()
         {
-            return new HttpCallHandlerResult(Value, Modified);
+            return new ModifyTracker(Value, Modified);
         }
     }
 }

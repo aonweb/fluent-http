@@ -9,12 +9,12 @@ namespace AonWeb.FluentHttp.Handlers
         {
             Response = response;
 
-            _result = new HttpCallHandlerResult<TResult>(result);
+            _result = new ModifyTracker<TResult>(result);
         }
 
         public HttpResponseMessage Response { get; private set; }
 
-        private readonly HttpCallHandlerResult<TResult> _result;
+        private readonly ModifyTracker<TResult> _result;
 
         public TResult Result
         {
@@ -28,7 +28,7 @@ namespace AonWeb.FluentHttp.Handlers
             }
         }
 
-        public override HttpCallHandlerResult GetHandlerResult()
+        public override ModifyTracker GetHandlerResult()
         {
             return _result.ToResult();
         }

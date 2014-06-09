@@ -111,7 +111,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         #endregion
 
         [Test]
-        public void WithResultExpectResultReturned()
+        public async Task WithResultExpectResultReturned()
         {
 
                 var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
@@ -120,7 +120,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 builder.WithResult(TestResultValue);
 
                 //act
-                var actual = builder.ResultAsync<TestResult>().Result;
+                var actual = await builder.ResultAsync<TestResult>();
 
                 Assert.AreEqual(TestResultValue, actual);
         }
@@ -128,7 +128,6 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WithErrorExpectResultReturned()
         {
-
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
             //arrange
@@ -151,7 +150,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
         [Test]
-        public void WithContent_ExpectNoExceptions()
+        public async Task WithContent_ExpectNoExceptions()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -159,7 +158,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             builder.WithResult(TestResultValue);
 
             //act
-            var actual = builder.WithContent(() => TestResultValue).AsPost().ResultAsync<TestResult>().Result;
+            var actual = await builder.WithContent(() => TestResultValue).AsPost().ResultAsync<TestResult>();
 
             Assert.AreEqual(TestResultValue, actual);
         }

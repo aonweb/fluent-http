@@ -8,6 +8,6 @@ namespace AonWeb.FluentHttp.Handlers
         protected TypedHttpCallHandlerContext(IRecursiveTypedHttpCallBuilder builder, TypedHttpCallBuilderSettings settings)
             : base(builder, settings) { }
 
-        public abstract HttpCallHandlerResult GetHandlerResult();
+        public abstract ModifyTracker GetHandlerResult();
     }
 }

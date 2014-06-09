@@ -2,7 +2,7 @@ using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Caching
 {
-    public class CacheResult<TResult>
+    public class CacheResult
     {
         public CacheResult() {  }
 
@@ -12,7 +12,7 @@ namespace AonWeb.FluentHttp.Caching
             ResponseInfo = responseInfo;
         }
 
-        public CacheResult(TResult result, HttpResponseMessage response, CacheContext<TResult> context)
+        public CacheResult(object result, HttpResponseMessage response, CacheContext context)
         {
             Found = true;
             Result = result;
@@ -20,11 +20,11 @@ namespace AonWeb.FluentHttp.Caching
         }
 
         public bool Found { get; set; }
-        public TResult Result { get; set; }
+        public object Result { get; set; }
         public ResponseInfo ResponseInfo { get; private set; }
-        public static CacheResult<TResult> Empty = new CacheResult<TResult>();
+        public static CacheResult Empty = new CacheResult();
 
-        public void UpdateResponseInfo(HttpResponseMessage response, CacheContext<TResult> context)
+        public void UpdateResponseInfo(HttpResponseMessage response, CacheContext context)
         {
             if (ResponseInfo == null)
                 ResponseInfo = CreateResponseInfo(Result, response, context);
@@ -32,7 +32,7 @@ namespace AonWeb.FluentHttp.Caching
                 ResponseInfo.UpdateExpiration(Result, response, context.DefaultExpiration);
         }
 
-        private ResponseInfo CreateResponseInfo(TResult result, HttpResponseMessage response, CacheContext<TResult> context)
+        private ResponseInfo CreateResponseInfo(object result, HttpResponseMessage response, CacheContext context)
         {
             return new ResponseInfo(result,
                 response,

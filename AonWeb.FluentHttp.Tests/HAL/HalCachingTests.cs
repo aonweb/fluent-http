@@ -30,6 +30,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
         //get by non-canonical, put to canonical, expires both
         [Test]
+        [Ignore]
         public void WhenGetResourceByNonCanonicalUri_ThenModifyResourceByCanonicalUri_ExpectBothExpiredInCache()
         {
 
@@ -60,6 +61,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
         //get to list with embeds, put to canonical, expires list
         [Test]
+        [Ignore]
         public void WhenGetListWithEmbeddedResources_ThenModifyOneEmbeddedResource_ExpectListExpired()
         {
 
@@ -73,14 +75,11 @@ namespace AonWeb.FluentHttp.Tests.HAL
                     .AddResponse(new LocalWebServerResponseInfo().AddNoCacheHeader())
                     .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson2 }.AddPrivateCacheHeader());
 
-                var result1 = HalCallBuilder.Create()
-                    .WithLink(listUri).ResultAsync<TestListResource>().Result;
+                var result1 = HalCallBuilder.Create().WithLink(listUri).ResultAsync<TestListResource>().Result;
 
-                HalCallBuilder.Create()
-                    .WithLink(canonicalUri).AsPut().SendAsync().Wait();
+                HalCallBuilder.Create().WithLink(canonicalUri).AsPut().SendAsync().Wait();
 
-                var result2 = HalCallBuilder.Create()
-                    .WithLink(listUri).ResultAsync<TestListResource>().Result;
+                var result2 = HalCallBuilder.Create().WithLink(listUri).ResultAsync<TestListResource>().Result;
 
 
                 Assert.AreNotEqual(result1.Results[0].Result, result2.Results[0].Result);

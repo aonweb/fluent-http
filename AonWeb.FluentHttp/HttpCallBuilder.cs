@@ -623,9 +623,13 @@ namespace AonWeb.FluentHttp
                         response = await client.SendAsync(request, context.CompletionOption, context.TokenSource.Token);
                     }
 
-                    if (!context.IsSuccessfulResponse(response))
-                        if (_settings.ExceptionFactory != null)
-                            throw _settings.ExceptionFactory(response);
+                    if (!context.IsSuccessfulResponse(response) && _settings.ExceptionFactory != null)
+                    {
+                        var ex = _settings.ExceptionFactory(response);
+
+                        if (ex != null)
+                            throw ex;
+                    }
 
                     var sentContext = new HttpSentContext(context, response);
 

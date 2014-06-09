@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
         [TestFixtureSetUp]
-        public async Task FixtureSetup()
+        public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;
         }
@@ -78,7 +79,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 {
                     return true;
                 }
-                if (obj.GetType() != this.GetType())
+                if (obj.GetType() != GetType())
                 {
                     return false;
                 }
@@ -258,7 +259,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(() => TestResultValue).AsPost().SendAsync().Wait();
+                await builder.WithContent(() => TestResultValue).AsPost().SendAsync();
 
                 Assert.AreEqual(expected, actual);
         }
@@ -276,7 +277,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 builder.OnSending<EmptyResult, bool>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent(() => true).AsPut().SendAsync().Wait();
+                await builder.WithContent(() => true).AsPut().SendAsync();
 
                 Assert.AreEqual(expected, actual);
         }
@@ -311,7 +312,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 builder.OnSending<EmptyResult, string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent<string>(() => null).AsPost().SendAsync().Wait();
+                await builder.WithContent<string>(() => null).AsPost().SendAsync();
 
                 Assert.AreEqual(expected, actual);
         }
@@ -329,9 +330,26 @@ namespace AonWeb.FluentHttp.Tests.Http
                 builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
-                builder.WithContent<TestResult>(() => null).AsPost().SendAsync().Wait();
+                await builder.WithContent<TestResult>(() => null).AsPost().SendAsync();
 
                 Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public async Task WhenContentSetMultipleTimes_ExpectLastContentWins()
+        {
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo());
+
+            var expected = "Content3";
+
+            //arrange
+            string actual = null;
+            builder.OnSendingWithContent<string>(async ctx => actual = await ctx.Request.Content.ReadAsAsync<string>());
+
+            //act
+            await builder.WithContent("Content1").WithContent("Content2").WithContent("Content3").AsPost().SendAsync();
+
+            Assert.AreEqual(expected, actual);
         }
 
         #endregion
