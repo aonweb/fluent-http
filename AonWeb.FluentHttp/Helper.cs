@@ -185,5 +185,10 @@ namespace AonWeb.FluentHttp
 
             return null;
         }
+
+        public static string PrettyPrintName(this Type type)
+        {
+            return type.Name;
+        }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Web.UI;
+using AonWeb.FluentHttp.Exceptions;
 
 namespace AonWeb.FluentHttp.Handlers
 {
@@ -23,14 +25,63 @@ namespace AonWeb.FluentHttp.Handlers
             }
         }
 
+        private Type CreateHandlerContextType(object handler, Type contextType, Type[] genericTypes)
+        {
+
+            var handlerType = handler.GetType();
+
+            //should be of the form Func<TContext, Task>
+            if (!handlerType.IsGenericType)
+                return null;
+
+            //TODO: type caching
+
+            var handlerContextType = handler.GetType().GetGenericArguments().FirstOrDefault();
+
+            if (handlerContextType == null)
+                return null;
+
+            //if the context is not generic, we don't need to worry about construction
+            if (handlerContextType.IsGenericType)
+            {
+                var handlerGenericTypes = handlerContextType.GetGenericArguments();
+                var handlerTypeDef = handlerContextType.GetGenericTypeDefinition();
+
+                if (!contextType.IsGenericTypeDefinition || !handlerTypeDef.IsAssignableFrom(contextType))
+                    return null;
+
+                contextType = handlerTypeDef;
+
+                // if the requested generic types don't match the handler, then we can't construct
+                if (handlerGenericTypes.Length != genericTypes.Length)
+                    return null;
+
+                for (var i = 0; i < handlerGenericTypes.Length; i++)
+                {
+                    // if we can't assign to the types in the handler, we can't construct
+                    if (!handlerGenericTypes[i].IsAssignableFrom(genericTypes[i]))
+                        return null;
+                }
+
+                genericTypes = handlerGenericTypes;
+            }
+            else 
+            {
+                if (!handlerContextType.IsAssignableFrom(contextType))
+                    return null;
+
+                contextType = handlerContextType;
+            }
+
+            return CreateHandlerContextType(contextType, genericTypes);
+        }
+
         private Type CreateHandlerContextType(Type contextType, Type[] genericTypes)
         {
             var closedContextType = contextType;
 
             if (contextType.IsGenericTypeDefinition)
-            {
                 closedContextType = contextType.MakeGenericType(genericTypes);
-            }
 
             return closedContextType;
         }
@@ -50,19 +101,36 @@ namespace AonWeb.FluentHttp.Handlers
             return (Task)handlerType.InvokeMember("Invoke", BindingFlags.InvokeMethod, null, handler, new object[] { context });
         }
 
-        private async Task<HttpCallHandlerResult> InvokeHandlers(HttpCallHandlerType callType, Type contextType, bool suppressTypeExceptions, params object[] handlerConstructorArgs)
+        private async Task<HttpCallHandlerResult> InvokeHandlers(HttpCallHandlerType callType, Type openContextType, Type[] defaultGenericContextTypes, object[] handlerConstructorArgs, bool suppressTypeExceptions)
         {
-            var handlerContext = CreateHandlerContext(contextType, handlerConstructorArgs);
-            var handlerType = CreateHandlerType(contextType);
             var tasks = new List<Task>();
+
+            TypedHttpCallHandlerContext handlerContext = null;
 
             foreach (var pair in _handlers[callType].OrderBy(kp => kp.Key))
             {
+                if (handlerContext != null && handlerConstructorArgs.Length > 0)
+                    handlerConstructorArgs[0] = handlerContext;
+
                 var priority = pair.Key;
                 var handler = pair.Value;
 
-                if (!ValidateContextType(handler, handlerType, suppressTypeExceptions))
+                var contextType = CreateHandlerContextType(handler, openContextType, defaultGenericContextTypes);
+
+                if (contextType == null)
+                {
+                    var tempCtxType = CreateHandlerContextType(openContextType, defaultGenericContextTypes);
+
+                    if (!suppressTypeExceptions)
+                        throw new TypeMismatchException(tempCtxType, handler.GetType());
+
                     continue;
+                }
+
+                var handlerType = CreateHandlerType(contextType);
+
+                if (handlerContext == null || handlerContext.GetType() != contextType)
+                    handlerContext = CreateHandlerContext(contextType, handlerConstructorArgs);
 
                 var task = InvokeHandler(handlerType, handler, handlerContext);
 
@@ -75,12 +143,15 @@ namespace AonWeb.FluentHttp.Handlers
             if (tasks.Count > 0) 
                 await Task.WhenAll(tasks);
 
-            return handlerContext.GetHandlerResult();
+            if (handlerContext != null)
+                return handlerContext.GetHandlerResult();
+
+            return null;
         }
 
         private bool ValidateContextType(object handler, Type genericType, bool suppressException)
         {
-            var valid = genericType.IsInstanceOfType(handler);
+            var valid = handler.GetType().IsAssignableFrom(genericType);
 
             //need to inspect context type
 
@@ -102,37 +173,29 @@ namespace AonWeb.FluentHttp.Handlers
 
         public async Task<HttpCallHandlerResult> OnSending(TypedHttpCallContext context, HttpRequestMessage request, object content, bool hasContent)
         {
-            var contextType = CreateHandlerContextType(typeof(TypedHttpSendingContext<,>), new[] { context.ResultType, context.ContentType });
-
-            return await InvokeHandlers(HttpCallHandlerType.Sending, contextType, context.SuppressHandlerTypeExceptions, context, request, content, hasContent);
+            return await InvokeHandlers(HttpCallHandlerType.Sending, typeof(TypedHttpSendingContext<,>), new[] { context.ResultType, context.ContentType }, new []{context, request, content, hasContent}, context.SuppressHandlerTypeExceptions);
         }
 
         public async Task<HttpCallHandlerResult> OnSent(TypedHttpCallContext context, HttpResponseMessage response)
         {
-            var contextType = CreateHandlerContextType(typeof(TypedHttpSentContext<>), new[] { context.ResultType });
-
-            return await InvokeHandlers(HttpCallHandlerType.Sent, contextType, context.SuppressHandlerTypeExceptions, context, response);
+            return await InvokeHandlers(HttpCallHandlerType.Sent, typeof(TypedHttpSentContext<>), new[] { context.ResultType }, new object[]{context, response}, context.SuppressHandlerTypeExceptions);
         }
 
         public async Task<HttpCallHandlerResult> OnResult(TypedHttpCallContext context, HttpResponseMessage response, object result)
         {
-            var contextType = CreateHandlerContextType(typeof(TypedHttpResultContext<>), new[] { context.ResultType });
-
-            return await InvokeHandlers(HttpCallHandlerType.Result, contextType, context.SuppressHandlerTypeExceptions, context, response, result);
+            return await InvokeHandlers(HttpCallHandlerType.Result, typeof(TypedHttpResultContext<>), new[] { context.ResultType },  new []{context, response, result}, context.SuppressHandlerTypeExceptions);
         }
 
         public async Task<HttpCallHandlerResult> OnError(TypedHttpCallContext context, HttpResponseMessage response, object error)
         {
-            var contextType = CreateHandlerContextType(typeof(TypedHttpCallErrorContext<>), new[] { context.ErrorType });
-
-            return await InvokeHandlers(HttpCallHandlerType.Error, contextType, context.SuppressHandlerTypeExceptions, context, response, error);
+            return await InvokeHandlers(HttpCallHandlerType.Error, typeof(TypedHttpCallErrorContext<>), new[] { context.ErrorType }, new []{context, response, error}, context.SuppressHandlerTypeExceptions);
         }
 
         public async Task<HttpCallHandlerResult> OnException(TypedHttpCallContext context, Exception exception)
         {
-            var contextType = CreateHandlerContextType(typeof(TypedHttpCallExceptionContext), null);
+            
 
-            return await InvokeHandlers(HttpCallHandlerType.Exception, contextType, context.SuppressHandlerTypeExceptions, context, exception);
+            return await InvokeHandlers(HttpCallHandlerType.Exception, typeof(TypedHttpCallExceptionContext), null,new object[]{context, exception}, context.SuppressHandlerTypeExceptions);
         }
 
 
@@ -180,7 +243,7 @@ namespace AonWeb.FluentHttp.Handlers
         }
 
         public TypedHttpCallHandlerRegister ConfigureHandler<THandler>(Action<THandler> configure, bool throwOnNotFound = true)
-            where THandler : class, IHttpCallHandler
+            where THandler : class, ITypedHttpCallHandler
         {
             if (configure == null)
                 throw new ArgumentNullException("configure");

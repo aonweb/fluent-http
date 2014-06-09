@@ -71,14 +71,14 @@
     </PropertyGroup>
 
     <Target Name="CheckPrerequisites">
-        <!-- Raise an error if we're unable to locate nuget.exe  -->
-        <Error Condition="'$(DownloadNuGetExe)' != 'true' AND !Exists('$(NuGetExePath)')" Text="Unable to locate '$(NuGetExePath)'" />
-        <!--
-        Take advantage of MsBuild's build dependency tracking to make sure that we only ever download nuget.exe once.
+         <!--Raise an error if we're unable to locate nuget.exe-->  
+        <!--<Error Condition="'$(DownloadNuGetExe)' != 'true' AND !Exists('$(NuGetExePath)')" Text="Unable to locate '$(NuGetExePath)'" />
+        
+        --><!--Take advantage of MsBuild's build dependency tracking to make sure that we only ever download nuget.exe once.
         This effectively acts as a lock that makes sure that the download operation will only happen once and all
-        parallel builds will have to wait for it to complete.
-        -->
-        <MsBuild Targets="_DownloadNuGet" Projects="$(MSBuildThisFileFullPath)" Properties="Configuration=NOT_IMPORTANT;DownloadNuGetExe=$(DownloadNuGetExe)" />
+        parallel builds will have to wait for it to complete.--><!--
+        
+        <MsBuild Targets="_DownloadNuGet" Projects="$(MSBuildThisFileFullPath)" Properties="Configuration=NOT_IMPORTANT;DownloadNuGetExe=$(DownloadNuGetExe)" />-->
     </Target>
 
     <Target Name="_DownloadNuGet">
@@ -86,14 +86,14 @@
     </Target>
 
     <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
-        <Exec Command="$(RestoreCommand)"
+        <!--<Exec Command="$(RestoreCommand)"
               Condition="'$(OS)' != 'Windows_NT' And Exists('$(PackagesConfig)')" />
               
         <Exec Command="$(RestoreCommand)"
               LogStandardErrorAsError="true"
-              Condition="'$(OS)' == 'Windows_NT' And Exists('$(PackagesConfig)')" />
+              Condition="'$(OS)' == 'Windows_NT' And Exists('$(PackagesConfig)')" />-->
     </Target>
-
+  <!--
     <Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites">
         <Exec Command="$(BuildCommand)" 
               Condition=" '$(OS)' != 'Windows_NT' " />
@@ -132,5 +132,5 @@
             ]]>
             </Code>
         </Task>
-    </UsingTask>
+    </UsingTask>-->
 </Project>

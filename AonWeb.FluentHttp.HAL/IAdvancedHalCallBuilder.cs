@@ -30,9 +30,9 @@ namespace AonWeb.FluentHttp.HAL
             where TContent : IHalRequest;
         IAdvancedHalCallBuilder WithHandler(ITypedHttpCallHandler handler);
         IAdvancedHalCallBuilder ConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler;
+            where THandler : class, ITypedHttpCallHandler;
         IAdvancedHalCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler;
+            where THandler : class, ITypedHttpCallHandler;
 
         IAdvancedHalCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
         IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory);
@@ -55,6 +55,24 @@ namespace AonWeb.FluentHttp.HAL
         IAdvancedHalCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
             where TResult : IHalResource
             where TContent : IHalRequest;
+
+        IAdvancedHalCallBuilder OnSendingWithContent<TContent>(Action<TypedHttpSendingContext<object, TContent>> handler)
+            where TContent : IHalRequest;
+        IAdvancedHalCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<object, TContent>> handler)
+            where TContent : IHalRequest;
+        IAdvancedHalCallBuilder OnSendingWithContent<TContent>(Func<TypedHttpSendingContext<object, TContent>, Task> handler)
+            where TContent : IHalRequest;
+        IAdvancedHalCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<object, TContent>, Task> handler)
+            where TContent : IHalRequest;
+
+        IAdvancedHalCallBuilder OnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, object>> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<TResult, object>> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnSendingWithResult<TResult>(Func<TypedHttpSendingContext<TResult, object>, Task> handler)
+            where TResult : IHalResource;
+        IAdvancedHalCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, object>, Task> handler)
+            where TResult : IHalResource;
 
         IAdvancedHalCallBuilder OnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler)
             where TResult : IHalResource;
@@ -85,7 +103,8 @@ namespace AonWeb.FluentHttp.HAL
         IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler);
 
         IAdvancedHalCallBuilder WithAutoDecompression(bool enabled = true);
-        IAdvancedHalCallBuilder WithSuppressCancellationErrors(bool suppress = true);
+        IAdvancedHalCallBuilder WithSuppressCancellationExceptions(bool suppress = true);
+        IAdvancedHalCallBuilder WithSuppressTypeMismatchExceptions(bool suppress = true);
         IAdvancedHalCallBuilder WithTimeout(TimeSpan? timeout);
     }
 }

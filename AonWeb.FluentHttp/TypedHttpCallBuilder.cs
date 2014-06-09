@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Serialization;
 
@@ -104,6 +105,13 @@ namespace AonWeb.FluentHttp
         }
 
         public ITypedHttpCallBuilder WithQueryString(NameValueCollection values)
+        {
+            _innerBuilder.WithQueryString(values);
+
+            return this;
+        }
+
+        public ITypedHttpCallBuilder WithQueryString(IEnumerable<KeyValuePair<string, string>> values)
         {
             _innerBuilder.WithQueryString(values);
 
@@ -324,14 +332,15 @@ namespace AonWeb.FluentHttp
         }
 
         public IAdvancedTypedHttpCallBuilder ConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler
+            where THandler : class, ITypedHttpCallHandler
         {
             _settings.Handler.ConfigureHandler(configure);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
+        public IAdvancedTypedHttpCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure) 
+            where THandler : class, ITypedHttpCallHandler
         {
             _settings.Handler.ConfigureHandler(configure, false);
 
@@ -358,7 +367,7 @@ namespace AonWeb.FluentHttp
         public IAdvancedTypedHttpCallBuilder WithCaching(bool enabled = true)
         {
 
-            ConfigureHandler<CacheHandler>(handler => handler.WithCaching(enabled));
+            ConfigureHandler<TypedCacheHandler>(handler => handler.WithCaching(enabled));
 
             return this;
         }
@@ -372,12 +381,12 @@ namespace AonWeb.FluentHttp
 
         public IAdvancedTypedHttpCallBuilder WithDependentUri(Uri uri)
         {
-            return TryConfigureHandler<CacheHandler>(h => h.WithDependentUri(uri));
+            return TryConfigureHandler<TypedCacheHandler>(h => h.WithDependentUri(uri));
         }
 
         public IAdvancedTypedHttpCallBuilder WithDependentUris(IEnumerable<Uri> uris)
         {
-            return TryConfigureHandler<CacheHandler>(h => h.WithDependentUris(uris));
+            return TryConfigureHandler<TypedCacheHandler>(h => h.WithDependentUris(uris));
         }
 
         public IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler)
@@ -402,6 +411,62 @@ namespace AonWeb.FluentHttp
         }
 
         public IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+        {
+            _settings.Handler.AddSendingHandler(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(Action<TypedHttpSendingContext<object, TContent>> handler)
+        {
+            _settings.Handler.AddSendingHandler(handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<object, TContent>> handler)
+        {
+            _settings.Handler.AddSendingHandler(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(Func<TypedHttpSendingContext<object, TContent>, Task> handler)
+        {
+            _settings.Handler.AddSendingHandler(handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<object, TContent>, Task> handler)
+        {
+            _settings.Handler.AddSendingHandler(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, object>> handler)
+        {
+            _settings.Handler.AddSendingHandler(handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<TResult, object>> handler)
+        {
+            _settings.Handler.AddSendingHandler(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(Func<TypedHttpSendingContext<TResult, object>, Task> handler)
+        {
+            _settings.Handler.AddSendingHandler(handler);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, object>, Task> handler)
         {
             _settings.Handler.AddSendingHandler(priority, handler);
 
@@ -527,9 +592,16 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder WithSuppressCancellationErrors(bool suppress = true)
+        public IAdvancedTypedHttpCallBuilder WithSuppressCancellationExceptions(bool suppress = true)
         {
-            _innerBuilder.WithSuppressCancellationErrors(suppress);
+            _innerBuilder.WithSuppressCancellationExceptions(suppress);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder WithSuppressTypeMismatchExceptions(bool suppress = true)
+        {
+            _settings.SuppressHandlerTypeExceptions = suppress;
 
             return this;
         }
@@ -570,6 +642,8 @@ namespace AonWeb.FluentHttp
 
         public async Task SendAsync()
         {
+            _settings.ResultType = typeof(EmptyResult);
+
             ConfigureResponseDeserialization(false);
 
             await ResultAsync(new TypedHttpCallContext(this, _settings)).ConfigureAwait(false);
@@ -577,6 +651,8 @@ namespace AonWeb.FluentHttp
 
         public async Task<TResult> RecursiveResultAsync<TResult>()
         {
+            _settings.ResultType = typeof(TResult);
+
             var result = await ResultAsync(new TypedHttpCallContext(this, _settings)).ConfigureAwait(false);
 
             return (TResult)result;
@@ -666,7 +742,17 @@ namespace AonWeb.FluentHttp
                     capturedException.Throw();
             }
 
-            return _settings.DefaultResultFactory(context.ResultType);
+            var defaultResult =  _settings.DefaultResultFactory(context.ResultType);
+
+            if (!context.ResultType.IsInstanceOfType(defaultResult))
+            {
+                if (!context.SuppressHandlerTypeExceptions)
+                    throw new TypeMismatchException(context.ResultType, defaultResult.GetType());
+
+                return Helper.GetDefaultValueForType(context.ResultType);
+            }
+
+            return defaultResult;
         }
 
         private void ConfigureResponseDeserialization(bool willDeserialize)

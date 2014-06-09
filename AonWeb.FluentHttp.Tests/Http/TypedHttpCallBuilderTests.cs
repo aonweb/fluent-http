@@ -19,7 +19,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
         [TestFixtureSetUp]
-        public void FixtureSetup()
+        public async Task FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;
         }
@@ -116,10 +116,11 @@ namespace AonWeb.FluentHttp.Tests.Http
         #region Results
 
         [Test]
-        public void WhenComplexTypedGet_WithValidResponse_ExpectValidDeserializedResult()
+        public async Task WhenComplexTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
 
                 var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+
                 //arrange
                 builder.WithResponse(new ResponseInfo
                 {
@@ -130,13 +131,13 @@ namespace AonWeb.FluentHttp.Tests.Http
                 });
 
                 //act
-                var actual = builder.ResultAsync<TestResult>().Result;
+                var actual = await builder.ResultAsync<TestResult>();
 
                 Assert.AreEqual(TestResultValue, actual);
         }
 
         [Test]
-        public void WhenSimpleTypedGet_WithValidResponse_ExpectValidDeserializedResult()
+        public async Task WhenSimpleTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -151,13 +152,13 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync<bool>().Result;
+                var actual = await builder.ResultAsync<bool>();
 
                 Assert.IsTrue(actual);
         }
 
         [Test]
-        public void WhenStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
+        public async Task WhenStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -173,13 +174,13 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync<string>().Result;
+                var actual = await builder.ResultAsync<string>();
 
                 Assert.AreEqual(expected, actual);
         }
 
         [Test]
-        public void WhenStringTypedGet_WithPlainTextResponseResponse_ExpectValidDeserializedResult()
+        public async Task WhenStringTypedGet_WithPlainTextResponseResponse_ExpectValidDeserializedResult()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -195,13 +196,13 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
             //act
-            var actual = builder.ResultAsync<string>().Result;
+            var actual = await builder.ResultAsync<string>();
 
             Assert.AreEqual(expected, actual);
         }
 
         [Test]
-        public void WhenEmptyStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
+        public async Task WhenEmptyStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -215,13 +216,13 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync<string>().Result;
+                var actual = await builder.ResultAsync<string>();
 
                 Assert.IsNullOrEmpty(actual);
         }
 
         [Test]
-        public void WhenEmptyTypedGet_WithValidResponse_ExpectValidDeserializedResult()
+        public async Task WhenEmptyTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -235,7 +236,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
 
                 //act
-                var actual = builder.ResultAsync<TestResult>().Result;
+                var actual = await builder.ResultAsync<TestResult>();
 
                 Assert.IsNull(actual);
         }
@@ -245,7 +246,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         #region Content
 
         [Test]
-        public void WhenPostingComplexType_ExpectRequestContentSerializedCorrectly()
+        public async Task WhenPostingComplexType_ExpectRequestContentSerializedCorrectly()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -254,7 +255,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
                 //arrange
                 string actual = null;
-                builder.OnSending<EmptyResult, TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
                 builder.WithContent(() => TestResultValue).AsPost().SendAsync().Wait();
@@ -263,7 +264,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void WhenPuttingSimpleTyped_ExpectRequestContentSerializedCorrectly()
+        public async Task WhenPuttingSimpleTyped_ExpectRequestContentSerializedCorrectly()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -290,7 +291,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 builder.WithResponse(new ResponseInfo());
 
                 string actual = null;
-                builder.OnSending<EmptyResult, string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSendingWithContent<string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 await builder.WithContent(() => expected).AsPost().SendAsync();
 
@@ -298,7 +299,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void WhenPostingEmptyStringType_ExpectRequestContentSerializedCorrectly()
+        public async Task WhenPostingEmptyStringType_ExpectRequestContentSerializedCorrectly()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -307,7 +308,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 builder.WithResponse(new ResponseInfo());
 
                 string actual = null;
-                builder.OnSending<EmptyResult, TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSending<EmptyResult, string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
                 builder.WithContent<string>(() => null).AsPost().SendAsync().Wait();
@@ -316,7 +317,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void WhenPostingEmptyType_ExpectRequestContentSerializedCorrectly()
+        public async Task WhenPostingEmptyType_ExpectRequestContentSerializedCorrectly()
         {
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
@@ -325,7 +326,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
                 //arrange
                 string actual = null;
-                builder.OnSending<EmptyResult, TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+                builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
                 //act
                 builder.WithContent<TestResult>(() => null).AsPost().SendAsync().Wait();

@@ -280,14 +280,15 @@ namespace AonWeb.FluentHttp.HAL
         }
 
         public IAdvancedHalCallBuilder ConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler
+            where THandler : class, ITypedHttpCallHandler
         {
             _innerBuilder.ConfigureHandler(configure);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure) where THandler : class, IHttpCallHandler
+        public IAdvancedHalCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure)
+            where THandler : class, ITypedHttpCallHandler
         {
             _innerBuilder.TryConfigureHandler(configure);
 
@@ -381,6 +382,62 @@ namespace AonWeb.FluentHttp.HAL
             where TContent : IHalRequest
         {
             _innerBuilder.OnSending(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithContent<TContent>(Action<TypedHttpSendingContext<object, TContent>> handler) where TContent : IHalRequest
+        {
+            _innerBuilder.OnSendingWithContent(handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<object, TContent>> handler) where TContent : IHalRequest
+        {
+            _innerBuilder.OnSendingWithContent(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithContent<TContent>(Func<TypedHttpSendingContext<object, TContent>, Task> handler) where TContent : IHalRequest
+        {
+            _innerBuilder.OnSendingWithContent(handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<object, TContent>, Task> handler) where TContent : IHalRequest
+        {
+            _innerBuilder.OnSendingWithContent(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, object>> handler) where TResult : IHalResource
+        {
+            _innerBuilder.OnSendingWithResult(handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<TResult, object>> handler) where TResult : IHalResource
+        {
+            _innerBuilder.OnSendingWithResult(priority, handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithResult<TResult>(Func<TypedHttpSendingContext<TResult, object>, Task> handler) where TResult : IHalResource
+        {
+            _innerBuilder.OnSendingWithResult(handler);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, object>, Task> handler) where TResult : IHalResource
+        {
+            _innerBuilder.OnSendingWithResult(priority, handler);
 
             return this;
         }
@@ -511,9 +568,16 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
-        public IAdvancedHalCallBuilder WithSuppressCancellationErrors(bool suppress = true)
+        public IAdvancedHalCallBuilder WithSuppressCancellationExceptions(bool suppress = true)
         {
-            _innerBuilder.WithSuppressCancellationErrors(suppress);
+            _innerBuilder.WithSuppressCancellationExceptions(suppress);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder WithSuppressTypeMismatchExceptions(bool suppress = true)
+        {
+            _innerBuilder.WithSuppressTypeMismatchExceptions(suppress);
 
             return this;
         }

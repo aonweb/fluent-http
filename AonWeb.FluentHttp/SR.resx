@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ArgumentMethodNullOrEmptyError" xml:space="preserve">
-    <value>Method must not be null or empty</value>
+    <value>Method must not be null or empty.</value>
   </data>
   <data name="ArgumentPathMustBeAbsoluteError" xml:space="preserve">
-    <value>Path must be absolute and begin with a "/"</value>
+    <value>Path must be absolute and begin with a "/".</value>
   </data>
   <data name="ArgumentUriMustBeAbsoluteError" xml:space="preserve">
     <value>Uri must be absolute.</value>
   </data>
   <data name="ArgumentUriNullOrEmptyError" xml:space="preserve">
-    <value>Uri must not be null or empty</value>
+    <value>Uri must not be null or empty.</value>
   </data>
   <data name="HanderAlreadyExistsError" xml:space="preserve">
     <value>This handler has already been registered.</value>
@@ -136,15 +136,21 @@
     <value>A handler of type '{0}' has not been registered.</value>
   </data>
   <data name="MaxAutoRedirectsErrorFormat" xml:space="preserve">
-    <value>The maximum allowed number redirects ({0}) was reached. Last uri: '{1}'</value>
+    <value>The maximum allowed number redirects ({0}) was reached. Last uri: '{1}'.</value>
   </data>
-  <data name="NoFormatterForMimeTypeErrorFormat" xml:space="preserve">
-    <value>No MediaTypeFormatter has been registered for media type '{0}'</value>
+  <data name="NowWriteFormatterForMimeTypeErrorFormat" xml:space="preserve">
+    <value>No MediaTypeFormatter is available to writean object of type '{0}' to content with media type 1.</value>
   </data>
   <data name="CacheContextRequestMessageRequiredError" xml:space="preserve">
-    <value>The current Cache Context must have Request Message</value>
+    <value>The current Cache Context must have Request Message.</value>
   </data>
   <data name="CacheContextResponseInfoRequiredError" xml:space="preserve">
-    <value>The current Cache Context must have ResponseInfo</value>
+    <value>The current Cache Context must have ResponseInfo.</value>
+  </data>
+  <data name="NoReadFormatterForMimeTypeErrorFormat" xml:space="preserve">
+    <value>No MediaTypeFormatter is available to read an object of type '{0}' from content with media type '{1}'.</value>
+  </data>
+  <data name="TypeMismatchErrorFormat" xml:space="preserve">
+    <value>Expected type '{0}', actual type {1}.</value>
   </data>
 </root>

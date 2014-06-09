@@ -119,10 +119,26 @@ namespace AonWeb.FluentHttp
 
         public IHttpCallBuilder WithQueryString(NameValueCollection values)
         {
-            if (values != null)
+            if (values == null)
+                return this;
+
+            for (var i = 0; i < values.Count; i++)
+                _settings.QueryString.Set(values.GetKey(i), values.Get(i));
+
+
+            _settings.UriBuilderQuery = _settings.QueryString.ToEncodedString();
+
+            return this;
+        }
+
+        public IHttpCallBuilder WithQueryString(IEnumerable<KeyValuePair<string, string>> values)
+        {
+            if (values == null)
+                return this;
+
+            foreach (var pair in values)
             {
-                for (var i = 0; i < values.Count; i++)
-                    _settings.QueryString.Set(values.GetKey(i), values.Get(i));
+                _settings.QueryString.Set(pair.Key, pair.Value);
             }
 
             _settings.UriBuilderQuery = _settings.QueryString.ToEncodedString();
@@ -492,7 +508,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder WithSuppressCancellationErrors(bool suppress = true)
+        public IAdvancedHttpCallBuilder WithSuppressCancellationExceptions(bool suppress = true)
         {
             _settings.SuppressCancellationErrors = suppress;
 
