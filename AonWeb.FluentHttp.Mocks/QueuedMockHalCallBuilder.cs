@@ -1,82 +1,78 @@
 using System;
 using System.Net;
 using System.Net.Http;
-
 using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class QueuedMockHalCallBuilder<TResult, TContent, TError> :
-        HalCallBuilder<TResult, TContent, TError>,
-        IMockBuilder<TResult, TContent, TError>
-        where TResult : IHalResource
-        where TContent : IHalRequest
+    public class QueuedMockHalCallBuilder :
+        HalCallBuilder,
+        IMockTypedBuilder<QueuedMockHalCallBuilder>
     {
-        private readonly QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> _innerBuilder;
+        private readonly QueuedMockTypedHttpCallBuilder _innerBuilder;
 
         protected QueuedMockHalCallBuilder()
         {
-            _innerBuilder = new QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>();
+            _innerBuilder = new QueuedMockTypedHttpCallBuilder();
         }
 
-        public static QueuedMockHalCallBuilder<TResult, TContent, TError> CreateMock()
+        public static QueuedMockHalCallBuilder CreateMock()
         {
-            return new QueuedMockHalCallBuilder<TResult, TContent, TError>();
+            return new QueuedMockHalCallBuilder();
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
+        public QueuedMockHalCallBuilder WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
             _innerBuilder.WithResult(resultFactory);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResult(TResult result)
+        public QueuedMockHalCallBuilder WithResult<TResult>(TResult result)
         {
             return WithResult(result, HttpStatusCode.OK);
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResult(TResult result, HttpStatusCode statusCode)
+        public QueuedMockHalCallBuilder WithResult<TResult>(TResult result, HttpStatusCode statusCode)
         {
             _innerBuilder.WithResult((r, c) => result);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
+        public QueuedMockHalCallBuilder WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
         {
             _innerBuilder.WithError(errorFactory);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithError(TError error)
+        public QueuedMockHalCallBuilder WithError<TError>(TError error)
         {
             return WithError(error, HttpStatusCode.InternalServerError);
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithError(TError error, HttpStatusCode statusCode)
+        public QueuedMockHalCallBuilder WithError<TError>(TError error, HttpStatusCode statusCode)
         {
             _innerBuilder.WithError((r, c) => error);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public QueuedMockHalCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
             _innerBuilder.WithResponse(responseFactory);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResponse(HttpResponseMessage response)
+        public QueuedMockHalCallBuilder WithResponse(HttpResponseMessage response)
         {
             return WithResponse(r => response);
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResponse(ResponseInfo response)
+        public QueuedMockHalCallBuilder WithResponse(ResponseInfo response)
         {
             return WithResponse(r => response.ToHttpResponseMessage());
         }

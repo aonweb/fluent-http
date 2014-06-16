@@ -1,0 +1,39 @@
+using System;
+using System.Net;
+using System.Net.Http;
+
+namespace AonWeb.FluentHttp.Mocks
+{
+    public class QueuedMockHttpCallBuilder : HttpCallBuilder, IMockBuilder<QueuedMockHttpCallBuilder>
+    {
+        private readonly ResponseQueue<Func<HttpRequestMessage, HttpResponseMessage>> _responses;
+
+        public QueuedMockHttpCallBuilder()
+            : this(new ResponseQueue<Func<HttpRequestMessage, HttpResponseMessage>>(r => new HttpResponseMessage(HttpStatusCode.OK))) { }
+
+        public QueuedMockHttpCallBuilder(ResponseQueue<Func<HttpRequestMessage, HttpResponseMessage>> responses)
+            : base(new MockHttpClientBuilder())
+        {
+            _responses = responses;
+
+            ConfigureClient(b => ((MockHttpClientBuilder)b).WithResponse(r => _responses.GetNext()(r)));
+        }
+
+        public QueuedMockHttpCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        {
+            _responses.Add(responseFactory);
+
+            return this;
+        }
+
+        public QueuedMockHttpCallBuilder WithResponse(HttpResponseMessage response)
+        {
+            return WithResponse(r => response);
+        }
+
+        public QueuedMockHttpCallBuilder WithResponse(ResponseInfo response)
+        {
+            return WithResponse(r => response.ToHttpResponseMessage());
+        }
+    }
+}

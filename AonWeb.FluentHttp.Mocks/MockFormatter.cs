@@ -48,7 +48,7 @@ namespace AonWeb.FluentHttp.Mocks
 
         public MockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
-            _resultFactory = (r, c) => resultFactory;
+            _resultFactory = (r, c) => resultFactory(r,c);
 
             return this;
         }
@@ -60,11 +60,9 @@ namespace AonWeb.FluentHttp.Mocks
 
         public MockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
         {
-            _errorFactory = (r, c) => errorFactory;
+            _errorFactory = (r, c) => errorFactory(r,c);
 
             return this;
         }
-
-
     }
 }

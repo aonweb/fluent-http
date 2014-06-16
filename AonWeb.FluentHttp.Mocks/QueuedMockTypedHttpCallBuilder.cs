@@ -6,118 +6,85 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class QueuedMockHttpCallBuilder : HttpCallBuilder, IMockBuilder
+    public class QueuedMockTypedHttpCallBuilder :
+        TypedHttpCallBuilder,
+        IMockBuilder<QueuedMockTypedHttpCallBuilder>
     {
-        private readonly ResponseQueue<Func<HttpRequestMessage, HttpResponseMessage>> _responses;
-
-        public QueuedMockHttpCallBuilder()
-            : this(new ResponseQueue<Func<HttpRequestMessage, HttpResponseMessage>>(r => new HttpResponseMessage(HttpStatusCode.OK))) { }
-
-        public QueuedMockHttpCallBuilder(ResponseQueue<Func<HttpRequestMessage, HttpResponseMessage>> responses)
-            : base(new MockHttpClientBuilder())
-        {
-            _responses = responses;
-
-            ConfigureClient(b => ((MockHttpClientBuilder)b).WithResponse(r => _responses.GetNext()(r)));
-        }
-
-        public IMockBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
-        {
-            _responses.Add(responseFactory);
-
-            return this;
-        }
-
-        public IMockBuilder WithResponse(HttpResponseMessage response)
-        {
-            return WithResponse(r => response);
-        }
-
-        public IMockBuilder WithResponse(ResponseInfo response)
-        {
-            return WithResponse(r => response.ToHttpResponseMessage());
-        }
-    }
-
-    public class QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> :
-        TypedHttpCallBuilder<TResult, TContent, TError>,
-        IMockBuilder<TResult, TContent, TError>
-    {
-        private readonly QueuedMockFormatter<TResult, TContent, TError> _formatter;
+        private readonly QueuedMockFormatter _formatter;
         private readonly QueuedMockHttpCallBuilder _innerBuilder;
 
         protected internal QueuedMockTypedHttpCallBuilder()
         {
             _innerBuilder = new QueuedMockHttpCallBuilder();
-            _formatter = new QueuedMockFormatter<TResult, TContent, TError>();
+            _formatter = new QueuedMockFormatter();
         }
 
-        public static QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> CreateMock()
+        public static QueuedMockTypedHttpCallBuilder CreateMock()
         {
-            return new QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>();
+            return new QueuedMockTypedHttpCallBuilder();
         }
 
-        public static QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> CreateMock(string baseUri)
+        public static QueuedMockTypedHttpCallBuilder CreateMock(string baseUri)
         {
-            return (QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>)(CreateMock().WithBaseUri(baseUri));
+            return (QueuedMockTypedHttpCallBuilder)(CreateMock().WithBaseUri(baseUri));
         }
 
-        public static QueuedMockTypedHttpCallBuilder<TResult, TContent, TError> CreateMock(Uri baseUri)
+        public static QueuedMockTypedHttpCallBuilder CreateMock(Uri baseUri)
         {
-            return (QueuedMockTypedHttpCallBuilder<TResult, TContent, TError>)(CreateMock().WithBaseUri(baseUri));
+            return (QueuedMockTypedHttpCallBuilder)(CreateMock().WithBaseUri(baseUri));
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
+        public QueuedMockTypedHttpCallBuilder WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
             _formatter.WithResult(resultFactory);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResult(TResult result)
+        public QueuedMockTypedHttpCallBuilder WithResult<TResult>(TResult result)
         {
             return WithResult(result, HttpStatusCode.OK);
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResult(TResult result, HttpStatusCode statusCode)
+        public QueuedMockTypedHttpCallBuilder WithResult<TResult>(TResult result, HttpStatusCode statusCode)
         {
             _formatter.WithResult((r, c) => result);
 
             return WithResponse(new ResponseInfo(statusCode));
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
+        public QueuedMockTypedHttpCallBuilder WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
         {
             _formatter.WithError(errorFactory);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithError(TError error)
+        public QueuedMockTypedHttpCallBuilder WithError<TError>(TError error)
         {
             return WithError(error, HttpStatusCode.InternalServerError);
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithError(TError error, HttpStatusCode statusCode)
+        public QueuedMockTypedHttpCallBuilder WithError<TError>(TError error, HttpStatusCode statusCode)
         {
             _formatter.WithError((r, c) => error);
 
             return WithResponse(new ResponseInfo(statusCode));
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public QueuedMockTypedHttpCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
             _innerBuilder.WithResponse(responseFactory);
 
             return this;
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResponse(HttpResponseMessage response)
+        public QueuedMockTypedHttpCallBuilder WithResponse(HttpResponseMessage response)
         {
             return WithResponse(r => response);
         }
 
-        public IMockBuilder<TResult, TContent, TError> WithResponse(ResponseInfo response)
+        public QueuedMockTypedHttpCallBuilder WithResponse(ResponseInfo response)
         {
             return WithResponse(r => response.ToHttpResponseMessage());
         }

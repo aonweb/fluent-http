@@ -6,29 +6,29 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class QueuedMockFormatter<TResult, TContent, TError>
-        : IHttpCallFormatter<TResult, TContent, TError>,
-          IHttpTypedMocker<QueuedMockFormatter<TResult, TContent, TError>, TResult, TContent, TError>
+    public class QueuedMockFormatter
+        : IHttpCallFormatter,
+        IHttpTypedMocker<QueuedMockFormatter>
     {
-        private readonly IHttpCallFormatter<TResult, TContent, TError> _innerFormatter;
+        private readonly IHttpCallFormatter _innerFormatter;
 
-        private readonly ResponseQueue<Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult>> _results;
-        private readonly ResponseQueue<Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError>> _errors;
+        private readonly ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>> _results;
+        private readonly ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>> _errors;
 
         public QueuedMockFormatter()
         {
-            _innerFormatter = new HttpCallFormatter<TResult, TContent, TError>();
+            _innerFormatter = new HttpCallFormatter();
 
-            _results = new ResponseQueue<Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult>>((r,c) => default(TResult));
-            _errors = new ResponseQueue<Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError>>((r, c) => default(TError));
+            _results = new ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>>((r,c) => default(object));
+            _errors = new ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>>((r, c) => default(object));
         }
 
-        public Task<HttpContent> CreateContent<T>(T value, HttpCallContext<TResult, TContent, TError> context)
+        public Task<HttpContent> CreateContent(object value, TypedHttpCallContext context)
         {
             return _innerFormatter.CreateContent(value, context);
         }
 
-        public Task<TResult> DeserializeResult(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context)
+        public Task<object> DeserializeResult(HttpResponseMessage response, TypedHttpCallContext context)
         {
             var func = _results.GetNext();
 
@@ -37,7 +37,7 @@ namespace AonWeb.FluentHttp.Mocks
             return Task.FromResult(result);
         }
 
-        public Task<TError> DeserializeError(HttpResponseMessage response, HttpCallContext<TResult, TContent, TError> context)
+        public Task<object> DeserializeError(HttpResponseMessage response, TypedHttpCallContext context)
         {
             var func = _errors.GetNext();
 
@@ -46,26 +46,26 @@ namespace AonWeb.FluentHttp.Mocks
             return Task.FromResult(result);
         }
 
-        public QueuedMockFormatter<TResult, TContent, TError> WithResult(TResult result)
+        public QueuedMockFormatter WithResult<TResult>(TResult result)
         {
             return WithResult((r, c) => result);
         }
 
-        public QueuedMockFormatter<TResult, TContent, TError> WithResult(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TResult> resultFactory)
+        public QueuedMockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
-            _results.Add(resultFactory);
+            _results.Add((r, c) => resultFactory(r,c));
 
             return this;
         }
 
-        public QueuedMockFormatter<TResult, TContent, TError> WithError(TError error)
+        public QueuedMockFormatter WithError<TError>(TError error)
         {
             return WithError((r, c) => error);
         }
 
-        public QueuedMockFormatter<TResult, TContent, TError> WithError(Func<HttpResponseMessage, HttpCallContext<TResult, TContent, TError>, TError> errorFactory)
+        public QueuedMockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
         {
-            _errors.Add(errorFactory);
+            _errors.Add((r, c) => errorFactory(r,c));
 
             return this;
         }
