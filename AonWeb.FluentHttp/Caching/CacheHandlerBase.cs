@@ -10,19 +10,19 @@ namespace AonWeb.FluentHttp.Caching
     // additionally I need an implementation that allows for deserialized object level caching in addition to http response caching
     // so I implemented a cachehandler that plugs in to the TypedHttpCallBuilder higher up,
     // but the base logic for cache validation / invalidation was based off CacheCow
-    public abstract class CacheHandlerBase<TResult>
+    public abstract class CacheHandlerBase
     {
         protected CacheHandlerBase()
         {
-            Settings = new CacheSettings<TResult>();
+            Settings = new CacheSettings();
         }
 
-        protected CacheHandlerBase(CacheSettings<TResult> settings)
+        protected CacheHandlerBase(CacheSettings settings)
         {
             Settings = settings;
         }
 
-        protected CacheSettings<TResult> Settings { get; set; }
+        protected CacheSettings Settings { get; set; }
 
         #region HttpCallHandler Implementation
 
@@ -51,17 +51,17 @@ namespace AonWeb.FluentHttp.Caching
 
         #endregion
 
-        protected CacheContext<TResult> CreateCacheContext(IHttpCallContext callContext, HttpRequestMessage request)
+        protected CacheContext CreateCacheContext(IHttpCallContext callContext, HttpRequestMessage request)
         {
-            return new CacheContext<TResult>(Settings, callContext, request);
+            return new CacheContext(Settings, callContext, request);
         }
 
-        protected CacheContext<TResult> CreateCacheContext(IHttpCallContext callContext, HttpResponseMessage response)
+        protected CacheContext CreateCacheContext(IHttpCallContext callContext, HttpResponseMessage response)
         {
             return CreateCacheContext(callContext, response.RequestMessage);
         }
 
-        protected async Task TryGetFromCache(CacheContext<TResult> context)
+        protected async Task TryGetFromCache(CacheContext context)
         {
             if (!context.CacheValidator(context))
                 return;
@@ -100,12 +100,12 @@ namespace AonWeb.FluentHttp.Caching
             }
         }
 
-        protected void TryGetRevalidatedResult(CacheContext<TResult> context, HttpResponseMessage response)
+        protected void TryGetRevalidatedResult(CacheContext context, HttpResponseMessage response)
         {
             if (!context.RevalidateValidator(context))
                 return;
 
-            context.CacheResult = context.Items["CacheHandlerCachedItem"] as CacheResult<TResult>;
+            context.CacheResult = context.Items["CacheHandlerCachedItem"] as CacheResult;
 
             if (context.CacheResult != null && context.ResultFound)
             {
@@ -118,13 +118,13 @@ namespace AonWeb.FluentHttp.Caching
             }
             else
             {
-                context.CacheResult = CacheResult<TResult>.Empty;
+                context.CacheResult = CacheResult.Empty;
             }
         }
 
-        protected async Task TryCacheResult(CacheContext<TResult> context, TResult result, HttpResponseMessage response)
+        protected async Task TryCacheResult(CacheContext context, object result, HttpResponseMessage response)
         {
-            context.CacheResult = new CacheResult<TResult>(result, response, context);
+            context.CacheResult = new CacheResult(result, response, context);
 
             if (context.CacheValidator(context))
             {

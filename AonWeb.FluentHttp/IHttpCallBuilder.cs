@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Text;
@@ -15,6 +16,7 @@ namespace AonWeb.FluentHttp
         IHttpCallBuilder WithRelativePath(string pathAndQuery);
         IHttpCallBuilder WithQueryString(string name, string value);
         IHttpCallBuilder WithQueryString(NameValueCollection values);
+        IHttpCallBuilder WithQueryString(IEnumerable<KeyValuePair<string, string>> values);
         IHttpCallBuilder AsGet();
         IHttpCallBuilder AsPut();
         IHttpCallBuilder AsPost();

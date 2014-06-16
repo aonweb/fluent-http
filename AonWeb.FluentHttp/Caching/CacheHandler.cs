@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 namespace AonWeb.FluentHttp.Caching
 {
 
-    public class TypedCacheHandler : CacheHandlerBase<object>, IBoxedHttpCallHandler
+    public class TypedCacheHandler : CacheHandlerBase, IBoxedHttpCallHandler
     {
         public TypedCacheHandler() { }
 
-        protected TypedCacheHandler(CacheSettings<object> settings)
+        protected TypedCacheHandler(CacheSettings settings)
             : base(settings) { }
 
         #region Configuration Methods
@@ -123,11 +123,11 @@ namespace AonWeb.FluentHttp.Caching
         #endregion
     }
 
-    public class CacheHandler : CacheHandlerBase<HttpResponseMessage>, IHttpCallHandler
+    public class CacheHandler : CacheHandlerBase, IHttpCallHandler
     {
         public CacheHandler() { }
 
-        protected CacheHandler(CacheSettings<HttpResponseMessage> settings)
+        protected CacheHandler(CacheSettings settings)
             : base(settings) { }
 
         #region Configuration Methods
@@ -164,26 +164,26 @@ namespace AonWeb.FluentHttp.Caching
 
         public async Task OnSending(HttpSendingContext context)
         {
-            Settings.CacheResultConfiguration = cacheResult => cacheResult.Result.RequestMessage = context.Request;
+            Settings.CacheResultConfiguration = cacheResult => ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Request;
 
             var cacheContext = CreateCacheContext(context, context.Request);
 
             await TryGetFromCache(cacheContext);
 
             if (cacheContext.ResultFound)
-                context.Response = cacheContext.Result;
+                context.Response = (HttpResponseMessage)cacheContext.Result;
         }
 
         public async Task OnSent(HttpSentContext context)
         {
             var cacheContext = CreateCacheContext(context, context.Response);
 
-            Settings.CacheResultConfiguration = cacheResult => cacheResult.Result.RequestMessage = context.Response.RequestMessage;
+            Settings.CacheResultConfiguration = cacheResult => ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Response.RequestMessage;
 
             TryGetRevalidatedResult(cacheContext, context.Response);
 
             if (cacheContext.ResultFound)
-                context.Response = cacheContext.Result;
+                context.Response = (HttpResponseMessage)cacheContext.Result;
 
             await TryCacheResult(cacheContext, context.Response, context.Response);
         }

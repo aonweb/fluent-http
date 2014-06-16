@@ -16,30 +16,30 @@ namespace AonWeb.FluentHttp.Caching
         private static readonly ConcurrentDictionary<string, UriCacheInfo> _uriCache = new ConcurrentDictionary<string, UriCacheInfo>();
         private static readonly ResponseSerializer _serializer = new ResponseSerializer();
 
-        public async Task<CacheResult<T>> GetCachedResult<T>(CacheContext<T> context)
+        public async Task<CacheResult> GetCachedResult(CacheContext context)
         {
             var cachedItem = _cache.Get(context.Key) as CachedItem;
 
             if (cachedItem == null)
-                return CacheResult<T>.Empty;
+                return CacheResult.Empty;
 
-            T result;
+            object result;
 
             if (cachedItem.IsHttpResponseMessage)
             {
                 var responseBuffer = cachedItem.Result as byte[];
 
-                result = (T)((object)await _serializer.Deserialize(responseBuffer));
+                result = await _serializer.Deserialize(responseBuffer);
             }
             else
             {
-                result = (T)cachedItem.Result;
+                result = cachedItem.Result;
             }
 
-            return new CacheResult<T>(cachedItem.ResponseInfo) { Result = result };
+            return new CacheResult(cachedItem.ResponseInfo) { Result = result };
         }
 
-        public async Task AddOrUpdate<T>(CacheContext<T> context)
+        public async Task AddOrUpdate(CacheContext context)
         {
             var isResponseMessage = false;
 
@@ -74,7 +74,7 @@ namespace AonWeb.FluentHttp.Caching
             AddCacheKey(context.Uri, context.Key);
         }
 
-        public bool TryRemove<T>(CacheContext<T> context)
+        public bool TryRemove(CacheContext context)
         {
             var item = _cache.Remove(context.Key) as CachedItem;
 

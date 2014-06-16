@@ -19,7 +19,7 @@ namespace AonWeb.FluentHttp
             var formatter = context.MediaTypeFormatters.FindWriter(type, header);
 
             if (formatter == null)
-                throw new ArgumentException(String.Format(SR.NoFormatterForMimeTypeErrorFormat, mediaType));
+                throw new ArgumentException(String.Format(SR.NowWriteFormatterForMimeTypeErrorFormat, type.PrettyPrintName(), mediaType));
 
             HttpContent content;
             using (var stream = new MemoryStream())
@@ -69,7 +69,7 @@ namespace AonWeb.FluentHttp
                 if (content.Headers.ContentLength == 0)
                     return Helper.GetDefaultValueForType(type);
 
-                throw new UnsupportedMediaTypeException(string.Format("No MediaTypeFormatter is available to read an object of type '{0}' from content with media type '{1}'", type.Name, mediaType.MediaType), mediaType);
+                throw new UnsupportedMediaTypeException(string.Format(SR.NoReadFormatterForMimeTypeErrorFormat, type.PrettyPrintName(), mediaType.MediaType), mediaType);
             }
 
             token.ThrowIfCancellationRequested();

@@ -263,7 +263,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             builder.OnSending(ctx => actual = ctx.Request.RequestUri.OriginalString);
 
             // act
-            await builder.WithQueryString(null).ResultAsync();
+            await builder.WithQueryString((NameValueCollection)null).ResultAsync();
 
             // assert
             Assert.AreEqual(expected, actual);

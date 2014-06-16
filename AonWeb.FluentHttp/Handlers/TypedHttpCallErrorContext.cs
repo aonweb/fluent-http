@@ -6,14 +6,14 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public class TypedHttpCallErrorContext<TError> : TypedHttpCallHandlerContext
     {
-        private readonly HttpCallHandlerResult<bool> _errorHandled;
+        private readonly ModifyTracker<bool> _errorHandled;
 
         public TypedHttpCallErrorContext(TypedHttpCallContext context, HttpResponseMessage response, TError error)
             : base(context)
         {
             Response = response;
             Error = error;
-            _errorHandled = new HttpCallHandlerResult<bool>(false);
+            _errorHandled = new ModifyTracker<bool>(false);
         }
 
         public HttpResponseMessage Response { get; private set; }
@@ -33,7 +33,7 @@ namespace AonWeb.FluentHttp.Handlers
 
         public TError Error { get; private set; }
 
-        public override HttpCallHandlerResult GetHandlerResult()
+        public override ModifyTracker GetHandlerResult()
         {
             return _errorHandled.ToResult();
         }

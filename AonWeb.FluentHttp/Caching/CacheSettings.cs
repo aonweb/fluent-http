@@ -5,10 +5,10 @@ using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Caching
 {
-    public class CacheSettings<TResult> : CacheSettings
+    public class CacheSettings
     {
         public CacheSettings()
-            : base(typeof(TResult),
+            : this(
                 HttpCallBuilderDefaults.DefaultCacheStoreFactory(),
                 HttpCallBuilderDefaults.DefaultVaryByStoreFactory())
         {
@@ -18,18 +18,8 @@ namespace AonWeb.FluentHttp.Caching
             AllowStaleResultValidator = CacheHandlerDefaults.AllowStaleResultValidator;
         }
 
-        public Action<CacheResult<TResult>> CacheResultConfiguration { get; set; }
-        public Func<CacheContext<TResult>, ResponseValidationResult> ResponseValidator { get; set; }
-        public Func<CacheContext<TResult>, bool> CacheValidator { get; set; }
-        public Func<CacheContext<TResult>, bool> RevalidateValidator { get; set; }
-        public Func<CacheContext<TResult>, bool> AllowStaleResultValidator { get; set; }
-    }
-
-    public abstract class CacheSettings
-    {
-        protected CacheSettings(Type resultType, IHttpCacheStore cacheStore, IVaryByStore varyByStore)
+        public CacheSettings(IHttpCacheStore cacheStore, IVaryByStore varyByStore)
         {
-            ResultType = resultType;
             CacheStore = cacheStore;
             VaryByStore = varyByStore;
             Enabled = HttpCallBuilderDefaults.CachingEnabled;
@@ -40,8 +30,13 @@ namespace AonWeb.FluentHttp.Caching
             DefaultExpiration = HttpCallBuilderDefaults.DefaultCacheExpiration;
         }
 
+        public Action<CacheResult> CacheResultConfiguration { get; set; }
+        public Func<CacheContext, ResponseValidationResult> ResponseValidator { get; set; }
+        public Func<CacheContext, bool> CacheValidator { get; set; }
+        public Func<CacheContext, bool> RevalidateValidator { get; set; }
+        public Func<CacheContext, bool> AllowStaleResultValidator { get; set; }
+
         public bool Enabled { get; set; }
-        public Type ResultType { get; private set; }
         public IHttpCacheStore CacheStore { get; private set; }
         public IVaryByStore VaryByStore { get; private set; }
         public ISet<HttpMethod> CacheableMethods { get; private set; }

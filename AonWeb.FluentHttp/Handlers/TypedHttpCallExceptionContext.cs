@@ -4,13 +4,13 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public class TypedHttpCallExceptionContext : TypedHttpCallHandlerContext
     {
-        private readonly HttpCallHandlerResult<bool> _exceptionHandled;
+        private readonly ModifyTracker<bool> _exceptionHandled;
 
         public TypedHttpCallExceptionContext(TypedHttpCallContext context, Exception exception)
             : base(context)
         {
             Exception = exception;
-            _exceptionHandled = new HttpCallHandlerResult<bool>(false);
+            _exceptionHandled = new ModifyTracker<bool>(false);
         }
 
         public Exception Exception { get; private set; }
@@ -28,7 +28,7 @@ namespace AonWeb.FluentHttp.Handlers
             }
         }
 
-        public override HttpCallHandlerResult GetHandlerResult()
+        public override ModifyTracker GetHandlerResult()
         {
             return _exceptionHandled.ToResult();
         }

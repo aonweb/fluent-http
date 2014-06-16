@@ -4,14 +4,14 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public class TypedHttpSentContext<TResult> : TypedHttpCallHandlerContext
     {
-        private readonly HttpCallHandlerResult<TResult> _result;
+        private readonly ModifyTracker<TResult> _result;
 
         public TypedHttpSentContext(TypedHttpCallContext context, HttpResponseMessage response)
             : base(context)
         {
             Response = response;
 
-            _result = new HttpCallHandlerResult<TResult>();
+            _result = new ModifyTracker<TResult>();
         }
 
         public HttpResponseMessage Response { get; set; }
@@ -28,7 +28,7 @@ namespace AonWeb.FluentHttp.Handlers
             }
         }
 
-        public override HttpCallHandlerResult GetHandlerResult()
+        public override ModifyTracker GetHandlerResult()
         {
             return _result.ToResult();
         }

@@ -167,7 +167,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 // act
                 var watch = new Stopwatch();
                 watch.Start();
-                var task = builder.Advanced.WithSuppressCancellationErrors(false).ResultAsync();
+                var task = builder.Advanced.WithSuppressCancellationExceptions(false).ResultAsync();
 
                 builder.CancelRequest();
 
@@ -211,7 +211,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => Thread.Sleep(delay));
 
                 // act
-                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationErrors(false).ResultAsync();
+                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).ResultAsync();
             }
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
@@ -72,7 +71,7 @@ namespace AonWeb.FluentHttp
         IAdvancedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext, Task> handler);
 
         IAdvancedHttpCallBuilder WithAutoDecompression(bool enabled = true);
-        IAdvancedHttpCallBuilder WithSuppressCancellationErrors(bool suppress = true);
+        IAdvancedHttpCallBuilder WithSuppressCancellationExceptions(bool suppress = true);
         IAdvancedHttpCallBuilder WithTimeout(TimeSpan? timeout);
     }
 }

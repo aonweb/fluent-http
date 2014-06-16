@@ -1,16 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Caching
 {
     public interface IHttpCacheStore
     {
-        Task<CacheResult<T>> GetCachedResult<T>(CacheContext<T> context);
+        Task<CacheResult> GetCachedResult(CacheContext context);
 
-        Task AddOrUpdate<T>(CacheContext<T> context);
+        Task AddOrUpdate(CacheContext context);
 
-        bool TryRemove<T>(CacheContext<T> context);
+        bool TryRemove(CacheContext context);
 
         void Clear();
 

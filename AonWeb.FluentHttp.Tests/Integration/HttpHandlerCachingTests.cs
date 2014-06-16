@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
-
-using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Tests.Helpers;
 
 using NUnit.Framework;

@@ -128,7 +128,6 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WithErrorExpectResultReturned()
         {
-
             var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
 
             //arrange

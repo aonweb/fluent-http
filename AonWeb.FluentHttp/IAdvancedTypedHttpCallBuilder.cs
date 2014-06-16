@@ -32,9 +32,9 @@ namespace AonWeb.FluentHttp
         IAdvancedTypedHttpCallBuilder WithHandler<TResult, TContent, TError>(ITypedHttpCallHandler handler);
         IAdvancedTypedHttpCallBuilder WithHandler(ITypedHttpCallHandler handler);
         IAdvancedTypedHttpCallBuilder ConfigureHandler<THandler>(Action<THandler> configure)
-                    where THandler : class, IHttpCallHandler;
+                    where THandler : class, ITypedHttpCallHandler;
         IAdvancedTypedHttpCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCallHandler;
+            where THandler : class, ITypedHttpCallHandler;
 
         IAdvancedTypedHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
         IAdvancedTypedHttpCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory);
@@ -48,6 +48,16 @@ namespace AonWeb.FluentHttp
         IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<TResult, TContent>> handler);
         IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(Func<TypedHttpSendingContext<TResult, TContent>, Task> handler);
         IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler);
+
+        IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(Action<TypedHttpSendingContext<object, TContent>> handler);
+        IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<object, TContent>> handler);
+        IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(Func<TypedHttpSendingContext<object, TContent>, Task> handler);
+        IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<object, TContent>, Task> handler);
+
+        IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, object>> handler);
+        IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpSendingContext<TResult, object>> handler);
+        IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(Func<TypedHttpSendingContext<TResult, object>, Task> handler);
+        IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, object>, Task> handler);
         
         IAdvancedTypedHttpCallBuilder OnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler);
         IAdvancedTypedHttpCallBuilder OnSent<TResult>(HttpCallHandlerPriority priority, Action<TypedHttpSentContext<TResult>> handler);
@@ -70,7 +80,8 @@ namespace AonWeb.FluentHttp
         IAdvancedTypedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler);
         
         IAdvancedTypedHttpCallBuilder WithAutoDecompression(bool enabled = true);
-        IAdvancedTypedHttpCallBuilder WithSuppressCancellationErrors(bool suppress = true);
+        IAdvancedTypedHttpCallBuilder WithSuppressCancellationExceptions(bool suppress = true);
+        IAdvancedTypedHttpCallBuilder WithSuppressTypeMismatchExceptions(bool suppress = true);
         IAdvancedTypedHttpCallBuilder WithTimeout(TimeSpan? timeout);
     }
 }
