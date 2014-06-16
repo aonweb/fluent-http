@@ -22,7 +22,7 @@ namespace AonWeb.FluentHttp.Handlers
             {
                 return _exceptionHandled.Value;
             }
-            internal set
+            set
             {
                 _exceptionHandled.Value = value;
             }

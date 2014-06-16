@@ -25,7 +25,7 @@ namespace AonWeb.FluentHttp.Handlers
             {
                 return _errorHandled.Value;
             }
-            internal set
+            set
             {
                 _errorHandled.Value = value;
             }
