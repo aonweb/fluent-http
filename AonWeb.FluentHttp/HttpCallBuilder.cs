@@ -42,7 +42,7 @@ namespace AonWeb.FluentHttp
 
         internal static IChildHttpCallBuilder CreateAsChild()
         {
-            return new HttpCallBuilder(new HttpCallBuilderSettings(), new HttpClientBuilder(), new RetryHandler(), new RedirectHandler());
+            return new HttpCallBuilder(new HttpCallBuilderSettings(), new HttpClientBuilder(), HttpCallBuilderDefaults.DefaultChildHandlerFactory());
         }
 
         public static IHttpCallBuilder Create(string baseUri)

@@ -80,6 +80,7 @@
     <Compile Include="Helpers\HAL\HalMother.cs" />
     <Compile Include="Helpers\LocalWebServerResponseInfo.cs" />
     <Compile Include="Helpers\LocalWebServer.cs" />
+    <Compile Include="Http\FollowLocationHandlerTests.cs" />
     <Compile Include="Http\RetryHandlerTests.cs" />
     <Compile Include="Http\MockTypedHttpCallBuilderTests.cs" />
     <Compile Include="Http\AdvancedTypedHttpCallBuilderTests.cs" />

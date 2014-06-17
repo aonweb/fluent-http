@@ -42,6 +42,9 @@ namespace AonWeb.FluentHttp
             DefaultContentEncoding = Encoding.UTF8;
             DefaultMediaTypeFormatters = new MediaTypeFormatterCollection().FluentAdd(new StringMediaFormatter());
             DefaultHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
+            DefaultChildHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
+            DefaultTypedHandlerFactory = () => new ITypedHttpCallHandler[] { new TypedCacheHandler() };
+
             DefaultResultType = typeof(string);
             DefaultErrorType = typeof(string);
             DefaultContentType = typeof(IEmptyRequest);
@@ -56,6 +59,9 @@ namespace AonWeb.FluentHttp
             DefaultMaxRequestContentBufferSize = null;
             DefaultCredentials = null;
             SuppressCancellationErrors = true;
+
+            //Auto Follow Location
+            AutoFollowLocationEnabled = true;
 
             //Redirect Defaults
             AutoRedirectEnabled = true;
@@ -108,6 +114,8 @@ namespace AonWeb.FluentHttp
         }
 
         public static Func<IHttpCallHandler[]> DefaultHandlerFactory { get; set; }
+        public static Func<IHttpCallHandler[]> DefaultChildHandlerFactory { get; set; }
+        public static Func<ITypedHttpCallHandler[]> DefaultTypedHandlerFactory { get; set; }
         public static MediaTypeFormatterCollection DefaultMediaTypeFormatters { get; set; }
         public static HttpMethod DefaultHttpMethod { get; set; }
         public static HttpCompletionOption DefaultCompletionOption { get; set; }
@@ -166,5 +174,7 @@ namespace AonWeb.FluentHttp
         {
             return Helper.GetDefaultValueForType(type);
         }
+
+        
     }
 }

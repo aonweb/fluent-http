@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+
+using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
@@ -237,6 +239,34 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         #endregion
+
+        [Test]
+        public async Task WhenDependentUriIsNull_ExpectNoException()
+        {
+
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo());
+
+            //act
+            var result = await builder
+                .WithDependentUri(null)
+                .ResultAsync();
+
+            Assert.NotNull(result);
+        }
+
+        [Test]
+        public async Task WhenDependentUrisIsNull_ExpectNoException()
+        {
+
+            var builder = MockHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo());
+
+            //act
+            var result = await builder
+                .WithDependentUris(null)
+                .ResultAsync();
+
+            Assert.NotNull(result);
+        }
 
         /*
          IHttpCallBuilder WithScheme(string scheme);

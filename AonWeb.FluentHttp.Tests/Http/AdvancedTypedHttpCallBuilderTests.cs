@@ -375,8 +375,36 @@ namespace AonWeb.FluentHttp.Tests.Http
                 .ResultAsync<TestResult>();
 
             Assert.NotNull(error);
+            Assert.Null(result);
             Assert.AreEqual(typeof(TestResult), type);
         }
 
+        [Test]
+        public async Task WhenDependentUriIsNull_ExpectNoException()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var result = await builder
+                .WithDependentUri(null)
+                .ResultAsync<TestResult>();
+
+            Assert.NotNull(result);
+        }
+
+        [Test]
+        public async Task WhenDependentUrisIsNull_ExpectNoException()
+        {
+
+            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+
+            //act
+            var result = await builder
+                .WithDependentUris(null)
+                .ResultAsync<TestResult>();
+
+            Assert.NotNull(result);
+        }
     }
 }

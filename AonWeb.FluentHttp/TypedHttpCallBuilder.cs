@@ -33,7 +33,7 @@ namespace AonWeb.FluentHttp
             : this(new TypedHttpCallBuilderSettings(), builder, formatter) { }
 
         private TypedHttpCallBuilder(TypedHttpCallBuilderSettings settings, IChildHttpCallBuilder builder, IHttpCallFormatter formatter)
-            : this(settings, builder, formatter, new TypedCacheHandler()) { }
+            : this(settings, builder, formatter, HttpCallBuilderDefaults.DefaultTypedHandlerFactory()) { }
 
         private TypedHttpCallBuilder(TypedHttpCallBuilderSettings settings, IChildHttpCallBuilder builder,  IHttpCallFormatter formatter, params ITypedHttpCallHandler[] defaultHandlers)
         {

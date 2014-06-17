@@ -38,5 +38,17 @@ namespace AonWeb.FluentHttp.Tests
         {
             return response.Content.ReadAsStringAsync().Result;
         }
+
+        public static async Task<string> ReadContentsAsync(this Task<HttpResponseMessage> responseTask)
+        {
+            var r = await responseTask;
+
+            return await r.ReadContentsAsync();
+        }
+
+        public static async Task<string> ReadContentsAsync(this HttpResponseMessage response)
+        {
+            return await response.Content.ReadAsStringAsync();
+        }
     }
 }
