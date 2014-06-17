@@ -427,16 +427,16 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder OnSending(Func<HttpSendingContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSendingAsync(Func<HttpSendingContext, Task> handler)
         {
-            _settings.Handler.AddSendingHandler(handler);
+            _settings.Handler.AddAsyncSendingHandler(handler);
 
             return this;
         }
 
-        public IAdvancedHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSendingAsync(HttpCallHandlerPriority priority, Func<HttpSendingContext, Task> handler)
         {
-            _settings.Handler.AddSendingHandler(priority, handler);
+            _settings.Handler.AddAsyncSendingHandler(priority, handler);
 
             return this;
         }
@@ -455,16 +455,16 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder OnSent(Func<HttpSentContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSentAsync(Func<HttpSentContext, Task> handler)
         {
-            _settings.Handler.AddSentHandler(handler);
+            _settings.Handler.AddAsyncSentHandler(handler);
 
             return this;
         }
 
-        public IAdvancedHttpCallBuilder OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnSentAsync(HttpCallHandlerPriority priority, Func<HttpSentContext, Task> handler)
         {
-            _settings.Handler.AddSentHandler(priority, handler);
+            _settings.Handler.AddAsyncSentHandler(priority, handler);
 
             return this;
         }
@@ -483,16 +483,16 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedHttpCallBuilder OnException(Func<HttpExceptionContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnExceptionAsync(Func<HttpExceptionContext, Task> handler)
         {
-            _settings.Handler.AddExceptionHandler(handler);
+            _settings.Handler.AddAsyncExceptionHandler(handler);
 
             return this;
         }
 
-        public IAdvancedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext, Task> handler)
+        public IAdvancedHttpCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<HttpExceptionContext, Task> handler)
         {
-            _settings.Handler.AddExceptionHandler(priority, handler);
+            _settings.Handler.AddAsyncExceptionHandler(priority, handler);
 
             return this;
         }

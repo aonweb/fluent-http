@@ -68,6 +68,7 @@
     <Compile Include="Caching\ResponseInfo.cs" />
     <Compile Include="Caching\ResponseSerializer.cs" />
     <Compile Include="Caching\ResponseValidationResult.cs" />
+    <Compile Include="Caching\TypedCacheHandler.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
     <Compile Include="Exceptions\HttpCallException.cs" />
     <Compile Include="Caching\ICacheableHttpResult.cs" />

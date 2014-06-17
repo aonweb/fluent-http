@@ -57,18 +57,18 @@ namespace AonWeb.FluentHttp
 
         IAdvancedHttpCallBuilder OnSending(Action<HttpSendingContext> handler);
         IAdvancedHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Action<HttpSendingContext> handler);
-        IAdvancedHttpCallBuilder OnSending(Func<HttpSendingContext, Task> handler);
-        IAdvancedHttpCallBuilder OnSending(HttpCallHandlerPriority priority, Func<HttpSendingContext, Task> handler);
+        IAdvancedHttpCallBuilder OnSendingAsync(Func<HttpSendingContext, Task> handler);
+        IAdvancedHttpCallBuilder OnSendingAsync(HttpCallHandlerPriority priority, Func<HttpSendingContext, Task> handler);
 
         IAdvancedHttpCallBuilder OnSent(Action<HttpSentContext> handler);
         IAdvancedHttpCallBuilder OnSent(HttpCallHandlerPriority priority, Action<HttpSentContext> handler);
-        IAdvancedHttpCallBuilder OnSent(Func<HttpSentContext, Task> handler);
-        IAdvancedHttpCallBuilder OnSent(HttpCallHandlerPriority priority, Func<HttpSentContext, Task> handler);
+        IAdvancedHttpCallBuilder OnSentAsync(Func<HttpSentContext, Task> handler);
+        IAdvancedHttpCallBuilder OnSentAsync(HttpCallHandlerPriority priority, Func<HttpSentContext, Task> handler);
 
         IAdvancedHttpCallBuilder OnException(Action<HttpExceptionContext> handler);
         IAdvancedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Action<HttpExceptionContext> handler);
-        IAdvancedHttpCallBuilder OnException(Func<HttpExceptionContext, Task> handler);
-        IAdvancedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Func<HttpExceptionContext, Task> handler);
+        IAdvancedHttpCallBuilder OnExceptionAsync(Func<HttpExceptionContext, Task> handler);
+        IAdvancedHttpCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<HttpExceptionContext, Task> handler);
 
         IAdvancedHttpCallBuilder WithAutoDecompression(bool enabled = true);
         IAdvancedHttpCallBuilder WithSuppressCancellationExceptions(bool suppress = true);

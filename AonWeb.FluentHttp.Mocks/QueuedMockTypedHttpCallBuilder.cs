@@ -8,7 +8,7 @@ namespace AonWeb.FluentHttp.Mocks
 {
     public class QueuedMockTypedHttpCallBuilder :
         TypedHttpCallBuilder,
-        IMockBuilder<QueuedMockTypedHttpCallBuilder>
+        IMockTypedBuilder<QueuedMockTypedHttpCallBuilder>
     {
         private readonly QueuedMockFormatter _formatter;
         private readonly QueuedMockHttpCallBuilder _innerBuilder;

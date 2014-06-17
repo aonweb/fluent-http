@@ -54,8 +54,6 @@ namespace AonWeb.FluentHttp.Handlers
 
         public async Task<ModifyTracker> OnException(TypedHttpCallContext context, Exception exception)
         {
-            
-
             return await InvokeHandlers(HttpCallHandlerType.Exception, typeof(TypedHttpCallExceptionContext), null,new object[]{context, exception}, context.SuppressHandlerTypeExceptions);
         }
 
@@ -69,31 +67,31 @@ namespace AonWeb.FluentHttp.Handlers
 
             _callHandlers.Add(handler);
 
-            AddSendingHandler<TResult, TContent>(handler.GetPriority(HttpCallHandlerType.Sending), async ctx =>
+            AddAsyncSendingHandler<TResult, TContent>(handler.GetPriority(HttpCallHandlerType.Sending), async ctx =>
             {
                 if (handler.Enabled)
                     await handler.OnSending(ctx);
             });
 
-            AddSentHandler<TResult>(handler.GetPriority(HttpCallHandlerType.Sent), async ctx =>
+            AddAsyncSentHandler<TResult>(handler.GetPriority(HttpCallHandlerType.Sent), async ctx =>
                 {
                     if (handler.Enabled)
                         await handler.OnSent(ctx);
                 });
 
-            AddResultHandler<TResult>(handler.GetPriority(HttpCallHandlerType.Result), async ctx =>
+            AddAsyncResultHandler<TResult>(handler.GetPriority(HttpCallHandlerType.Result), async ctx =>
                 {
                     if (handler.Enabled)
                         await handler.OnResult(ctx);
                 });
 
-            AddErrorHandler<TError>(handler.GetPriority(HttpCallHandlerType.Error), async ctx =>
+            AddAsyncErrorHandler<TError>(handler.GetPriority(HttpCallHandlerType.Error), async ctx =>
                 {
                     if (handler.Enabled)
                         await handler.OnError(ctx);
                 });
 
-            AddExceptionHandler(handler.GetPriority(HttpCallHandlerType.Exception), async ctx =>
+            AddAsyncExceptionHandler(handler.GetPriority(HttpCallHandlerType.Exception), async ctx =>
                 {
                     if (handler.Enabled)
                         await handler.OnException(ctx);
@@ -135,15 +133,15 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddSendingHandler<TResult, TContent>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncSendingHandler<TResult, TContent>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public TypedHttpCallHandlerRegister AddSendingHandler<TResult, TContent>(Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncSendingHandler<TResult, TContent>(Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
         {
-            return AddSendingHandler(HttpCallHandlerPriority.Default, handler);
+            return AddAsyncSendingHandler(HttpCallHandlerPriority.Default, handler);
         }
 
-        public TypedHttpCallHandlerRegister AddSendingHandler<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncSendingHandler<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException("handler");
@@ -167,15 +165,15 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddSentHandler<TResult>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncSentHandler<TResult>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public TypedHttpCallHandlerRegister AddSentHandler<TResult>(Func<TypedHttpSentContext<TResult>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncSentHandler<TResult>(Func<TypedHttpSentContext<TResult>, Task> handler)
         {
-            return AddSentHandler(HttpCallHandlerPriority.Default, handler);
+            return AddAsyncSentHandler(HttpCallHandlerPriority.Default, handler);
         }
 
-        public TypedHttpCallHandlerRegister AddSentHandler<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSentContext<TResult>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncSentHandler<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSentContext<TResult>, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException("handler");
@@ -199,15 +197,15 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddResultHandler<TResult>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncResultHandler<TResult>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public TypedHttpCallHandlerRegister AddResultHandler<TResult>(Func<TypedHttpResultContext<TResult>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncResultHandler<TResult>(Func<TypedHttpResultContext<TResult>, Task> handler)
         {
-            return AddResultHandler(HttpCallHandlerPriority.Default, handler);
+            return AddAsyncResultHandler(HttpCallHandlerPriority.Default, handler);
         }
 
-        public TypedHttpCallHandlerRegister AddResultHandler<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncResultHandler<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException("handler");
@@ -231,15 +229,15 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddErrorHandler<TError>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncErrorHandler<TError>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public TypedHttpCallHandlerRegister AddErrorHandler<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncErrorHandler<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler)
         {
-            return AddErrorHandler(HttpCallHandlerPriority.Default, handler);
+            return AddAsyncErrorHandler(HttpCallHandlerPriority.Default, handler);
         }
 
-        public TypedHttpCallHandlerRegister AddErrorHandler<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncErrorHandler<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException("handler");
@@ -263,15 +261,15 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddExceptionHandler(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncExceptionHandler(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public TypedHttpCallHandlerRegister AddExceptionHandler(Func<TypedHttpCallExceptionContext, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncExceptionHandler(Func<TypedHttpCallExceptionContext, Task> handler)
         {
-            return AddExceptionHandler(HttpCallHandlerPriority.Default, handler);
+            return AddAsyncExceptionHandler(HttpCallHandlerPriority.Default, handler);
         }
 
-        public TypedHttpCallHandlerRegister AddExceptionHandler(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler)
+        public TypedHttpCallHandlerRegister AddAsyncExceptionHandler(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException("handler");

@@ -411,22 +411,22 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSendingAsync<TResult, TContent>(Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
         {
             _settings.SetContentType(typeof(TContent));
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddSendingHandler(handler);
+            _settings.Handler.AddAsyncSendingHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSendingAsync<TResult, TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, TContent>, Task> handler)
         {
             _settings.SetContentType(typeof(TContent));
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddSendingHandler(priority, handler);
+            _settings.Handler.AddAsyncSendingHandler(priority, handler);
 
             return this;
         }
@@ -449,20 +449,20 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(Func<TypedHttpSendingContext<object, TContent>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSendingWithContentAsync<TContent>(Func<TypedHttpSendingContext<object, TContent>, Task> handler)
         {
             _settings.SetContentType(typeof(TContent));
 
-            _settings.Handler.AddSendingHandler(handler);
+            _settings.Handler.AddAsyncSendingHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSendingWithContent<TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<object, TContent>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSendingWithContentAsync<TContent>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<object, TContent>, Task> handler)
         {
             _settings.SetContentType(typeof(TContent));
 
-            _settings.Handler.AddSendingHandler(priority, handler);
+            _settings.Handler.AddAsyncSendingHandler(priority, handler);
 
             return this;
         }
@@ -485,20 +485,20 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(Func<TypedHttpSendingContext<TResult, object>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSendingWithResultAsync<TResult>(Func<TypedHttpSendingContext<TResult, object>, Task> handler)
         {
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddSendingHandler(handler);
+            _settings.Handler.AddAsyncSendingHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSendingWithResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, object>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSendingWithResultAsync<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSendingContext<TResult, object>, Task> handler)
         {
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddSendingHandler(priority, handler);
+            _settings.Handler.AddAsyncSendingHandler(priority, handler);
 
             return this;
         }
@@ -521,20 +521,20 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSent<TResult>(Func<TypedHttpSentContext<TResult>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSentAsync<TResult>(Func<TypedHttpSentContext<TResult>, Task> handler)
         {
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddSentHandler(handler);
+            _settings.Handler.AddAsyncSentHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnSent<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSentContext<TResult>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnSentAsync<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpSentContext<TResult>, Task> handler)
         {
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddSentHandler(priority, handler);
+            _settings.Handler.AddAsyncSentHandler(priority, handler);
 
             return this;
         }
@@ -557,20 +557,20 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnResult<TResult>(Func<TypedHttpResultContext<TResult>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnResultAsync<TResult>(Func<TypedHttpResultContext<TResult>, Task> handler)
         {
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddResultHandler(handler);
+            _settings.Handler.AddAsyncResultHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnResult<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnResultAsync<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler)
         {
             _settings.SetResultType( typeof(TResult));
 
-            _settings.Handler.AddResultHandler(priority, handler);
+            _settings.Handler.AddAsyncResultHandler(priority, handler);
 
             return this;
         }
@@ -593,20 +593,20 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnError<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler)
         {
             _settings.SetErrorType(typeof(TError));
 
-            _settings.Handler.AddErrorHandler(handler);
+            _settings.Handler.AddAsyncErrorHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler)
         {
             _settings.SetErrorType(typeof(TError));
 
-            _settings.Handler.AddErrorHandler(priority, handler);
+            _settings.Handler.AddAsyncErrorHandler(priority, handler);
 
             return this;
         }
@@ -625,16 +625,16 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnException(Func<TypedHttpCallExceptionContext, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnExceptionAsync(Func<TypedHttpCallExceptionContext, Task> handler)
         {
-            _settings.Handler.AddExceptionHandler(handler);
+            _settings.Handler.AddAsyncExceptionHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler)
         {
-            _settings.Handler.AddExceptionHandler(priority, handler);
+            _settings.Handler.AddAsyncExceptionHandler(priority, handler);
 
             return this;
         }

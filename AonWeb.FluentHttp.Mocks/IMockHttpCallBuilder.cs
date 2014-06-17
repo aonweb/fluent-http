@@ -23,7 +23,7 @@ namespace AonWeb.FluentHttp.Mocks
     }
 
     public interface IMockBuilder<out T> : IHttpMocker<T>
-    where T : IMockBuilder<T> { }
+        where T : IMockBuilder<T> { }
 
     public interface IMockTypedBuilder<out T> :
         IHttpTypedMocker<T>,
