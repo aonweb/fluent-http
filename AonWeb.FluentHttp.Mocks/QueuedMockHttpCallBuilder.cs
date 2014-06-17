@@ -19,6 +19,25 @@ namespace AonWeb.FluentHttp.Mocks
             ConfigureClient(b => ((MockHttpClientBuilder)b).WithResponse(r => _responses.GetNext()(r)));
         }
 
+        public static QueuedMockHttpCallBuilder CreateMock()
+        {
+            return new QueuedMockHttpCallBuilder().ConfigureMock();
+        }
+
+        public static QueuedMockHttpCallBuilder CreateMock(string baseUri)
+        {
+            var builder = CreateMock().WithBaseUri(baseUri);
+
+            return (QueuedMockHttpCallBuilder)builder;
+        }
+
+        public static QueuedMockHttpCallBuilder CreateMock(Uri baseUri)
+        {
+            var builder = CreateMock().WithBaseUri(baseUri);
+
+            return (QueuedMockHttpCallBuilder)builder;
+        }
+
         public QueuedMockHttpCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
             _responses.Add(responseFactory);

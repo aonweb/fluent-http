@@ -15,7 +15,7 @@ namespace AonWeb.FluentHttp.Mocks
 
         protected internal QueuedMockTypedHttpCallBuilder()
         {
-            _innerBuilder = new QueuedMockHttpCallBuilder();
+            _innerBuilder = new QueuedMockHttpCallBuilder().ConfigureMock();
             _formatter = new QueuedMockFormatter();
         }
 

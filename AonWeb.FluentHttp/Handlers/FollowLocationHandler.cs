@@ -88,7 +88,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (!ctx.ShouldFollow) 
                 return;
 
-            context.Builder.WithUri(ctx.LocationUri).AsGet();
+            context.Builder.WithUri(ctx.LocationUri).AsGet().WithContent(string.Empty);
 
             // dispose of previous response
             Helper.DisposeResponse(context.Response);

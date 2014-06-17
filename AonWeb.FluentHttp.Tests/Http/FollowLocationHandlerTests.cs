@@ -24,21 +24,24 @@ namespace AonWeb.FluentHttp.Tests.Http
 
                 string actualUrl = null;
                 string actualMethod = null;
+                var hasBody = true;
                 server.InspectRequest(
                     r =>
                         {
                             actualUrl = r.Url.ToString();
                             actualMethod = r.HttpMethod;
+                            hasBody = r.HasEntityBody;
                         });
 
                 //act
-                var response = await HttpCallBuilder.Create(TestUriString).ResultAsync();
+                var response = await HttpCallBuilder.Create(TestUriString).AsPost().WithContent("POST CONTENT").ResultAsync();
 
                 var result = response.ReadContents();
 
-                Assert.AreEqual(expected, actualUrl);
-                Assert.AreEqual("GET", actualMethod);
-                Assert.AreEqual("Success", result);
+                Assert.AreEqual(expected, actualUrl, "Url");
+                Assert.AreEqual("GET", actualMethod, "Method");
+                Assert.IsFalse(hasBody, "Body");
+                Assert.AreEqual("Success", result, "Result");
 
             }
         }
@@ -56,20 +59,22 @@ namespace AonWeb.FluentHttp.Tests.Http
 
                 string actualUrl = null;
                 string actualMethod = null;
+                var hasBody = true;
                 server.InspectRequest(
                     r =>
                     {
                         actualUrl = r.Url.ToString();
                         actualMethod = r.HttpMethod;
+                        hasBody = r.HasEntityBody;
                     });
 
                 //act
-                var result = await TypedHttpCallBuilder.Create(TestUriString).ResultAsync<string>();
+                var result = await TypedHttpCallBuilder.Create(TestUriString).AsPost().WithContent("POST CONTENT").ResultAsync<string>();
 
-                Assert.AreEqual(expected, actualUrl);
-                Assert.AreEqual("GET", actualMethod);
-                Assert.AreEqual("Success", result);
-
+                Assert.AreEqual(expected, actualUrl, "Url");
+                Assert.AreEqual("GET", actualMethod, "Method");
+                Assert.IsFalse(hasBody, "Body");
+                Assert.AreEqual("Success", result, "Result");
             }
         }
     }

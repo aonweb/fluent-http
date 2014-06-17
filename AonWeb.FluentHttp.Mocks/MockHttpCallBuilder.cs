@@ -1,6 +1,8 @@
 using System;
 using System.Net.Http;
 
+using AonWeb.FluentHttp.Handlers;
+
 namespace AonWeb.FluentHttp.Mocks
 {
     public class MockHttpCallBuilder : HttpCallBuilder, IMockBuilder<MockHttpCallBuilder>
@@ -10,17 +12,21 @@ namespace AonWeb.FluentHttp.Mocks
 
         public static MockHttpCallBuilder CreateMock()
         {
-            return new MockHttpCallBuilder();
+            return new MockHttpCallBuilder().ConfigureMock();
         }
 
         public static MockHttpCallBuilder CreateMock(string baseUri)
         {
-            return (MockHttpCallBuilder)(CreateMock().WithBaseUri(baseUri));
+            var builder = CreateMock().WithBaseUri(baseUri);
+
+            return (MockHttpCallBuilder)builder;
         }
 
         public static MockHttpCallBuilder CreateMock(Uri baseUri)
         {
-            return (MockHttpCallBuilder)(CreateMock().WithBaseUri(baseUri));
+            var builder = CreateMock().WithBaseUri(baseUri);
+                
+            return (MockHttpCallBuilder)builder;
         }
 
         public MockHttpCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)

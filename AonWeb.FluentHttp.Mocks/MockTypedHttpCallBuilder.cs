@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp.Mocks
         private readonly MockHttpCallBuilder _innerBuilder;
 
         protected MockTypedHttpCallBuilder()
-            : this(new MockHttpCallBuilder(),new MockFormatter())
+            : this(new MockHttpCallBuilder().ConfigureMock(),new MockFormatter())
         { }
 
         private MockTypedHttpCallBuilder(MockHttpCallBuilder builder, MockFormatter formatter)

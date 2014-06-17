@@ -317,7 +317,10 @@ namespace AonWeb.FluentHttp
                 {
                     var content = contentFactory() ?? string.Empty;
 
-                    return new StringContent(content, encoding, mediaType);
+                    if (!string.IsNullOrEmpty(content))
+                        return new StringContent(content, encoding, mediaType);
+
+                    return null;
                 });
 
 

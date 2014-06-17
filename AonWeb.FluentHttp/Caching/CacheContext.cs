@@ -15,6 +15,15 @@ namespace AonWeb.FluentHttp.Caching
 
         public CacheContext(CacheSettings settings, IHttpCallContext callContext, HttpRequestMessage request)
         {
+            if (settings == null)
+                throw new ArgumentNullException("settings");
+
+            if (callContext == null)
+                throw new ArgumentNullException("callContext");
+
+            if (request == null)
+                throw new ArgumentNullException("request");
+
             _settings = settings;
 
             _callContext = callContext;

@@ -478,20 +478,20 @@ namespace AonWeb.FluentHttp.Tests.Http
         #region Content (string)
 
         [Test]
-        public async Task WithContent_AsString_ExpectRequestContainsBody([Values("Content", "", null)]string content)
+        public async Task WithContent_AsString_ExpectRequestContainsContent()
         {
             //arrange
             var uri = TestUriString;
-
+            var expected = "Content";
             var builder = MockHttpCallBuilder.CreateMock(uri);
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
             //act
-            await builder.AsPost().WithContent(content).ResultAsync();
+            await builder.AsPost().WithContent(expected).ResultAsync();
 
             //assert
-            Assert.AreEqual(content ?? string.Empty, actual);
+            Assert.AreEqual(expected ?? string.Empty, actual);
         }
 
         [Test]
@@ -607,20 +607,54 @@ namespace AonWeb.FluentHttp.Tests.Http
         #region Content (func)
 
         [Test]
-        public async Task WithContent_AsFactoryFunc_ExpectRequestContainsBody([Values("Content", "", null)]string content)
+        public async Task WithContent_AsFactoryFunc_ExpectRequestContainsContent()
         {
             //arrange
             var uri = TestUriString;
-
+            var expected = "Content";
             var builder = MockHttpCallBuilder.CreateMock(uri);
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
             //act
+            await builder.AsPost().WithContent(() => expected).ResultAsync();
+
+            //assert
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public async Task WithContent_AsIsNullOrEmptyInFactory_ExpectRequestContentNull([Values("", null)]string content)
+        {
+            //arrange
+            var uri = TestUriString;
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            bool actual = false;
+            builder.OnSending(ctx => actual = ctx.Request.Content == null);
+
+            //act
             await builder.AsPost().WithContent(() => content).ResultAsync();
 
             //assert
-            Assert.AreEqual(content ?? string.Empty, actual);
+            Assert.IsTrue(actual);
+        }
+
+        [Test]
+        public async Task WithContent_AsIsNullOrEmpty_ExpectRequestContentNull([Values("", null)]string content)
+        {
+            //arrange
+            var uri = TestUriString;
+
+            var builder = MockHttpCallBuilder.CreateMock(uri);
+            bool actual = false;
+            builder.OnSending(ctx => actual = ctx.Request.Content == null);
+
+            //act
+            await builder.AsPost().WithContent(content).ResultAsync();
+
+            //assert
+            Assert.IsTrue(actual);
         }
 
         [Test]
