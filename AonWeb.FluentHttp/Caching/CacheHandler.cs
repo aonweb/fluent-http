@@ -82,7 +82,7 @@ namespace AonWeb.FluentHttp.Caching
         #region Unimplemented IHttpCallHandler Methods
 
         // TODO: invalidate caches for uri on exception?
-        public Task OnException(HttpExceptionContext context) { return Helper.TaskComplete; }
+        public Task OnException(HttpExceptionContext context) { return Task.Delay(0); }
 
         #endregion
     }

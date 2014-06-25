@@ -13,10 +13,8 @@ using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
 
-namespace AonWeb.FluentHttp
-{
-    public class HttpCallBuilder : IChildHttpCallBuilder, IRecursiveHttpCallBuilder
-    {
+namespace AonWeb.FluentHttp {
+    public class HttpCallBuilder : IChildHttpCallBuilder, IRecursiveHttpCallBuilder {
         private readonly IHttpClientBuilder _clientBuilder;
         private readonly HttpCallBuilderSettings _settings;
 
@@ -42,7 +40,15 @@ namespace AonWeb.FluentHttp
 
         internal static IChildHttpCallBuilder CreateAsChild()
         {
-            return new HttpCallBuilder(new HttpCallBuilderSettings(), new HttpClientBuilder(), HttpCallBuilderDefaults.DefaultChildHandlerFactory());
+            var childBuilder = new HttpCallBuilder(
+                new HttpCallBuilderSettings(),
+                new HttpClientBuilder(),
+                HttpCallBuilderDefaults.DefaultChildHandlerFactory());
+            
+            // allow parent to cache
+            childBuilder.WithCaching(false);
+
+            return childBuilder;
         }
 
         public static IHttpCallBuilder Create(string baseUri)
@@ -530,7 +536,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public async Task<HttpResponseMessage> ResultAsync()
+        public virtual async Task<HttpResponseMessage> ResultAsync()
         {
             HttpResponseMessage response = null;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,12 +13,13 @@ namespace AonWeb.FluentHttp.Handlers
         public FollowLocationHandler()
         {
             Enabled = HttpCallBuilderDefaults.AutoFollowLocationEnabled;
-
+            IgnoredStatusCodes = new HashSet<HttpStatusCode>(HttpCallBuilderDefaults.DefaultRedirectStatusCodes);
             FollowValidtor = ShouldFollow;
         }
 
         private Func<HttpSentContext, bool> FollowValidtor { get; set; }
         private Action<HttpFollowLocationContext> OnFollow { get; set; }
+        private static ISet<HttpStatusCode> IgnoredStatusCodes { get; set; }
 
         public FollowLocationHandler WithAutoFollow(bool enabled = true)
         {
@@ -100,6 +102,9 @@ namespace AonWeb.FluentHttp.Handlers
         private bool ShouldFollow(HttpSentContext context)
         {
             if (!context.IsSuccessfulResponse())
+                return false;
+
+            if (IgnoredStatusCodes.Contains(context.Response.StatusCode))
                 return false;
 
             if (context.Response.Headers.Location == null) 

@@ -291,7 +291,6 @@ namespace AonWeb.FluentHttp.Tests.Integration
         [Test]
         public void WhenHttpCachingIsOff_ExpectContentsNotCached()
         {
-
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
             {
                 server

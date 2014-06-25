@@ -174,7 +174,5 @@ namespace AonWeb.FluentHttp
         {
             return Helper.GetDefaultValueForType(type);
         }
-
-        
     }
 }

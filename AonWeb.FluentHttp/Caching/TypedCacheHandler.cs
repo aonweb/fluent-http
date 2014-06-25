@@ -69,7 +69,7 @@ namespace AonWeb.FluentHttp.Caching
             if (cacheContext.ResultFound)
                 context.Result = cacheContext.Result;
 
-            return Helper.TaskComplete;
+            return Task.Delay(0);
         }
 
         public async Task OnResult(TypedHttpResultContext<object> context)
@@ -84,7 +84,7 @@ namespace AonWeb.FluentHttp.Caching
         #region Unimplemented IHttpCallHandler Methods
 
         // TODO: invalidate caches for uri on error or exception?
-        public Task OnError(TypedHttpCallErrorContext<object> context) { return Helper.TaskComplete; }
+        public Task OnError(TypedHttpCallErrorContext<object> context) { return Task.Delay(0); }
 
         Task ITypedHttpCallHandler.OnSending<TResult, TContent>(TypedHttpSendingContext<TResult, TContent> context)
         {
@@ -118,10 +118,10 @@ namespace AonWeb.FluentHttp.Caching
 
         Task ITypedHttpCallHandler.OnError<TError>(TypedHttpCallErrorContext<TError> context)
         {
-            return Helper.TaskComplete;
+            return Task.Delay(0);
         }
 
-        public Task OnException(TypedHttpCallExceptionContext context) { return Helper.TaskComplete; }
+        public Task OnException(TypedHttpCallExceptionContext context) { return Task.Delay(0); }
 
         #endregion
     }

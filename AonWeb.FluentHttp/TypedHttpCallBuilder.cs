@@ -682,7 +682,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public async Task<TResult> ResultAsync<TResult>()
+        public virtual async Task<TResult> ResultAsync<TResult>()
         {
             if (typeof(IEmptyResult).IsAssignableFrom(typeof(TResult)))
                 ConfigureResponseDeserialization(false);

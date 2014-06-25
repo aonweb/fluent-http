@@ -7,15 +7,12 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace AonWeb.FluentHttp
 {
     public static class Helper
     {
-        public static readonly Task TaskComplete = Task.FromResult(true);
-
         internal static MediaTypeFormatterCollection FluentAdd(this MediaTypeFormatterCollection collection, MediaTypeFormatter formatter)
         {
             collection.Add(formatter);
@@ -120,6 +117,11 @@ namespace AonWeb.FluentHttp
             return new UriBuilder(uri).NormalizeQuery().Uri;
         }
 
+        /// <summary>
+        /// Tries to converts a uri builder's query into a canonical format
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns>Uri Builder with modified query</returns>
         internal static UriBuilder NormalizeQuery(this UriBuilder builder)
         {
             var qsCollection = HttpUtility.ParseQueryString(builder.Query);
@@ -186,17 +188,17 @@ namespace AonWeb.FluentHttp
             return null;
         }
 
-        public static string PrettyPrintName(this Type type)
+        public static string FormattedTypeName(this Type type)
         {
-            if (type.GetGenericArguments().Length == 0)
-            {
-                return type.Name;
-            }
-            var genericArguments = type.GetGenericArguments();
-            var typeDefeninition = type.Name;
-            var unmangledName = typeDefeninition.Substring(0, typeDefeninition.IndexOf("`"));
-            return unmangledName + "<" + String.Join(",", genericArguments.Select(PrettyPrintName)) + ">";
+            var name = type.Name;
 
+            if (!type.GetGenericArguments().Any())
+                return name;
+
+            var args = type.GetGenericArguments();
+            
+            var prettyName = name.Substring(0, name.IndexOf("`"));
+            return prettyName + "<" + String.Join(",", args.Select(FormattedTypeName)) + ">";
         }
     }
 }

@@ -98,7 +98,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void AutoRedirect_WhenNotEnabledCallRedirects_ExpectNotFollowed()
+        public async Task AutoRedirect_WhenNotEnabledCallRedirects_ExpectNotFollowed()
         {
             var redirectUrl = Helper.CombineVirtualPaths(TestUriString, "redirect");
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
@@ -109,9 +109,9 @@ namespace AonWeb.FluentHttp.Tests.Http
                 var calledBack = false;
 
                 //act
-                HttpCallBuilder.Create(TestUriString).Advanced
+                await HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureRedirect(h => h.WithAutoRedirect(false).WithCallback(ctx => calledBack = true))
-                    .ResultAsync().Wait();
+                    .ResultAsync();
 
                 Assert.IsFalse(calledBack);
 
@@ -119,7 +119,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void AutoRedirect_WhenEnabledAndCallRedirects_ExpectRedirect()
+        public async Task AutoRedirect_WhenEnabledAndCallRedirects_ExpectRedirect()
         {
             var expected = Helper.CombineVirtualPaths(TestUriString, "redirect");
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
@@ -131,8 +131,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Url.ToString());
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString)
-                    .Advanced.ConfigureRedirect(h => h.WithAutoRedirect()).ResultAsync().Result.ReadContents();
+                var result = await HttpCallBuilder.Create(TestUriString).Advanced.ConfigureRedirect(h => h.WithAutoRedirect()).ResultAsync().ReadContentsAsync();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -140,7 +139,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void WithCallback_WhenAction_ExpectConfigurationApplied()
+        public async Task WithCallback_WhenAction_ExpectConfigurationApplied()
         {
             var redirectUrl = Helper.CombineVirtualPaths(TestUriString, "redirect");
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
@@ -156,13 +155,13 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual++);
 
                 //act
-                HttpCallBuilder.Create(TestUriString).Advanced
+                await HttpCallBuilder.Create(TestUriString).Advanced
                     .ConfigureHandler<RedirectHandler>(h => h.WithCallback(ctx =>
                     {
                         if (ctx.CurrentRedirectionCount >= 1)
                             ctx.ShouldRedirect = false;
                     }))
-                    .ResultAsync().Wait();
+                    .ResultAsync();
 
                 Assert.AreEqual(expected, actual);
 
@@ -170,7 +169,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void AutoRedirect_WithNoLocationHeader_ExpectNoRedirect()
+        public async Task AutoRedirect_WithNoLocationHeader_ExpectNoRedirect()
         {
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
             {
@@ -179,7 +178,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                     .AddResponse(new LocalWebServerResponseInfo());
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString).ResultAsync().Result;
+                var result = await HttpCallBuilder.Create(TestUriString).ResultAsync();
 
                 Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
 
@@ -187,7 +186,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void WithRedirectStatusCode_WithAddedStatusCode_ExpectAutoRetry()
+        public async Task WithRedirectStatusCode_WithAddedStatusCode_ExpectAutoRetry()
         {
             var expected = Helper.CombineVirtualPaths(TestUriString, "redirect");
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
@@ -199,8 +198,8 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Url.ToString());
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString)
-                    .Advanced.ConfigureRedirect(h => h.WithRedirectStatusCode(HttpStatusCode.MultipleChoices)).ResultAsync().Result.ReadContents();
+                var result = await HttpCallBuilder.Create(TestUriString)
+                    .Advanced.ConfigureRedirect(h => h.WithRedirectStatusCode(HttpStatusCode.MultipleChoices)).ResultAsync().ReadContentsAsync();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -208,7 +207,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        public void WithRedirectValidator_WithCustomValidator_ExpectValidatorUsed()
+        public async Task WithRedirectValidator_WithCustomValidator_ExpectValidatorUsed()
         {
             var expected = Helper.CombineVirtualPaths(TestUriString, "redirect");
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
@@ -220,10 +219,10 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => actual = r.Url.ToString());
 
                 //act
-                var result = HttpCallBuilder.Create(TestUriString)
+                var result = await HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRedirect(h =>
                         h.WithRedirectValidator(r => r.Response.StatusCode == HttpStatusCode.MultipleChoices))
-                    .ResultAsync().Result.ReadContents();
+                    .ResultAsync().ReadContentsAsync();
 
                 Assert.AreEqual(expected, actual);
                 Assert.AreEqual("Success", result);
@@ -232,10 +231,10 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         [Test]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void WithRedirectValidator_WithValidatorIsNull_ExpectException()
+        public async Task WithRedirectValidator_WithValidatorIsNull_ExpectException()
         {
                 //act
-                HttpCallBuilder.Create(TestUriString)
+                await HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRedirect(h =>
                         h.WithRedirectValidator(null))
                     .ResultAsync();

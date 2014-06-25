@@ -15,9 +15,9 @@ namespace AonWeb.FluentHttp.Handlers
             return HttpCallHandlerPriority.Default;
         }
 
-        public virtual Task OnSending(HttpSendingContext context)     { return Helper.TaskComplete; }
-        public virtual Task OnSent(HttpSentContext context)           { return Helper.TaskComplete; }
-        public virtual Task OnException(HttpExceptionContext context) { return Helper.TaskComplete; }
+        public virtual Task OnSending(HttpSendingContext context)     { return Task.Delay(0); }
+        public virtual Task OnSent(HttpSentContext context)           { return Task.Delay(0); }
+        public virtual Task OnException(HttpExceptionContext context) { return Task.Delay(0); }
     }
 
     [ExcludeFromCodeCoverage]
@@ -32,11 +32,11 @@ namespace AonWeb.FluentHttp.Handlers
             return HttpCallHandlerPriority.Default;
         }
 
-        public virtual Task OnSending<TResult, TContent>(TypedHttpSendingContext<TResult, TContent> context) { return Helper.TaskComplete; }
-        public virtual Task OnSent<TResult>(TypedHttpSentContext<TResult> context) { return Helper.TaskComplete; }
-        public virtual Task OnResult<TResult>(TypedHttpResultContext<TResult> context) { return Helper.TaskComplete; }
-        public virtual Task OnError<TError>(TypedHttpCallErrorContext<TError> context) { return Helper.TaskComplete; }
-        public virtual Task OnException(TypedHttpCallExceptionContext context) { return Helper.TaskComplete; }
+        public virtual Task OnSending<TResult, TContent>(TypedHttpSendingContext<TResult, TContent> context) { return Task.Delay(0); }
+        public virtual Task OnSent<TResult>(TypedHttpSentContext<TResult> context) { return Task.Delay(0); }
+        public virtual Task OnResult<TResult>(TypedHttpResultContext<TResult> context) { return Task.Delay(0); }
+        public virtual Task OnError<TError>(TypedHttpCallErrorContext<TError> context) { return Task.Delay(0); }
+        public virtual Task OnException(TypedHttpCallExceptionContext context) { return Task.Delay(0); }
     }
 
 }
