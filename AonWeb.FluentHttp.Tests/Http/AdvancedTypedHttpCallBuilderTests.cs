@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Mocks;
-using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
@@ -135,7 +132,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenResultAndSendingTypesMismatchAndSuppressTypeException_ExpectResult()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var actual = await builder.Advanced.WithSuppressTypeMismatchExceptions().OnSendingWithResult<Uri>(ctx => { }).ResultAsync<TestResult>();
@@ -160,7 +157,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenContentAndSendingHandlerTypesMismatchAndSuppressTypeException_ExpectResult()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var actual = await builder.WithContent(TestResultValue)
@@ -176,7 +173,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
             await builder.WithErrorType<TestResult>().Advanced.OnError<Uri>(ctx => { }).ResultAsync<TestResult>();
@@ -188,7 +185,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenErrorAndErrorHandlerTypesMismatchAndSuppressTypeException_ExpectResult()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
             var actual = await builder
@@ -207,7 +204,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenDefaultResultAndResultTypesMismatch_ExpectException()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
             await builder.WithDefaultResult(TestResultValue).Advanced.WithExceptionFactory(context => null).ResultAsync<Uri>();
@@ -219,7 +216,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenDefaultResultAndResultTypesMismatchAndSuppressTypeException_ExpectNullResult()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
             var actual = await builder.WithDefaultResult(TestResultValue)
@@ -234,7 +231,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenHandlerIsSubTypeOfResult_ExpectSuccess()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo { Body = TestResultString });
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo { Body = TestResultString }).WithUri(TestUriString);
 
             //act
             var called = false;
@@ -252,7 +249,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenHandlerIsSuperTypeOfResult_ExpectException()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var actual = await builder
@@ -267,7 +264,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenSendingContentHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var called = false;
@@ -285,7 +282,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenSendingResultHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var called = false;
@@ -303,7 +300,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenSentHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var called = false;
@@ -321,7 +318,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenResultHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var called = false;
@@ -338,7 +335,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenErrorHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
             var called = false;
@@ -356,7 +353,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenErrorTypeSetMultipleTimes_ExpectLastWins()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithError(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
             Type type = null;
@@ -383,10 +380,10 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenDependentUriIsNull_ExpectNoException()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
-            var result = await builder
+            var result = await builder.Advanced
                 .WithDependentUri(null)
                 .ResultAsync<TestResult>();
 
@@ -397,10 +394,10 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenDependentUrisIsNull_ExpectNoException()
         {
 
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
-            var result = await builder
+            var result = await builder.Advanced
                 .WithDependentUris(null)
                 .ResultAsync<TestResult>();
 

@@ -6,9 +6,7 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockFormatter
-        : IHttpCallFormatter,
-        IHttpTypedMocker<MockFormatter>
+    public class MockFormatter : IMockFormatter
     {
         private readonly IHttpCallFormatter _innerFormatter;
 
@@ -41,24 +39,24 @@ namespace AonWeb.FluentHttp.Mocks
             return _innerFormatter.DeserializeError(response, context);
         }
 
-        public MockFormatter WithResult<TResult>(TResult result)
+        public IMockFormatter WithResult<TResult>(TResult result)
         {
             return WithResult((r, c) => result);
         }
 
-        public MockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
+        public IMockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
             _resultFactory = (r, c) => resultFactory(r,c);
 
             return this;
         }
 
-        public MockFormatter WithError<TError>(TError error)
+        public IMockFormatter WithError<TError>(TError error)
         {
             return WithError((r, c) => error);
         }
 
-        public MockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
+        public IMockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
         {
             _errorFactory = (r, c) => errorFactory(r,c);
 

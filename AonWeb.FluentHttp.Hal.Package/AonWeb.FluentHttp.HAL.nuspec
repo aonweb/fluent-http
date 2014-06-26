@@ -18,7 +18,7 @@
     <dependencies>
       <group>
         <dependency id="Newtonsoft.Json" version="6.0.0"  />
-        <dependency id="AonWeb.FluentHttp" version="1.2.8" />
+        <dependency id="AonWeb.FluentHttp" version="1.2.9" />
       </group>
     </dependencies>
   </metadata>

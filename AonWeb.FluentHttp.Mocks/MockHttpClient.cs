@@ -44,7 +44,7 @@ namespace AonWeb.FluentHttp.Mocks
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
-            return Task.FromResult(_responseFactory(request));
+            return Task.FromResult<HttpResponseMessage>(_responseFactory(request));
         }
 
         public void Dispose()

@@ -244,7 +244,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenDependentUriIsNull_ExpectNoException()
         {
 
-            var builder = MockHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo());
+            var builder = new MockHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
             //act
             var result = await builder
@@ -258,7 +258,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenDependentUrisIsNull_ExpectNoException()
         {
 
-            var builder = MockHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo());
+            var builder = new MockHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
             //act
             var result = await builder

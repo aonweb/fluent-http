@@ -6,11 +6,9 @@ using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
-namespace AonWeb.FluentHttp.Tests.Http
-{
+namespace AonWeb.FluentHttp.Tests.Http {
     [TestFixture]
-    public class MockTypedHttpCallBuilderTests
-    {
+    public class MockTypedHttpCallBuilderTests {
         #region Declarations, Set up, & Tear Down
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
@@ -28,8 +26,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public static string TestResultString = @"{""StringProperty"":""TestString"",""IntProperty"":2,""BoolProperty"":true,""DateOffsetProperty"":""2000-01-01T00:00:00-05:00"",""DateProperty"":""2000-01-01T00:00:00""}";
         public static TestResult TestResultValue = new TestResult();
 
-        public class TestResult : IEquatable<TestResult>
-        {
+        public class TestResult : IEquatable<TestResult> {
             public TestResult()
             {
                 StringProperty = "TestString";
@@ -113,29 +110,24 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WithResultExpectResultReturned()
         {
+            //arrange
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
-                var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+            //act
+            var actual = await builder.ResultAsync<TestResult>();
 
-                //arrange
-                builder.WithResult(TestResultValue);
-
-                //act
-                var actual = await builder.ResultAsync<TestResult>();
-
-                Assert.AreEqual(TestResultValue, actual);
+            Assert.AreEqual(TestResultValue, actual);
         }
 
         [Test]
         public async Task WithErrorExpectResultReturned()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
             //arrange
-            builder.WithError(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             TestResult actual = null;
 
-            builder.OnError<TestResult>(ctx => actual = ctx.Error);
+            builder.Advanced.OnError<TestResult>(ctx => actual = ctx.Error);
 
             //act
             try
@@ -143,7 +135,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 await builder.SendAsync();
             }
             catch (HttpErrorException<TestResult>) { }
-            
+
 
             Assert.AreEqual(TestResultValue, actual);
         }
@@ -152,10 +144,8 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WithContent_ExpectNoExceptions()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
             //arrange
-            builder.WithResult(TestResultValue);
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
             var actual = await builder.WithContent(() => TestResultValue).AsPost().ResultAsync<TestResult>();

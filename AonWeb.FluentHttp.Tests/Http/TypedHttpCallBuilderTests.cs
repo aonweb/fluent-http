@@ -10,11 +10,9 @@ using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
-namespace AonWeb.FluentHttp.Tests.Http
-{
+namespace AonWeb.FluentHttp.Tests.Http {
     [TestFixture]
-    public class TypedMockHttpCallBuilderTests
-    {
+    public class TypedMockHttpCallBuilderTests {
         #region Declarations, Set up, & Tear Down
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
@@ -32,8 +30,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         public static string TestResultString = @"{""StringProperty"":""TestString"",""IntProperty"":2,""BoolProperty"":true,""DateOffsetProperty"":""2000-01-01T00:00:00-05:00"",""DateProperty"":""2000-01-01T00:00:00""}";
         public static TestResult TestResultValue = new TestResult();
 
-        public class TestResult : IEquatable<TestResult>
-        {
+        public class TestResult : IEquatable<TestResult> {
             public TestResult()
             {
                 StringProperty = "TestString";
@@ -120,81 +117,78 @@ namespace AonWeb.FluentHttp.Tests.Http
         public async Task WhenComplexTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
 
-                var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                builder.WithResponse(new ResponseInfo
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK,
                     Body = TestResultString
-                });
+                })
+                .WithUri(TestUriString);
 
-                //act
-                var actual = await builder.ResultAsync<TestResult>();
+            //act
+            var actual = await builder.ResultAsync<TestResult>();
 
-                Assert.AreEqual(TestResultValue, actual);
+            Assert.AreEqual(TestResultValue, actual);
         }
 
         [Test]
         public async Task WhenSimpleTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                builder.WithResponse(new ResponseInfo
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK,
                     Body = "true"
-                });
+                })
+                .WithUri(TestUriString);
 
 
-                //act
-                var actual = await builder.ResultAsync<bool>();
+            //act
+            var actual = await builder.ResultAsync<bool>();
 
-                Assert.IsTrue(actual);
+            Assert.IsTrue(actual);
         }
 
         [Test]
         public async Task WhenStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                var expected = "some string data";
-                builder.WithResponse(new ResponseInfo
+            //arrange
+            var expected = "some string data";
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK,
                     Body = "\"" + expected + "\""
-                });
+                })
+                .WithUri(TestUriString);
 
+            //act
+            var actual = await builder.ResultAsync<string>();
 
-                //act
-                var actual = await builder.ResultAsync<string>();
-
-                Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WhenStringTypedGet_WithPlainTextResponseResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
             //arrange
             var expected = "some string data";
-            builder.WithResponse(new ResponseInfo
-            {
-                ContentEncoding = Encoding.UTF8,
-                ContentType = "text/plain",
-                StatusCode = HttpStatusCode.OK,
-                Body = expected
-            });
 
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
+                {
+                    ContentEncoding = Encoding.UTF8,
+                    ContentType = "text/plain",
+                    StatusCode = HttpStatusCode.OK,
+                    Body = expected
+                })
+                .WithUri(TestUriString);
 
             //act
             var actual = await builder.ResultAsync<string>();
@@ -205,41 +199,39 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenEmptyStringTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                builder.WithResponse(new ResponseInfo
+            //arrange
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK
-                });
+                })
+                .WithUri(TestUriString);
 
+            //act
+            var actual = await builder.ResultAsync<string>();
 
-                //act
-                var actual = await builder.ResultAsync<string>();
-
-                Assert.IsNullOrEmpty(actual);
+            Assert.IsNullOrEmpty(actual);
         }
 
         [Test]
         public async Task WhenEmptyTypedGet_WithValidResponse_ExpectValidDeserializedResult()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                builder.WithResponse(new ResponseInfo
+            //arrange
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.OK
-                });
+                })
+                .WithUri(TestUriString);
 
+            //act
+            var actual = await builder.ResultAsync<TestResult>();
 
-                //act
-                var actual = await builder.ResultAsync<TestResult>();
-
-                Assert.IsNull(actual);
+            Assert.IsNull(actual);
         }
 
         #endregion
@@ -249,100 +241,90 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenPostingComplexType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+            //arrange
+            var expected = TestResultString;
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
-                var expected = TestResultString;
-                builder.WithResponse(new ResponseInfo());
+            string actual = null;
+            builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                //arrange
-                string actual = null;
-                builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            //act
+            await builder.WithContent(() => TestResultValue).AsPost().SendAsync();
 
-                //act
-                await builder.WithContent(() => TestResultValue).AsPost().SendAsync();
-
-                Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WhenPuttingSimpleTyped_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+            //arrange
+            var expected = "true";
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
-                //arrange
-                var expected = "true";
-                builder.WithResponse(new ResponseInfo());
+            string actual = null;
+            builder.OnSending<EmptyResult, bool>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                string actual = null;
-                builder.OnSending<EmptyResult, bool>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            //act
+            await builder.WithContent(() => true).AsPut().SendAsync();
 
-                //act
-                await builder.WithContent(() => true).AsPut().SendAsync();
-
-                Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WhenPostingStringType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+            //arrange
+            var expected = "some string data";
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
-                //arrange
-                var expected = "some string data";
-                builder.WithResponse(new ResponseInfo());
+            string actual = null;
+            builder.OnSendingWithContent<string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                string actual = null;
-                builder.OnSendingWithContent<string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            await builder.WithContent(() => expected).AsPost().SendAsync();
 
-                await builder.WithContent(() => expected).AsPost().SendAsync();
-
-                Assert.AreEqual("\"" + expected + "\"", actual);
+            Assert.AreEqual("\"" + expected + "\"", actual);
         }
 
         [Test]
         public async Task WhenPostingEmptyStringType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+            //arrange
+            var expected = "null";
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
-                //arrange
-                var expected = "null";
-                builder.WithResponse(new ResponseInfo());
+            string actual = null;
+            builder.OnSending<EmptyResult, string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                string actual = null;
-                builder.OnSending<EmptyResult, string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            //act
+            await builder.WithContent<string>(() => null).AsPost().SendAsync();
 
-                //act
-                await builder.WithContent<string>(() => null).AsPost().SendAsync();
-
-                Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WhenPostingEmptyType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+            //arrange
+            var expected = "null";
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
-                var expected = "null";
-                builder.WithResponse(new ResponseInfo());
+            //arrange
+            string actual = null;
+            builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
-                //arrange
-                string actual = null;
-                builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            //act
+            await builder.WithContent<TestResult>(() => null).AsPost().SendAsync();
 
-                //act
-                await builder.WithContent<TestResult>(() => null).AsPost().SendAsync();
-
-                Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public async Task WhenContentSetMultipleTimes_ExpectLastContentWins()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString).WithResponse(new ResponseInfo());
-
-            var expected = "Content3";
-
             //arrange
+            var expected = "Content3";
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
+
             string actual = null;
             builder.OnSendingWithContent<string>(async ctx => actual = await ctx.Request.Content.ReadAsAsync<string>());
 
@@ -359,133 +341,131 @@ namespace AonWeb.FluentHttp.Tests.Http
         [Test]
         public async Task WhenCallFailsAndErrorIsComplexType_ExpectRequestContentSerializedCorrectly()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                builder.WithResponse(new ResponseInfo
+            //arrange
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = TestResultString
-                });
+                })
+                .WithUri(TestUriString);
 
-                //act
-                try
-                {
-                    await builder.WithErrorType<TestResult>().ResultAsync<EmptyResult>();
-                    Assert.Fail();
-                }
-                catch (HttpErrorException<TestResult> ex)
-                {
-                    Assert.AreEqual(TestResultValue, ex.Error);
-                }
+            //act
+            try
+            {
+                await builder.WithErrorType<TestResult>().ResultAsync<EmptyResult>();
+                Assert.Fail();
+            }
+            catch (HttpErrorException<TestResult> ex)
+            {
+                Assert.AreEqual(TestResultValue, ex.Error);
+            }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsSimpleTyped_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                builder.WithResponse(new ResponseInfo
+            //arrange
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = "true"
-                });
+                })
+                .WithUri(TestUriString);
 
-                //act
-                try
-                {
-                    await builder.WithErrorType<bool>().ResultAsync<EmptyResult>();
-                    Assert.Fail();
-                }
-                catch (HttpErrorException<bool> ex)
-                {
-                    Assert.IsTrue(ex.Error);
-                }
+            //act
+            try
+            {
+                await builder.WithErrorType<bool>().ResultAsync<EmptyResult>();
+                Assert.Fail();
+            }
+            catch (HttpErrorException<bool> ex)
+            {
+                Assert.IsTrue(ex.Error);
+            }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsStringType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
+            //arrange
+            var expected = "some string data";
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo
+            {
+                ContentEncoding = Encoding.UTF8,
+                ContentType = "application/json",
+                StatusCode = HttpStatusCode.BadRequest,
+                Body = "\"" + expected + "\""
+            })
+            .WithUri(TestUriString);
 
-                //arrange
-                var expected = "some string data";
-                builder.WithResponse(new ResponseInfo
-                {
-                    ContentEncoding = Encoding.UTF8,
-                    ContentType = "application/json",
-                    StatusCode = HttpStatusCode.BadRequest,
-                    Body = "\"" + expected + "\""
-                });
-
-                //act
-                try
-                {
-                    await builder.WithErrorType<string>().ResultAsync<EmptyResult>();
-                    Assert.Fail();
-                }
-                catch (HttpErrorException<string> ex)
-                {
-                    Assert.AreEqual(expected, ex.Error);
-                }
+            //act
+            try
+            {
+                await builder.WithErrorType<string>().ResultAsync<EmptyResult>();
+                Assert.Fail();
+            }
+            catch (HttpErrorException<string> ex)
+            {
+                Assert.AreEqual(expected, ex.Error);
+            }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsEmptyStringType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-
-                builder.WithResponse(new ResponseInfo
+            //arrange
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = null
-                });
+                })
+                .WithUri(TestUriString);
 
-                //act
-                try
-                {
-                    await builder.WithErrorType<string>().ResultAsync<EmptyResult>();
-                    Assert.Fail();
-                }
-                catch (HttpErrorException<string> ex)
-                {
-                    Assert.IsNullOrEmpty(ex.Error);
-                }
+            //act
+            try
+            {
+                await builder.WithErrorType<string>().ResultAsync<EmptyResult>();
+                Assert.Fail();
+            }
+            catch (HttpErrorException<string> ex)
+            {
+                Assert.IsNullOrEmpty(ex.Error);
+            }
         }
 
         [Test]
         public async Task WhenCallFailsAndErrorIsEmptyType_ExpectExceptionWithCorrectlyDeserializedError()
         {
-            var builder = MockTypedHttpCallBuilder.CreateMock(TestUriString);
-
-                //arrange
-                builder.WithResponse(new ResponseInfo
+            //arrange
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(new ResponseInfo
                 {
                     ContentEncoding = Encoding.UTF8,
                     ContentType = "application/json",
                     StatusCode = HttpStatusCode.BadRequest,
                     Body = null
-                });
+                })
+                .WithUri(TestUriString);
 
-                //act
-                try
-                {
-                    await builder.WithErrorType<TestResult>().ResultAsync<EmptyResult>();
-                    Assert.Fail();
-                }
-                catch (HttpErrorException<TestResult> ex)
-                {
-                    Assert.IsNull(ex.Error);
-                }
+            //act
+            try
+            {
+                await builder.WithErrorType<TestResult>().ResultAsync<EmptyResult>();
+                Assert.Fail();
+            }
+            catch (HttpErrorException<TestResult> ex)
+            {
+                Assert.IsNull(ex.Error);
+            }
         }
 
         #endregion

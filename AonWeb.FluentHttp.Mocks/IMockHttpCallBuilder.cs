@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 
+using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.Handlers;
@@ -24,71 +25,64 @@ namespace AonWeb.FluentHttp.Mocks {
         T WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory);
     }
 
-    public interface IMockBuilder<out T> : IHttpMocker<T>
-        where T : IMockBuilder<T> { }
-
     public interface IMockTypedBuilder<out T> :
         IHttpTypedMocker<T>,
         IHttpMocker<T>
         where T : IMockTypedBuilder<T> 
     {
         T WithResult<TResult>(TResult result, HttpStatusCode statusCode);
+        T WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory, ResponseInfo response);
         T WithError<TError>(TError error, HttpStatusCode statusCode);
+        T WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory, ResponseInfo response);
     }
 
-    public interface IMockHttpCallBuilder<out T> : IAdvancedHttpCallBuilder, IMockBuilder<T>
-        where T : IMockBuilder<T> 
+    public interface IMockFormatter : IHttpTypedMocker<IMockFormatter>, IHttpCallFormatter { }
+
+    public interface IMockHttpClientBuilder : IHttpMocker<IMockHttpClientBuilder>, IHttpClientBuilder { }
+
+    public interface IMockHttpCallBuilder : IChildHttpCallBuilder, IHttpMocker<IMockHttpCallBuilder>
     {
-        T VerifyOnSending(Action<HttpSendingContext> handler);
-        T VerifyOnSent(Action<HttpSentContext> handler);
-        T VerifyOnException(Action<HttpExceptionContext> handler);
-        T WithAssertFailure(Action failureAction);
+        IMockHttpCallBuilder VerifyOnSending(Action<HttpSendingContext> handler);
+        IMockHttpCallBuilder VerifyOnSent(Action<HttpSentContext> handler);
+        IMockHttpCallBuilder VerifyOnException(Action<HttpExceptionContext> handler);
+        IMockHttpCallBuilder WithAssertFailure(Action failureAction);
     }
 
-    public interface IMockTypedHttpCallBuilder<out T> : IAdvancedTypedHttpCallBuilder, IMockTypedBuilder<T>
-        where T : IMockTypedBuilder<T> 
+    public interface IMockTypedHttpCallBuilder : IAdvancedTypedHttpCallBuilder, IMockTypedBuilder<IMockTypedHttpCallBuilder>
     {
-        T VerifyOnSending(Action<TypedHttpSendingContext<object, object>> handler);
-        T VerifyOnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler);
-        T VerifyOnSendingWithContent<TContent>(Action<TypedHttpSendingContext<object, TContent>> handler);
-        T VerifyOnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, object>> handler);
-        T VerifyOnSent(Action<TypedHttpSentContext<object>> handler);
-        T VerifyOnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler);
-        T VerifyOnResult(Action<TypedHttpResultContext<object>> handler);
-        T VerifyOnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler);
-        T VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler);
-        T VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
-        T VerifyOnException(Action<TypedHttpCallExceptionContext> handler);
-        T WithAssertFailure(Action failureAction);
+        IMockTypedHttpCallBuilder VerifyOnSending(Action<TypedHttpSendingContext<object, object>> handler);
+        IMockTypedHttpCallBuilder VerifyOnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler);
+        IMockTypedHttpCallBuilder VerifyOnSendingWithContent<TContent>(Action<TypedHttpSendingContext<object, TContent>> handler);
+        IMockTypedHttpCallBuilder VerifyOnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, object>> handler);
+        IMockTypedHttpCallBuilder VerifyOnSent(Action<TypedHttpSentContext<object>> handler);
+        IMockTypedHttpCallBuilder VerifyOnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler);
+        IMockTypedHttpCallBuilder VerifyOnResult(Action<TypedHttpResultContext<object>> handler);
+        IMockTypedHttpCallBuilder VerifyOnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler);
+        IMockTypedHttpCallBuilder VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler);
+        IMockTypedHttpCallBuilder VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
+        IMockTypedHttpCallBuilder VerifyOnException(Action<TypedHttpCallExceptionContext> handler);
+        IMockTypedHttpCallBuilder WithAssertFailure(Action failureAction);
     }
 
-    public interface IMockHalCallBuilder<out T> : IAdvancedHalCallBuilder, IMockTypedBuilder<T>
-        where T : IMockTypedBuilder<T> 
+    public interface IMockHalCallBuilder : IAdvancedHalCallBuilder, IMockTypedBuilder<IMockHalCallBuilder>
     {
-        T VerifyOnSending(Action<TypedHttpSendingContext<IHalResource, IHalRequest>> handler);
-        T VerifyOnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler)
+        IMockHalCallBuilder VerifyOnSending(Action<TypedHttpSendingContext<IHalResource, IHalRequest>> handler);
+        IMockHalCallBuilder VerifyOnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler)
             where TResult : IHalResource
             where TContent : IHalRequest;
-        T VerifyOnSendingWithContent<TContent>(Action<TypedHttpSendingContext<IHalResource, TContent>> handler)
+        IMockHalCallBuilder VerifyOnSendingWithContent<TContent>(Action<TypedHttpSendingContext<IHalResource, TContent>> handler)
             where TContent : IHalRequest;
-        T VerifyOnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, IHalRequest>> handler)
+        IMockHalCallBuilder VerifyOnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, IHalRequest>> handler)
             where TResult : IHalResource;
-        T VerifyOnSent(Action<TypedHttpSentContext<IHalResource>> handler);
-        T VerifyOnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler)
+        IMockHalCallBuilder VerifyOnSent(Action<TypedHttpSentContext<IHalResource>> handler);
+        IMockHalCallBuilder VerifyOnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler)
             where TResult : IHalResource;
-        T VerifyOnResult(Action<TypedHttpResultContext<IHalResource>> handler);
-        T VerifyOnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler)
+        IMockHalCallBuilder VerifyOnResult(Action<TypedHttpResultContext<IHalResource>> handler);
+        IMockHalCallBuilder VerifyOnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler)
             where TResult : IHalResource;
-        T VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler);
-        T VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
-        T VerifyOnException(Action<TypedHttpCallExceptionContext> handler);
-        T WithAssertFailure(Action failureAction);
+        IMockHalCallBuilder VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler);
+        IMockHalCallBuilder VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
+        IMockHalCallBuilder VerifyOnException(Action<TypedHttpCallExceptionContext> handler);
+        IMockHalCallBuilder WithAssertFailure(Action failureAction);
     }
-
-
-    public interface IMockHttpCallBuilder : IMockHttpCallBuilder<IMockHttpCallBuilder> { }
-
-    public interface IMockTypedHttpCallBuilder : IMockTypedHttpCallBuilder<IMockTypedHttpCallBuilder> { }
-
-    public interface IMockHalCallBuilder : IMockHalCallBuilder<IMockHalCallBuilder> { }
 }

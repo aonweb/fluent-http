@@ -7,7 +7,7 @@
     <NuBuildVersionSource>Library</NuBuildVersionSource>
     <NuBuildVersionFileName>True</NuBuildVersionFileName>
     <NuBuildAddBinariesToSubfolder>False</NuBuildAddBinariesToSubfolder>
-    <NuBuildIncludePdbs>False</NuBuildIncludePdbs>
+    <NuBuildIncludePdbs>True</NuBuildIncludePdbs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
   </PropertyGroup>
