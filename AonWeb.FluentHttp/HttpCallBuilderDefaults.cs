@@ -47,7 +47,7 @@ namespace AonWeb.FluentHttp
 
             DefaultResultType = typeof(string);
             DefaultErrorType = typeof(string);
-            DefaultContentType = typeof(IEmptyRequest);
+            DefaultContentType = typeof(EmptyRequest);
 
             //Client Defaults
             AutoDecompressionEnabled = true;

@@ -705,7 +705,8 @@ namespace AonWeb.FluentHttp
 
         public async Task SendAsync()
         {
-            _settings.SetResultType(typeof(EmptyResult), true);
+            if (!typeof(IEmptyResult).IsAssignableFrom(_settings.ResultType))
+                _settings.SetResultType(typeof(EmptyResult), true);
 
             ConfigureResponseDeserialization(false);
 
