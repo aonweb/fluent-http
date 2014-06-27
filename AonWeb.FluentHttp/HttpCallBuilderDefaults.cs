@@ -62,15 +62,22 @@ namespace AonWeb.FluentHttp
 
             //Auto Follow Location
             AutoFollowLocationEnabled = true;
+            DefaultFollowedStatusCodes = new HashSet<HttpStatusCode>
+            {
+                HttpStatusCode.Created,
+                HttpStatusCode.SeeOther
+            };
 
             //Redirect Defaults
             AutoRedirectEnabled = true;
             DefaultMaxAutoRedirects = 2;
             DefaultRedirectStatusCodes = new HashSet<HttpStatusCode>
             {
+                HttpStatusCode.MultipleChoices,
                 HttpStatusCode.Found,
                 HttpStatusCode.Redirect,
-                HttpStatusCode.MovedPermanently
+                HttpStatusCode.MovedPermanently,
+                HttpStatusCode.UseProxy
             };
 
             //Retry
@@ -148,6 +155,7 @@ namespace AonWeb.FluentHttp
         public static ISet<HttpStatusCode> DefaultRedirectStatusCodes { get; set; }
 
         public static bool AutoFollowLocationEnabled { get; set; }
+        public static ISet<HttpStatusCode> DefaultFollowedStatusCodes { get; set; }
 
         public static bool AutoRetryEnabled { get; set; }
         public static int DefaultMaxAutoRetries { get; set; }
@@ -155,6 +163,8 @@ namespace AonWeb.FluentHttp
         public static TimeSpan DefaultMaxRetryAfter { get; set; }
         public static ISet<HttpStatusCode> DefaultRetryStatusCodes { get; set; }
         public static bool SuppressCancellationErrors { get; set; }
+
+        
 
         private static bool IsSuccessfulResponse(HttpResponseMessage response)
         {
