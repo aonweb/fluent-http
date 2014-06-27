@@ -48,7 +48,7 @@ namespace AonWeb.FluentHttp.Mocks {
         IMockHttpCallBuilder WithAssertFailure(Action failureAction);
     }
 
-    public interface IMockTypedHttpCallBuilder : IAdvancedTypedHttpCallBuilder, IMockTypedBuilder<IMockTypedHttpCallBuilder>
+    public interface IMockTypedHttpCallBuilder : IChildTypedHttpCallBuilder, IMockTypedBuilder<IMockTypedHttpCallBuilder>
     {
         IMockTypedHttpCallBuilder VerifyOnSending(Action<TypedHttpSendingContext<object, object>> handler);
         IMockTypedHttpCallBuilder VerifyOnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler);

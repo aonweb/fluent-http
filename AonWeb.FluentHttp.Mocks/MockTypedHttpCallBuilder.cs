@@ -16,11 +16,19 @@ namespace AonWeb.FluentHttp.Mocks
         private Action _assertFailure;
 
         public MockTypedHttpCallBuilder()
-            : this(new MockHttpCallBuilder(), new MockFormatter())
+            : this(new TypedHttpCallBuilderSettings())
+        { }
+
+        public MockTypedHttpCallBuilder(TypedHttpCallBuilderSettings settings)
+            : this(settings, new MockHttpCallBuilder(), new MockFormatter())
         { }
 
         protected MockTypedHttpCallBuilder(IMockHttpCallBuilder builder, IMockFormatter formatter)
-            : base(builder, formatter)
+            : this(new TypedHttpCallBuilderSettings(), builder, formatter)
+        { }
+
+        protected MockTypedHttpCallBuilder(TypedHttpCallBuilderSettings settings, IMockHttpCallBuilder builder, IMockFormatter formatter)
+            : base(settings, builder, formatter)
         {
             _innerBuilder = builder;
             _formatter = formatter;

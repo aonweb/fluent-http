@@ -10,6 +10,15 @@ using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp
 {
+    public interface IChildTypedHttpCallBuilder : IRecursiveTypedHttpCallBuilder 
+    {
+        void ApplySettings(TypedHttpCallBuilderSettings settings);
+    }
+
+    public interface IRecursiveTypedHttpCallBuilder : IAdvancedTypedHttpCallBuilder {
+        Task<TResult> RecursiveResultAsync<TResult>();
+    }
+
     public interface IAdvancedTypedHttpCallBuilder : ITypedHttpCallBuilder
     {
         IAdvancedTypedHttpCallBuilder WithScheme(string scheme);

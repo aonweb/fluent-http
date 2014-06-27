@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Exceptions;
@@ -114,6 +118,254 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         #endregion
+
+        //#region WithMethod
+
+        //[Test]
+        //public void WithMethod_WhenValidString_ExpectResultUsesMethod()
+        //{
+        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
+        //    {
+        //        //arrange
+        //        var method = "GET";
+        //        var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
+
+        //        string actual = null;
+        //        server.InspectRequest(r => actual = r.HttpMethod);
+
+        //        //act
+        //        builder.ResultAsync().Wait();
+
+        //        Assert.AreEqual(method, actual);
+        //    }
+        //}
+
+        //[Test]
+        //[ExpectedException(typeof(ArgumentException))]
+        //public void WithMethod_WhenNullString_ExpectException()
+        //{
+        //    //arrange
+        //    string method = null;
+        //    var builder = TypedHttpCallBuilder.Create();
+
+        //    //act
+        //    builder.Advanced.WithMethod(method);
+        //}
+
+        //[Test]
+        //[ExpectedException(typeof(ArgumentException))]
+        //public void WithMethod_WhenEmptyString_ExpectException()
+        //{
+        //    //arrange
+        //    var method = string.Empty;
+        //    var builder = TypedHttpCallBuilder.Create();
+
+        //    //act
+        //    builder.Advanced.WithMethod(method);
+        //}
+
+        //[Test]
+        //public void WithMethod_WhenValidMethod_ExpectResultUsesMethod()
+        //{
+        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
+        //    {
+        //        //arrange
+        //        var method = HttpMethod.Get;
+        //        var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
+
+        //        string actual = null;
+        //        server.InspectRequest(r => actual = r.HttpMethod);
+
+        //        //act
+        //        builder.ResultAsync().Wait();
+
+        //        Assert.AreEqual(method.Method, actual);
+        //    }
+        //}
+
+        //[Test]
+        //[ExpectedException(typeof(ArgumentNullException))]
+        //public void WithMethod_WhenNullMethod_ExpectException()
+        //{
+        //    //arrange
+        //    HttpMethod method = null;
+        //    var builder = TypedHttpCallBuilder.Create().Advanced.WithMethod(method);
+
+        //    //act
+        //    builder.ResultAsync();
+
+        //    Assert.Fail();
+        //}
+
+        //[Test]
+        //public void WithMethod_WhenCalledMultipleTimes_ExpectLastWins()
+        //{
+        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
+        //    {
+        //        //arrange
+        //        var method1 = "POST";
+        //        var method2 = "GET";
+        //        var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method1).Advanced.WithMethod(method2);
+
+        //        string actual = null;
+        //        server.InspectRequest(r => actual = r.HttpMethod);
+
+        //        //act
+        //        builder.ResultAsync().Wait();
+
+        //        Assert.AreEqual(method2, actual);
+        //    }
+        //}
+
+        //#endregion
+
+        //#region Client Configuration
+
+        //[Test]
+        //public void WithClientConfiguration_WhenAction_ExpectConfigurationApplied()
+        //{
+        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
+        //    {
+        //        var expected = "GoogleBot/1.0";
+        //        string actual = null;
+        //        server.InspectRequest(r => actual = r.Headers["User-Agent"]);
+
+        //        //act
+        //        TypedHttpCallBuilder.Create(TestUriString)
+        //            .Advanced
+        //            .ConfigureClient(b =>
+        //                b.WithHeaders(h =>
+        //                    h.UserAgent.Add(new ProductInfoHeaderValue("GoogleBot", "1.0"))))
+        //                .ResultAsync().Wait();
+
+        //        Assert.AreEqual(expected, actual);
+
+        //    }
+        //}
+
+        //#endregion
+
+        //#region Timeout & Cancellation
+
+        //[Test]
+        //[ExpectedException(typeof(AggregateException))]
+        //public void CancelRequest_WhenSuppressCancelOff_ExpectException()
+        //{
+        //    //arrange
+        //    var uri = TestUriString;
+        //    using (var server = LocalWebServer.ListenInBackground(uri))
+        //    {
+        //        var delay = 500;
+        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+        //        server.InspectRequest(r => Thread.Sleep(delay));
+
+        //        // act
+        //        var watch = new Stopwatch();
+        //        watch.Start();
+        //        var task = builder.Advanced.WithSuppressCancellationExceptions(false).ResultAsync();
+
+        //        builder.CancelRequest();
+
+        //        Task.WaitAll(task);
+        //    }
+        //}
+
+        //[Test]
+        //public async Task WithTimeout_WithLongCall_ExpectTimeoutBeforeCompletionWithNoException()
+        //{
+        //    //arrange
+        //    var uri = TestUriString;
+        //    using (var server = LocalWebServer.ListenInBackground(uri))
+        //    {
+        //        var delay = 1000;
+        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+        //        server.InspectRequest(r => Thread.Sleep(delay));
+
+        //        // act
+        //        var watch = new Stopwatch();
+        //        watch.Start();
+        //        var result = await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).ResultAsync();
+
+        //        // assert
+        //        Assert.IsNull(result);
+        //        Assert.GreaterOrEqual(watch.ElapsedMilliseconds, 100);
+        //        Assert.Less(watch.ElapsedMilliseconds, delay);
+        //    }
+        //}
+
+        //[Test]
+        //[ExpectedException(typeof(TaskCanceledException))]
+        //public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
+        //{
+        //    //arrange
+        //    var uri = TestUriString;
+        //    using (var server = LocalWebServer.ListenInBackground(uri))
+        //    {
+        //        var delay = 10000;
+        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+        //        server.InspectRequest(r => Thread.Sleep(delay));
+
+        //        // act
+        //        await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).ResultAsync();
+        //    }
+        //}
+
+        //[Test]
+        //public async Task WithTimeout_WithLongCallAndExceptionHandler_ExpectExceptionHandlerCalled()
+        //{
+        //    //arrange
+        //    var uri = TestUriString;
+        //    using (var server = LocalWebServer.ListenInBackground(uri))
+        //    {
+        //        var delay = 1000;
+        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+        //        server.InspectRequest(r => Thread.Sleep(delay));
+        //        var callbackCalled = false;
+        //        // act
+        //        await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).OnException(ctx =>
+        //        {
+        //            callbackCalled = true;
+        //        }).ResultAsync();
+
+        //        Assert.IsTrue(callbackCalled);
+        //    }
+        //}
+
+        //#endregion
+
+        //#region DependentUri
+
+        //[Test]
+        //public async Task WhenDependentUriIsNull_ExpectNoException()
+        //{
+
+        //    var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
+
+        //    //act
+        //    var result = await builder
+        //        .WithDependentUri(null)
+        //        .ResultAsync();
+
+        //    Assert.NotNull(result);
+        //}
+
+        //[Test]
+        //public async Task WhenDependentUrisIsNull_ExpectNoException()
+        //{
+
+        //    var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
+
+        //    //act
+        //    var result = await builder
+        //        .WithDependentUris(null)
+        //        .ResultAsync();
+
+        //    Assert.NotNull(result);
+        //}
+
+        //#endregion
+
+        #region Handlers
 
         [Test]
         [ExpectedException(typeof(TypeMismatchException))]
@@ -375,33 +627,6 @@ namespace AonWeb.FluentHttp.Tests.Http
             Assert.Null(result);
             Assert.AreEqual(typeof(TestResult), type);
         }
-
-        [Test]
-        public async Task WhenDependentUriIsNull_ExpectNoException()
-        {
-
-            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
-
-            //act
-            var result = await builder.Advanced
-                .WithDependentUri(null)
-                .ResultAsync<TestResult>();
-
-            Assert.NotNull(result);
-        }
-
-        [Test]
-        public async Task WhenDependentUrisIsNull_ExpectNoException()
-        {
-
-            var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
-
-            //act
-            var result = await builder.Advanced
-                .WithDependentUris(null)
-                .ResultAsync<TestResult>();
-
-            Assert.NotNull(result);
-        }
+        #endregion
     }
 }

@@ -17,14 +17,15 @@ namespace AonWeb.FluentHttp.HAL
 {
     public class HalCallBuilder : IAdvancedHalCallBuilder
     {
-        private readonly IAdvancedTypedHttpCallBuilder _innerBuilder;
+        private readonly IChildTypedHttpCallBuilder _innerBuilder;
 
         protected HalCallBuilder()
-            : this(TypedHttpCallBuilder.Create().Advanced) { }
+            : this(TypedHttpCallBuilder.CreateAsChild(new HalCallBuilderSettings())) { }
 
-        protected HalCallBuilder(IAdvancedTypedHttpCallBuilder builder)
+        protected HalCallBuilder(IChildTypedHttpCallBuilder builder)
         {
-            _innerBuilder = builder.ConfigureMediaTypeFormatter<JsonMediaTypeFormatter>(
+            _innerBuilder = builder;
+            _innerBuilder.ConfigureMediaTypeFormatter<JsonMediaTypeFormatter>(
                 f =>
                 {
                     f.SerializerSettings.Converters.Add(new HalResourceConverter());

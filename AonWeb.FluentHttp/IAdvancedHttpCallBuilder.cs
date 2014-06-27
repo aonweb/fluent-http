@@ -21,11 +21,6 @@ namespace AonWeb.FluentHttp
         Task<HttpResponseMessage> RecursiveResultAsync();
     }
 
-    public interface IRecursiveTypedHttpCallBuilder : IAdvancedTypedHttpCallBuilder
-    {
-        Task<TResult> RecursiveResultAsync<TResult>();
-    }
-
     public interface IAdvancedHttpCallBuilder : IHttpCallBuilder
     {
         IAdvancedHttpCallBuilder WithScheme(string scheme);

@@ -3,6 +3,11 @@ namespace AonWeb.FluentHttp.Mocks
     public class QueuedMockTypedHttpCallBuilder : MockTypedHttpCallBuilder
     {
         public QueuedMockTypedHttpCallBuilder()
-            : base(new QueuedMockHttpCallBuilder(), new QueuedMockFormatter()) { }
+            : this(new TypedHttpCallBuilderSettings())
+        { }
+
+        public QueuedMockTypedHttpCallBuilder(TypedHttpCallBuilderSettings settings)
+            : base(settings, new QueuedMockHttpCallBuilder(), new QueuedMockFormatter())
+        { }
     }
 }

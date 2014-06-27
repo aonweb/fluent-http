@@ -16,9 +16,9 @@ using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp
 {
-    public class TypedHttpCallBuilder : IRecursiveTypedHttpCallBuilder
+    public class TypedHttpCallBuilder : IChildTypedHttpCallBuilder
     {
-        private readonly TypedHttpCallBuilderSettings _settings;
+        private TypedHttpCallBuilderSettings _settings;
         private readonly IChildHttpCallBuilder _innerBuilder;
 
         private readonly  IHttpCallFormatter _formatter;
@@ -32,16 +32,15 @@ namespace AonWeb.FluentHttp
         protected TypedHttpCallBuilder(IChildHttpCallBuilder builder, IHttpCallFormatter formatter)
             : this(new TypedHttpCallBuilderSettings(), builder, formatter) { }
 
-        private TypedHttpCallBuilder(TypedHttpCallBuilderSettings settings, IChildHttpCallBuilder builder, IHttpCallFormatter formatter)
+        protected TypedHttpCallBuilder(TypedHttpCallBuilderSettings settings, IChildHttpCallBuilder builder, IHttpCallFormatter formatter)
             : this(settings, builder, formatter, HttpCallBuilderDefaults.DefaultTypedHandlerFactory()) { }
 
         private TypedHttpCallBuilder(TypedHttpCallBuilderSettings settings, IChildHttpCallBuilder builder,  IHttpCallFormatter formatter, params ITypedHttpCallHandler[] defaultHandlers)
         {
             _formatter = formatter;
-            _settings = settings;
             _innerBuilder = builder;
 
-            builder.ApplySettings(_settings);
+            ApplySettings(settings);
             
             foreach (var handler in defaultHandlers)
                 WithHandler(handler);
@@ -60,6 +59,16 @@ namespace AonWeb.FluentHttp
         public static ITypedHttpCallBuilder Create(Uri baseUri)
         {
             return Create().WithBaseUri(baseUri);
+        }
+
+        public static IChildTypedHttpCallBuilder CreateAsChild(TypedHttpCallBuilderSettings settings)
+        {
+            var childBuilder = new TypedHttpCallBuilder(
+                settings,
+                HttpCallBuilder.CreateAsChild(),
+                new HttpCallFormatter());
+
+            return childBuilder;
         }
 
         public ITypedHttpCallBuilder WithUri(string uri)
@@ -710,6 +719,12 @@ namespace AonWeb.FluentHttp
             var result = await ResultAsync(new TypedHttpCallContext(this, _settings)).ConfigureAwait(false);
 
             return (TResult)result;
+        }
+
+        public void ApplySettings(TypedHttpCallBuilderSettings settings)
+        {
+            _settings = settings;
+            _innerBuilder.ApplySettings(_settings);
         }
 
         private async Task<object> ResultAsync(TypedHttpCallContext context)

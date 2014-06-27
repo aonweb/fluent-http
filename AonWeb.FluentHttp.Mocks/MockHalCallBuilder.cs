@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.Mocks
         private readonly IMockTypedHttpCallBuilder _innerBuilder;
 
         public MockHalCallBuilder()
-            : this(new MockTypedHttpCallBuilder())
+            : this(new MockTypedHttpCallBuilder(new HalCallBuilderSettings()))
         { }
 
         protected MockHalCallBuilder(IMockTypedHttpCallBuilder builder)

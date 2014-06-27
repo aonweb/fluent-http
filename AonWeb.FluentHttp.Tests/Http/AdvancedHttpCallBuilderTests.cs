@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
-    public class HttpCallBuilderAdvancedMethodTests
+    public class AdvancedHttpCallBuilderTests
     {
         #region Declarations, Set up, & Tear Down
 
@@ -240,6 +240,8 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         #endregion
 
+        #region DependentUri
+
         [Test]
         public async Task WhenDependentUriIsNull_ExpectNoException()
         {
@@ -267,6 +269,8 @@ namespace AonWeb.FluentHttp.Tests.Http
 
             Assert.NotNull(result);
         }
+
+        #endregion
 
         /*
          IHttpCallBuilder WithScheme(string scheme);

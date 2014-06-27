@@ -74,6 +74,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="HAL\AdvancedHalCallBuilderTests.cs" />
     <Compile Include="HAL\HalDeserializationTests.cs" />
     <Compile Include="HAL\HalCachingTests.cs" />
     <Compile Include="Helpers\Extensions.cs" />
@@ -85,7 +86,7 @@
     <Compile Include="Http\MockTypedHttpCallBuilderTests.cs" />
     <Compile Include="Http\AdvancedTypedHttpCallBuilderTests.cs" />
     <Compile Include="Http\TypedHttpCallBuilderTests.cs" />
-    <Compile Include="Http\HttpCallBuilderAdvancedMethodsTests .cs" />
+    <Compile Include="Http\AdvancedHttpCallBuilderTests.cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
     <Compile Include="Http\HttpCallBuilderMethodTests.cs" />
     <Compile Include="Integration\HttpHandlerCachingTests.cs" />

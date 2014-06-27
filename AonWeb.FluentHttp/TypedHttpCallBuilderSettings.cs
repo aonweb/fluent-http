@@ -16,16 +16,23 @@ namespace AonWeb.FluentHttp
         private readonly IDictionary _items;
 
         private readonly ModifyTracker<Type> _resultTypeValue;
-        private ModifyTracker<Type> _errorTypeValue;
-        private ModifyTracker<Type> _contentTypeValue;
+        private readonly ModifyTracker<Type> _errorTypeValue;
+        private readonly ModifyTracker<Type> _contentTypeValue;
 
         public TypedHttpCallBuilderSettings()
+            : this(
+            HttpCallBuilderDefaults.DefaultResultType,
+            HttpCallBuilderDefaults.DefaultContentType,
+            HttpCallBuilderDefaults.DefaultErrorType) { }
+
+        public TypedHttpCallBuilderSettings(Type resultType, Type contentType, Type errorType)
         {
             _items = new HybridDictionary();
 
-            _resultTypeValue = new ModifyTracker<Type>(HttpCallBuilderDefaults.DefaultResultType);
-            _errorTypeValue = new ModifyTracker<Type>(HttpCallBuilderDefaults.DefaultErrorType);
-            _contentTypeValue = new ModifyTracker<Type>(HttpCallBuilderDefaults.DefaultContentType);
+            _resultTypeValue = new ModifyTracker<Type>(resultType);
+            _contentTypeValue = new ModifyTracker<Type>(contentType);
+            _errorTypeValue = new ModifyTracker<Type>(errorType);
+            
 
             DeserializeResult = true;
             MediaType = HttpCallBuilderDefaults.DefaultMediaType;
@@ -75,25 +82,29 @@ namespace AonWeb.FluentHttp
 
         public bool SuppressHandlerTypeExceptions { get; set; }
 
-        public void SetResultType(Type type, bool authoritative = false)
+        public TypedHttpCallBuilderSettings SetResultType(Type type, bool authoritative = false)
         {
-            SetType(t => ResultType = t, type, _resultTypeValue.Modified, authoritative);
+            return SetType(t => ResultType = t, type, _resultTypeValue.Modified, authoritative);
+
+            return this;
         }
 
-        public void SetContentType(Type type, bool authoritative = false)
+        public TypedHttpCallBuilderSettings SetContentType(Type type, bool authoritative = false)
         {
-            SetType(t => ContentType = t, type, _contentTypeValue.Modified, authoritative);
+            return SetType(t => ContentType = t, type, _contentTypeValue.Modified, authoritative);
         }
 
-        public void SetErrorType(Type type, bool authoritative = false)
+        public TypedHttpCallBuilderSettings SetErrorType(Type type, bool authoritative = false)
         {
-            SetType(t => ErrorType = t, type, _errorTypeValue.Modified, authoritative);
+            return SetType(t => ErrorType = t, type, _errorTypeValue.Modified, authoritative);
         }
 
-        private void SetType(Action<Type> configure, Type type, bool modified, bool authoritative = false)
+        private TypedHttpCallBuilderSettings SetType(Action<Type> configure, Type type, bool modified, bool authoritative = false)
         {
             if (authoritative || (!modified && type != typeof(object)))
                 configure(type);
+
+            return this;
         }
 
         public void Reset()
