@@ -10,15 +10,15 @@ namespace AonWeb.FluentHttp.Mocks
     {
         private readonly IHttpCallFormatter _innerFormatter;
 
-        private readonly ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>> _results;
-        private readonly ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>> _errors;
+        private readonly ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, Task<object>>> _results;
+        private readonly ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, Task<object>>> _errors;
 
         public QueuedMockFormatter()
         {
             _innerFormatter = new HttpCallFormatter();
 
-            _results = new ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>>((r,c) => default(object));
-            _errors = new ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, object>>((r, c) => default(object));
+            _results = new ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, Task<object>>>(async (r, c) => await _innerFormatter.DeserializeResult(r, c));
+            _errors = new ResponseQueue<Func<HttpResponseMessage, TypedHttpCallContext, Task<object>>>(async (r, c) => await _innerFormatter.DeserializeError(r, c));
         }
 
         public Task<HttpContent> CreateContent(object value, TypedHttpCallContext context)
@@ -32,7 +32,7 @@ namespace AonWeb.FluentHttp.Mocks
 
             var result = func(response, context);
                 
-            return Task.FromResult(result);
+            return result;
         }
 
         public Task<object> DeserializeError(HttpResponseMessage response, TypedHttpCallContext context)
@@ -41,7 +41,7 @@ namespace AonWeb.FluentHttp.Mocks
 
             var result = func(response, context);
 
-            return Task.FromResult(result);
+            return result;
         }
 
         public IMockFormatter WithResult<TResult>(TResult result)
@@ -51,7 +51,7 @@ namespace AonWeb.FluentHttp.Mocks
 
         public IMockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
-            _results.Add((r, c) => resultFactory(r,c));
+            _results.Add((r, c) => Task.FromResult<object>(resultFactory(r,c)));
 
             return this;
         }
@@ -63,7 +63,7 @@ namespace AonWeb.FluentHttp.Mocks
 
         public IMockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
         {
-            _errors.Add((r, c) => errorFactory(r,c));
+            _errors.Add((r, c) => Task.FromResult<object>(errorFactory(r, c)));
 
             return this;
         }
