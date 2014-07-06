@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Mocks;
+using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 
 using NUnit.Framework;

@@ -63,16 +63,6 @@ namespace AonWeb.FluentHttp.Mocks
 
         public void CancelPendingRequests() { }
 
-        public MockHttpClient WithResponse(HttpResponseMessage response)
-        {
-            return WithResponse(r => response);
-        }
-
-        public MockHttpClient WithResponse(ResponseInfo response)
-        {
-            return WithResponse(r => response.ToHttpResponseMessage());
-        }
-
         public MockHttpClient WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
             _responseFactory = responseFactory;

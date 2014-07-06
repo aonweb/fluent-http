@@ -1,21 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
-using System.Net;
 using System.Text;
 
-using AonWeb.FluentHttp.Mocks;
-
-namespace AonWeb.FluentHttp.Tests.Helpers
+namespace AonWeb.FluentHttp.Mocks.WebServer
 {
-    public class LocalWebServerResponseInfo : ResponseInfo<LocalWebServerResponseInfo>
-    {
-        public LocalWebServerResponseInfo()
-            :base( HttpStatusCode.OK) { }
-
-        public LocalWebServerResponseInfo(HttpStatusCode statusCode)
-            : base(statusCode) { }
-    }
-
     public class LocalWebServerRequestInfo
     {
 

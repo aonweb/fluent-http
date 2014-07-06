@@ -39,21 +39,11 @@ namespace AonWeb.FluentHttp.Mocks
             return _innerFormatter.DeserializeError(response, context);
         }
 
-        public IMockFormatter WithResult<TResult>(TResult result)
-        {
-            return WithResult((r, c) => result);
-        }
-
         public IMockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
         {
             _resultFactory = (r, c) => resultFactory(r,c);
 
             return this;
-        }
-
-        public IMockFormatter WithError<TError>(TError error)
-        {
-            return WithError((r, c) => error);
         }
 
         public IMockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)

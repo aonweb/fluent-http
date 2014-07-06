@@ -17,8 +17,7 @@
     <tags>fluent, http</tags>
     <dependencies>
       <group>
-        <dependency id="Newtonsoft.Json" version="6.0.0"  />
-        <dependency id="AonWeb.FluentHttp" version="1.2.12" />
+        <dependency id="AonWeb.FluentHttp" />
       </group>
     </dependencies>
   </metadata>

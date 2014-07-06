@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+	<BuildPackage>true</BuildPackage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -91,6 +92,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="AonWeb.FluentHttp.HAL.nuspec" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -115,7 +117,15 @@
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
   -->
+  <!-- Make the build depend on publish packages -->
+	<PropertyGroup>
+		<BuildDependsOn Condition=" '$(Configuration)' == 'Release' ">
+		  $(BuildDependsOn);
+		  PublishPackage;
+		</BuildDependsOn>
+	</PropertyGroup>
+	<Target Name="PublishPackage">
+	<Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="$(SolutionDir)\.nuget\push-hal.cmd" />
+  </Target>
 </Project>

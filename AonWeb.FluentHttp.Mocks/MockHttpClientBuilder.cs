@@ -25,15 +25,5 @@ namespace AonWeb.FluentHttp.Mocks
 
             return this;
         }
-
-        public IMockHttpClientBuilder WithResponse(HttpResponseMessage response)
-        {
-            return WithResponse(r => response);
-        }
-
-        public IMockHttpClientBuilder WithResponse(ResponseInfo response)
-        {
-            return WithResponse(r => response.ToHttpResponseMessage());
-        }
     }
 }

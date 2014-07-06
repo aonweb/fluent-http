@@ -85,8 +85,6 @@ namespace AonWeb.FluentHttp
         public TypedHttpCallBuilderSettings SetResultType(Type type, bool authoritative = false)
         {
             return SetType(t => ResultType = t, type, _resultTypeValue.Modified, authoritative);
-
-            return this;
         }
 
         public TypedHttpCallBuilderSettings SetContentType(Type type, bool authoritative = false)

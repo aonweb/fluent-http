@@ -5,9 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-using AonWeb.FluentHttp.Mocks;
-
-namespace AonWeb.FluentHttp.Tests.Helpers
+namespace AonWeb.FluentHttp.Mocks.WebServer
 {
     public class LocalWebServer : IDisposable
     {

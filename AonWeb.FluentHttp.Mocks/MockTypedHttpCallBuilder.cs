@@ -41,21 +41,11 @@ namespace AonWeb.FluentHttp.Mocks
             return WithResult(resultFactory, new ResponseInfo(HttpStatusCode.OK));
         }
 
-        public IMockTypedHttpCallBuilder WithResult<TResult>(TResult result)
-        {
-            return WithResult(result, HttpStatusCode.OK);
-        }
-
-        public IMockTypedHttpCallBuilder WithResult<TResult>(TResult result, HttpStatusCode statusCode)
-        {
-            return WithResult((r, c) => result, new ResponseInfo(statusCode));
-        }
-
         public IMockTypedHttpCallBuilder WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory, ResponseInfo response)
         {
             _formatter.WithResult(resultFactory);
 
-            return WithResponse(response);
+            return this.WithResponse(response);
         }
 
         public IMockTypedHttpCallBuilder WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
@@ -63,21 +53,11 @@ namespace AonWeb.FluentHttp.Mocks
             return WithError(errorFactory, new ResponseInfo(HttpStatusCode.InternalServerError));
         }
 
-        public IMockTypedHttpCallBuilder WithError<TError>(TError error)
-        {
-            return WithError(error, HttpStatusCode.InternalServerError);
-        }
-
-        public IMockTypedHttpCallBuilder WithError<TError>(TError error, HttpStatusCode statusCode)
-        {
-            return WithError((r, c) => error, new ResponseInfo(statusCode));
-        }
-
         public IMockTypedHttpCallBuilder WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory, ResponseInfo response)
         {
             _formatter.WithError(errorFactory);
 
-            return WithResponse(response);
+            return this.WithResponse(response);
         }
 
         public IMockTypedHttpCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
@@ -85,16 +65,6 @@ namespace AonWeb.FluentHttp.Mocks
             _innerBuilder.WithResponse(responseFactory);
 
             return this;
-        }
-
-        public IMockTypedHttpCallBuilder WithResponse(HttpResponseMessage response)
-        {
-            return WithResponse(r => response);
-        }
-       
-        public IMockTypedHttpCallBuilder WithResponse(ResponseInfo response)
-        {
-            return WithResponse(r => response.ToHttpResponseMessage());
         }
 
         public IMockTypedHttpCallBuilder VerifyOnSending(Action<TypedHttpSendingContext<object, object>> handler)

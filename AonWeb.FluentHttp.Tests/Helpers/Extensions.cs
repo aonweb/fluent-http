@@ -22,33 +22,5 @@ namespace AonWeb.FluentHttp.Tests
         {
             mock.Verify(m => m.SendAsync(It.Is(messagePredicate), It.IsAny<HttpCompletionOption>(), It.IsAny<CancellationToken>()), times);
         }
-
-        public static string ReadContents(this HttpListenerRequest request)
-        {
-            using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
-                return reader.ReadToEnd();
-        }
-
-        public static string ReadContents(this Task<HttpResponseMessage> response)
-        {
-            return response.Result.ReadContents();
-        }
-
-        public static string ReadContents(this HttpResponseMessage response)
-        {
-            return response.Content.ReadAsStringAsync().Result;
-        }
-
-        public static async Task<string> ReadContentsAsync(this Task<HttpResponseMessage> responseTask)
-        {
-            var r = await responseTask;
-
-            return await r.ReadContentsAsync();
-        }
-
-        public static async Task<string> ReadContentsAsync(this HttpResponseMessage response)
-        {
-            return await response.Content.ReadAsStringAsync();
-        }
     }
 }

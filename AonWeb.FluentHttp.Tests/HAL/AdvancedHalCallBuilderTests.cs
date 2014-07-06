@@ -5,6 +5,7 @@ using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.Mocks;
+using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 
 using NUnit.Framework;

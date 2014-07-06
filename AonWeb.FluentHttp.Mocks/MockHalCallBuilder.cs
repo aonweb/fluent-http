@@ -29,20 +29,6 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockHalCallBuilder WithResult<TResult>(TResult result) 
-        {
-            _innerBuilder.WithResult(result);
-
-            return this;
-        }
-
-        public IMockHalCallBuilder WithResult<TResult>(TResult result, HttpStatusCode statusCode)
-        {
-            _innerBuilder.WithResult(result, statusCode);
-
-            return this;
-        }
-
         public IMockHalCallBuilder WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory, ResponseInfo response)
         {
             _innerBuilder.WithResult(resultFactory, response);
@@ -57,20 +43,6 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockHalCallBuilder WithError<TError>(TError error)
-        {
-            _innerBuilder.WithError(error);
-
-            return this;
-        }
-
-        public IMockHalCallBuilder WithError<TError>(TError error, HttpStatusCode statusCode)
-        {
-            _innerBuilder.WithError(error, statusCode);
-
-            return this;
-        }
-
         public IMockHalCallBuilder WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory, ResponseInfo response)
         {
             _innerBuilder.WithError(errorFactory, response);
@@ -81,20 +53,6 @@ namespace AonWeb.FluentHttp.Mocks
         public IMockHalCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
             _innerBuilder.WithResponse(responseFactory);
-
-            return this;
-        }
-
-        public IMockHalCallBuilder WithResponse(HttpResponseMessage response)
-        {
-            _innerBuilder.WithResponse(response);
-
-            return this;
-        }
-
-        public IMockHalCallBuilder WithResponse(ResponseInfo response)
-        {
-            _innerBuilder.WithResponse(response);
 
             return this;
         }
@@ -118,13 +76,13 @@ namespace AonWeb.FluentHttp.Mocks
         public IMockHalCallBuilder VerifyOnSendingWithContent<TContent>(Action<TypedHttpSendingContext<IHalResource, TContent>> handler)
             where TContent : IHalRequest
         {
-            return VerifyOnSending(handler);
+            return VerifyOnSending<IHalResource, TContent>(handler);
         }
 
         public IMockHalCallBuilder VerifyOnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, IHalRequest>> handler)
             where TResult : IHalResource
         {
-            return VerifyOnSending(handler);
+            return VerifyOnSending<TResult, IHalRequest>(handler);
         }
 
         public IMockHalCallBuilder VerifyOnSent(Action<TypedHttpSentContext<IHalResource>> handler)

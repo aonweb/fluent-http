@@ -1,4 +1,5 @@
 ﻿using AonWeb.FluentHttp.HAL;
+using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 using AonWeb.FluentHttp.Tests.Helpers.HAL;
 
