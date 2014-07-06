@@ -86,7 +86,7 @@
     <Compile Include="Http\TypedHttpCallBuilderTests.cs" />
     <Compile Include="Http\AdvancedHttpCallBuilderTests.cs" />
     <Compile Include="Http\HttpClientBuilderTests.cs" />
-    <Compile Include="Http\HttpCallBuilderMethodTests.cs" />
+    <Compile Include="Http\HttpCallBuilderTests.cs" />
     <Compile Include="Integration\HttpHandlerCachingTests.cs" />
     <Compile Include="Integration\InterfaceDefinitionTests.cs" />
     <Compile Include="Http\RedirectionHandlerTests.cs" />

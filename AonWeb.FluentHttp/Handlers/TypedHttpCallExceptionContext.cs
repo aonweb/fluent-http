@@ -13,19 +13,19 @@ namespace AonWeb.FluentHttp.Handlers
             _exceptionHandled = new ModifyTracker<bool>(false);
         }
 
-        public Exception Exception { get; private set; }
+        public TypedHttpCallExceptionContext(TypedHttpCallExceptionContext context)
+            : base(context)
+        {
+            Exception = context.Exception;
+            _exceptionHandled = context._exceptionHandled;
+        }
 
+        public Exception Exception { get; private set; }
 
         public bool ExceptionHandled
         {
-            get
-            {
-                return _exceptionHandled.Value;
-            }
-            set
-            {
-                _exceptionHandled.Value = value;
-            }
+            get { return _exceptionHandled.Value; }
+            set { _exceptionHandled.Value = value; }
         }
 
         public override ModifyTracker GetHandlerResult()

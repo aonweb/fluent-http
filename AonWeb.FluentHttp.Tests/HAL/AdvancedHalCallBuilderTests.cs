@@ -463,6 +463,63 @@ namespace AonWeb.FluentHttp.Tests.HAL
             Assert.Null(result);
             Assert.AreEqual(typeof(TestResult), type);
         }
+
+        [Test]
+        public async Task OnSending_CanUseSmallerType()
+        {
+            //arrange
+            var sendingCalled = false;
+            var sendingWithContentCalled = false;
+            var sendingWithResultCalled = false;
+
+            var builder =
+                new MockHalCallBuilder()
+                .VerifyOnSending<IHalResource, IHalRequest>(ctx => { })
+                    .VerifyOnSendingWithContent<IHalRequest>(ctx => { })
+                    .VerifyOnSendingWithResult<IHalResource>(ctx => { })
+                    .WithResult(TestResultValue)
+                    .WithLink(TestUriString)
+                    .WithContent(TestRequestValue)
+                    .Advanced.OnSending<IHalResource, IHalRequest>(ctx => sendingCalled = true)
+                    .OnSendingWithContent<IHalRequest>(ctx => sendingWithContentCalled = true)
+                    .OnSendingWithResult<IHalResource>(ctx => sendingWithResultCalled = true);
+
+            //act
+            var actual1 = await builder.ResultAsync<TestResult>();
+
+            Assert.IsTrue(sendingCalled, "Sending was not called");
+            Assert.IsTrue(sendingWithContentCalled, "SendingWithContent was not called");
+            Assert.IsTrue(sendingWithResultCalled, "SendingWithResult was not called");
+        }
+
+        [Test]
+        public async Task OnSending_CanUseSmallerType2()
+        {
+            //arrange
+            var sendingCalled = false;
+            var sendingWithContentCalled = false;
+            var sendingWithResultCalled = false;
+
+            var builder =
+                new QueuedMockHalCallBuilder()
+                .VerifyOnSending<IHalResource, IHalRequest>(ctx => { })
+                    .VerifyOnSendingWithContent<IHalRequest>(ctx => { })
+                    .VerifyOnSendingWithResult<IHalResource>(ctx => { })
+                    .WithResult(TestResultValue)
+                    .WithLink(TestUriString)
+                    .WithContent(TestRequestValue)
+                    .Advanced.OnSending<IHalResource, IHalRequest>(ctx => sendingCalled = true)
+                    .OnSendingWithContent<IHalRequest>(ctx => sendingWithContentCalled = true)
+                    .OnSendingWithResult<IHalResource>(ctx => sendingWithResultCalled = true);
+
+            //act
+            var actual1 = await builder.ResultAsync<TestResult>();
+
+            Assert.IsTrue(sendingCalled, "Sending was not called");
+            Assert.IsTrue(sendingWithContentCalled, "SendingWithContent was not called");
+            Assert.IsTrue(sendingWithResultCalled, "SendingWithResult was not called");
+        }
+
         #endregion 
     }
 }

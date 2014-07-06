@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
+using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
@@ -26,6 +29,26 @@ namespace AonWeb.FluentHttp.Tests.Http {
 
         public static string TestResultString = @"{""StringProperty"":""TestString"",""IntProperty"":2,""BoolProperty"":true,""DateOffsetProperty"":""2000-01-01T00:00:00-05:00"",""DateProperty"":""2000-01-01T00:00:00""}";
         public static TestResult TestResultValue = new TestResult();
+        public static TestCachedResult TestCachedResultValue = new TestCachedResult();
+
+        public class TestCachedResult : TestResult, ICacheableHttpResult
+        {
+            public TimeSpan? Duration
+            {
+                get
+                {
+                    return TimeSpan.FromMinutes(10);
+                }
+            }
+
+            public IEnumerable<Uri> DependentUris
+            {
+                get
+                {
+                    return Enumerable.Empty<Uri>();
+                }
+            }
+        }
 
         public class TestResult : IEquatable<TestResult> {
             public TestResult()
@@ -152,6 +175,20 @@ namespace AonWeb.FluentHttp.Tests.Http {
             var actual = await builder.WithContent(() => TestResultValue).AsPost().ResultAsync<TestResult>();
 
             Assert.AreEqual(TestResultValue, actual);
+        }
+
+        [Test]
+        public async Task WithResultWithCachingExpectResultReturned()
+        {
+            //arrange
+            var builder = new MockTypedHttpCallBuilder().WithResult(TestCachedResultValue).WithUri(TestUriString);
+
+            //act
+            var actual1 = await builder.ResultAsync<TestCachedResult>();
+            var actual2 = await builder.ResultAsync<TestCachedResult>();
+
+            Assert.AreEqual(TestResultValue, actual1);
+            Assert.AreEqual(actual1, actual2);
         }
     }
 }

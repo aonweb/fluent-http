@@ -153,4 +153,7 @@
   <data name="TypeMismatchErrorFormat" xml:space="preserve">
     <value>Expected type '{0}', actual type {1}.</value>
   </data>
+  <data name="ConstructorMissingErrorFormat" xml:space="preserve">
+    <value>Could not construct context of type {0}. Could not find constructor with {1} parameter(s)</value>
+  </data>
 </root>

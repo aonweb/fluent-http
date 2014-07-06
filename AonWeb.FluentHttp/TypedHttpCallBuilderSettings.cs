@@ -82,6 +82,8 @@ namespace AonWeb.FluentHttp
 
         public bool SuppressHandlerTypeExceptions { get; set; }
 
+        public bool SuppressCancellationErrors { get; set; }
+
         public TypedHttpCallBuilderSettings SetResultType(Type type, bool authoritative = false)
         {
             return SetType(t => ResultType = t, type, _resultTypeValue.Modified, authoritative);

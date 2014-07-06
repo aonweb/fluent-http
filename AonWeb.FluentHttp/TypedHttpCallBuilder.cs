@@ -657,7 +657,7 @@ namespace AonWeb.FluentHttp
 
         public IAdvancedTypedHttpCallBuilder WithSuppressCancellationExceptions(bool suppress = true)
         {
-            _innerBuilder.WithSuppressCancellationExceptions(suppress);
+            _settings.SuppressCancellationErrors = suppress;
 
             return this;
         }
@@ -810,11 +810,15 @@ namespace AonWeb.FluentHttp
 
             if (capturedException != null)
             {
-                
                 var exceptionResult = await context.Handler.OnException(context, capturedException.SourceException);
 
                 if (!(bool)exceptionResult.Value)
-                    capturedException.Throw();
+                {
+                    if (!_settings.SuppressCancellationErrors
+                        || !(capturedException.SourceException is TaskCanceledException))
+                        capturedException.Throw();
+                }
+                    
             }
 
             var defaultResult =  _settings.DefaultResultFactory(context.ResultType);

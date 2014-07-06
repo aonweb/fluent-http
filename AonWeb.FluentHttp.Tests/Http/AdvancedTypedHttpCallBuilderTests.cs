@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -8,7 +9,6 @@ using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
-using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
 namespace AonWeb.FluentHttp.Tests.Http
@@ -80,7 +80,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 {
                     return true;
                 }
-                if (obj.GetType() != this.GetType())
+                if (obj.GetType() != GetType())
                 {
                     return false;
                 }
@@ -120,251 +120,253 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         #endregion
 
-        //#region WithMethod
+        #region WithMethod
 
-        //[Test]
-        //public void WithMethod_WhenValidString_ExpectResultUsesMethod()
-        //{
-        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
-        //    {
-        //        //arrange
-        //        var method = "GET";
-        //        var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
+        [Test]
+        public async Task WithMethod_WhenValidString_ExpectResultUsesMethod()
+        {
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                //arrange
+                var method = "GET";
+                var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
 
-        //        string actual = null;
-        //        server.InspectRequest(r => actual = r.HttpMethod);
+                string actual = null;
+                server.InspectRequest(r => actual = r.HttpMethod);
 
-        //        //act
-        //        builder.ResultAsync().Wait();
+                //act
+                await builder.SendAsync();
 
-        //        Assert.AreEqual(method, actual);
-        //    }
-        //}
+                Assert.AreEqual(method, actual);
+            }
+        }
 
-        //[Test]
-        //[ExpectedException(typeof(ArgumentException))]
-        //public void WithMethod_WhenNullString_ExpectException()
-        //{
-        //    //arrange
-        //    string method = null;
-        //    var builder = TypedHttpCallBuilder.Create();
+        [Test]
+        [ExpectedException(typeof(ArgumentException))]
+        public void WithMethod_WhenNullString_ExpectException()
+        {
+            //arrange
+            string method = null;
+            var builder = TypedHttpCallBuilder.Create();
 
-        //    //act
-        //    builder.Advanced.WithMethod(method);
-        //}
+            //act
+            builder.Advanced.WithMethod(method);
+        }
 
-        //[Test]
-        //[ExpectedException(typeof(ArgumentException))]
-        //public void WithMethod_WhenEmptyString_ExpectException()
-        //{
-        //    //arrange
-        //    var method = string.Empty;
-        //    var builder = TypedHttpCallBuilder.Create();
+        [Test]
+        [ExpectedException(typeof(ArgumentException))]
+        public void WithMethod_WhenEmptyString_ExpectException()
+        {
+            //arrange
+            var method = string.Empty;
+            var builder = TypedHttpCallBuilder.Create();
 
-        //    //act
-        //    builder.Advanced.WithMethod(method);
-        //}
+            //act
+            builder.Advanced.WithMethod(method);
+        }
 
-        //[Test]
-        //public void WithMethod_WhenValidMethod_ExpectResultUsesMethod()
-        //{
-        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
-        //    {
-        //        //arrange
-        //        var method = HttpMethod.Get;
-        //        var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
+        [Test]
+        public async Task WithMethod_WhenValidMethod_ExpectResultUsesMethod()
+        {
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                //arrange
+                var method = HttpMethod.Get;
+                var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method);
 
-        //        string actual = null;
-        //        server.InspectRequest(r => actual = r.HttpMethod);
+                string actual = null;
+                server.InspectRequest(r => actual = r.HttpMethod);
 
-        //        //act
-        //        builder.ResultAsync().Wait();
+                //act
+                await builder.SendAsync();
 
-        //        Assert.AreEqual(method.Method, actual);
-        //    }
-        //}
+                Assert.AreEqual(method.Method, actual);
+            }
+        }
 
-        //[Test]
-        //[ExpectedException(typeof(ArgumentNullException))]
-        //public void WithMethod_WhenNullMethod_ExpectException()
-        //{
-        //    //arrange
-        //    HttpMethod method = null;
-        //    var builder = TypedHttpCallBuilder.Create().Advanced.WithMethod(method);
+        [Test]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task WithMethod_WhenNullMethod_ExpectException()
+        {
+            //arrange
+            HttpMethod method = null;
+            var builder = TypedHttpCallBuilder.Create().Advanced.WithMethod(method);
 
-        //    //act
-        //    builder.ResultAsync();
+            //act
+            await builder.SendAsync();
 
-        //    Assert.Fail();
-        //}
+            Assert.Fail();
+        }
 
-        //[Test]
-        //public void WithMethod_WhenCalledMultipleTimes_ExpectLastWins()
-        //{
-        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
-        //    {
-        //        //arrange
-        //        var method1 = "POST";
-        //        var method2 = "GET";
-        //        var builder = TypedHttpCallBuilder.Create().WithUri(TestUriString).Advanced.WithMethod(method1).Advanced.WithMethod(method2);
+        [Test]
+        public async Task WithMethod_WhenCalledMultipleTimes_ExpectLastWins()
+        {
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                //arrange
+                var method1 = "POST";
+                var method2 = "GET";
+                var builder = TypedHttpCallBuilder.Create()
+                    .WithUri(TestUriString)
+                    .Advanced
+                        .WithMethod(method1)
+                        .WithMethod(method2);
 
-        //        string actual = null;
-        //        server.InspectRequest(r => actual = r.HttpMethod);
+                string actual = null;
+                server.InspectRequest(r => actual = r.HttpMethod);
 
-        //        //act
-        //        builder.ResultAsync().Wait();
+                //act
+                await builder.SendAsync();
 
-        //        Assert.AreEqual(method2, actual);
-        //    }
-        //}
+                Assert.AreEqual(method2, actual);
+            }
+        }
 
-        //#endregion
+        #endregion
 
-        //#region Client Configuration
+        #region Client Configuration
 
-        //[Test]
-        //public void WithClientConfiguration_WhenAction_ExpectConfigurationApplied()
-        //{
-        //    using (var server = LocalWebServer.ListenInBackground(TestUriString))
-        //    {
-        //        var expected = "GoogleBot/1.0";
-        //        string actual = null;
-        //        server.InspectRequest(r => actual = r.Headers["User-Agent"]);
+        [Test]
+        public async Task WithClientConfiguration_WhenAction_ExpectConfigurationApplied()
+        {
+            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            {
+                var expected = "GoogleBot/1.0";
+                string actual = null;
+                server.InspectRequest(r => actual = r.Headers["User-Agent"]);
 
-        //        //act
-        //        TypedHttpCallBuilder.Create(TestUriString)
-        //            .Advanced
-        //            .ConfigureClient(b =>
-        //                b.WithHeaders(h =>
-        //                    h.UserAgent.Add(new ProductInfoHeaderValue("GoogleBot", "1.0"))))
-        //                .ResultAsync().Wait();
+                //act
+                await TypedHttpCallBuilder.Create(TestUriString)
+                    .Advanced
+                    .ConfigureClient(b =>
+                        b.WithHeaders(h =>
+                            h.UserAgent.Add(new ProductInfoHeaderValue("GoogleBot", "1.0"))))
+                        .SendAsync();
 
-        //        Assert.AreEqual(expected, actual);
+                Assert.AreEqual(expected, actual);
 
-        //    }
-        //}
+            }
+        }
 
-        //#endregion
+        #endregion
 
-        //#region Timeout & Cancellation
+        #region Timeout & Cancellation
 
-        //[Test]
-        //[ExpectedException(typeof(AggregateException))]
-        //public void CancelRequest_WhenSuppressCancelOff_ExpectException()
-        //{
-        //    //arrange
-        //    var uri = TestUriString;
-        //    using (var server = LocalWebServer.ListenInBackground(uri))
-        //    {
-        //        var delay = 500;
-        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
-        //        server.InspectRequest(r => Thread.Sleep(delay));
+        [Test]
+        [ExpectedException(typeof(TaskCanceledException))]
+        public async Task CancelRequest_WhenSuppressCancelOff_ExpectException()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 500;
+                var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
 
-        //        // act
-        //        var watch = new Stopwatch();
-        //        watch.Start();
-        //        var task = builder.Advanced.WithSuppressCancellationExceptions(false).ResultAsync();
+                // act
+                var watch = new Stopwatch();
+                watch.Start();
+                var task = builder.Advanced.WithSuppressCancellationExceptions(false).SendAsync();
 
-        //        builder.CancelRequest();
+                builder.CancelRequest();
 
-        //        Task.WaitAll(task);
-        //    }
-        //}
+                await Task.WhenAll(task);
+            }
+        }
 
-        //[Test]
-        //public async Task WithTimeout_WithLongCall_ExpectTimeoutBeforeCompletionWithNoException()
-        //{
-        //    //arrange
-        //    var uri = TestUriString;
-        //    using (var server = LocalWebServer.ListenInBackground(uri))
-        //    {
-        //        var delay = 1000;
-        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
-        //        server.InspectRequest(r => Thread.Sleep(delay));
+        [Test]
+        public async Task WithTimeout_WithLongCall_ExpectTimeoutBeforeCompletionWithNoException()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 1000;
+                var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
 
-        //        // act
-        //        var watch = new Stopwatch();
-        //        watch.Start();
-        //        var result = await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).ResultAsync();
+                // act
+                var watch = new Stopwatch();
+                watch.Start();
+                await builder.Advanced
+                    .WithSuppressCancellationExceptions(true)
+                    .WithTimeout(TimeSpan.FromMilliseconds(100))
+                    .SendAsync();
 
-        //        // assert
-        //        Assert.IsNull(result);
-        //        Assert.GreaterOrEqual(watch.ElapsedMilliseconds, 100);
-        //        Assert.Less(watch.ElapsedMilliseconds, delay);
-        //    }
-        //}
+                // assert
+                Assert.GreaterOrEqual(watch.ElapsedMilliseconds, 100);
+                Assert.Less(watch.ElapsedMilliseconds, delay);
+            }
+        }
 
-        //[Test]
-        //[ExpectedException(typeof(TaskCanceledException))]
-        //public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
-        //{
-        //    //arrange
-        //    var uri = TestUriString;
-        //    using (var server = LocalWebServer.ListenInBackground(uri))
-        //    {
-        //        var delay = 10000;
-        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
-        //        server.InspectRequest(r => Thread.Sleep(delay));
+        [Test]
+        [ExpectedException(typeof(TaskCanceledException))]
+        public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 10000;
+                var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
 
-        //        // act
-        //        await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).ResultAsync();
-        //    }
-        //}
+                // act
+                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).SendAsync();
+            }
+        }
 
-        //[Test]
-        //public async Task WithTimeout_WithLongCallAndExceptionHandler_ExpectExceptionHandlerCalled()
-        //{
-        //    //arrange
-        //    var uri = TestUriString;
-        //    using (var server = LocalWebServer.ListenInBackground(uri))
-        //    {
-        //        var delay = 1000;
-        //        var builder = TypedHttpCallBuilder.Create().WithUri(uri);
-        //        server.InspectRequest(r => Thread.Sleep(delay));
-        //        var callbackCalled = false;
-        //        // act
-        //        await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).OnException(ctx =>
-        //        {
-        //            callbackCalled = true;
-        //        }).ResultAsync();
+        [Test]
+        public async Task WithTimeout_WithLongCallAndExceptionHandler_ExpectExceptionHandlerCalled()
+        {
+            //arrange
+            var uri = TestUriString;
+            using (var server = LocalWebServer.ListenInBackground(uri))
+            {
+                var delay = 1000;
+                var builder = TypedHttpCallBuilder.Create().WithUri(uri);
+                server.InspectRequest(r => Thread.Sleep(delay));
+                var callbackCalled = false;
+                // act
+                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).OnException(ctx =>
+                {
+                    ctx.ExceptionHandled = true;
+                    callbackCalled = true;
+                }).SendAsync();
 
-        //        Assert.IsTrue(callbackCalled);
-        //    }
-        //}
+                Assert.IsTrue(callbackCalled);
+            }
+        }
 
-        //#endregion
+        #endregion
 
-        //#region DependentUri
+        #region DependentUri
 
-        //[Test]
-        //public async Task WhenDependentUriIsNull_ExpectNoException()
-        //{
+        [Test]
+        public async Task WhenDependentUriIsNull_ExpectNoException()
+        {
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
-        //    var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
+            //act
+            await builder
+                .WithDependentUri(null)
+                .SendAsync();
+        }
 
-        //    //act
-        //    var result = await builder
-        //        .WithDependentUri(null)
-        //        .ResultAsync();
+        [Test]
+        public async Task WhenDependentUrisIsNull_ExpectNoException()
+        {
 
-        //    Assert.NotNull(result);
-        //}
+            var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
 
-        //[Test]
-        //public async Task WhenDependentUrisIsNull_ExpectNoException()
-        //{
+            //act
+            await builder
+                .WithDependentUris(null)
+                .SendAsync();
+        }
 
-        //    var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;
-
-        //    //act
-        //    var result = await builder
-        //        .WithDependentUris(null)
-        //        .ResultAsync();
-
-        //    Assert.NotNull(result);
-        //}
-
-        //#endregion
+        #endregion
 
         #region Handlers
 
@@ -419,6 +421,202 @@ namespace AonWeb.FluentHttp.Tests.Http
                 .WithSuppressTypeMismatchExceptions().OnSendingWithContent<Uri>(ctx => { }).ResultAsync<TestResult>();
 
             Assert.NotNull(actual);
+        }
+
+        [Test]
+        public async Task OnSending_WhenResultSet_ExpectIsAvailableAndReturned()
+        {
+
+            var builder = new MockTypedHttpCallBuilder().WithUri(TestUriString);
+
+            string actual1 = null;
+            string actual2 = null;
+
+            //act
+            var actualFinal = await builder
+                .Advanced
+                .OnSending<string, object>(ctx => ctx.Result = "one")
+                .OnSending<string, object>(
+                    ctx =>
+                    {
+                        actual1 = ctx.Result;
+                        ctx.Result = "two";
+                    })
+                .OnSending<string, object>(
+                    ctx =>
+                    {
+                        actual2 = ctx.Result;
+                        ctx.Result = "buckle my shoe";
+                    })
+                .ResultAsync<string>();
+
+            Assert.AreEqual("one", actual1);
+            Assert.AreEqual("two", actual2);
+            Assert.AreEqual("buckle my shoe", actualFinal);
+        }
+
+        [Test]
+        public async Task OnSendingWithContent_WhenResultSet_ExpectIsAvailableAndReturned()
+        {
+
+            var builder = new MockTypedHttpCallBuilder().WithUri(TestUriString);
+
+            string actual1 = null;
+            string actual2 = null;
+
+            //act
+            var actualFinal = await builder
+                .Advanced
+                .OnSendingWithResult<string>(ctx => ctx.Result = "one")
+                .OnSendingWithResult<string>(
+                    ctx =>
+                        {
+                            actual1 = ctx.Result;
+                            ctx.Result = "two";
+                        })
+                .OnSendingWithResult<string>(
+                    ctx =>
+                    {
+                        actual2 = ctx.Result;
+                        ctx.Result = "buckle my shoe";
+                    })
+                .ResultAsync<string>();
+
+            Assert.AreEqual("one", actual1);
+            Assert.AreEqual("two", actual2);
+            Assert.AreEqual("buckle my shoe", actualFinal);
+        }
+
+        [Test]
+        public async Task OnSent_WhenResultSet_ExpectIsAvailableAndReturned()
+        {
+
+            var builder = new MockTypedHttpCallBuilder()
+                .WithOkResponse("zero")
+                .WithUri(TestUriString);
+
+            string actual1 = null;
+            string actual2 = null;
+
+            //act
+            var actualFinal = await builder
+                .Advanced
+                .OnSent<string>(ctx => ctx.Result = "one")
+                .OnSent<string>(
+                    ctx =>
+                    {
+                        actual1 = ctx.Result;
+                        ctx.Result = "two";
+                    })
+                .OnSent<string>(
+                    ctx =>
+                    {
+                        actual2 = ctx.Result;
+                        ctx.Result = "buckle my shoe";
+                    })
+                .ResultAsync<string>();
+
+            Assert.AreEqual("one", actual1);
+            Assert.AreEqual("two", actual2);
+            Assert.AreEqual("buckle my shoe", actualFinal);
+        }
+
+        [Test]
+        public async Task OnResult_WhenResultSet_ExpectIsAvailableAndReturned()
+        {
+
+            var builder = new MockTypedHttpCallBuilder()
+                .WithOkResponse("\"zero\"")
+                .WithUri(TestUriString);
+
+            string actual1 = null;
+            string actual2 = null;
+
+            //act
+            var actualFinal = await builder
+                .Advanced
+                .OnResult<string>(ctx => ctx.Result = "one")
+                .OnResult<string>(
+                    ctx =>
+                    {
+                        actual1 = ctx.Result;
+                        ctx.Result = "two";
+                    })
+                .OnResult<string>(
+                    ctx =>
+                    {
+                        actual2 = ctx.Result;
+                        ctx.Result = "buckle my shoe";
+                    })
+                .ResultAsync<string>();
+
+            Assert.AreEqual("one", actual1);
+            Assert.AreEqual("two", actual2);
+            Assert.AreEqual("buckle my shoe", actualFinal);
+        }
+
+        [Test]
+        public async Task OnError_WhenHandledSet_ExpectIsAvailableAndReturned()
+        {
+
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(HttpStatusCode.InternalServerError, "\"error\"")
+                .WithUri(TestUriString);
+
+            bool? actual1 = null;
+            bool? actual2 = null;
+
+            //act
+            var actualFinal = await builder
+                .Advanced
+                .OnError<string>(
+                    ctx =>
+                    {
+                        actual1 = ctx.ErrorHandled;
+                        ctx.ErrorHandled = true;
+                    })
+                .OnError<string>(
+                    ctx =>
+                    {
+                        actual2 = ctx.ErrorHandled;
+                    })
+                .ResultAsync<string>();
+
+            Assert.AreEqual(false, actual1);
+            Assert.AreEqual(true, actual2);
+            Assert.IsNull(actualFinal);
+        }
+
+        [Test]
+        public async Task OnException_WhenHandledSet_ExpectIsAvailableAndReturned()
+        {
+
+            var builder = new MockTypedHttpCallBuilder()
+                .WithResponse(HttpStatusCode.InternalServerError, "\"error\"")
+                .WithUri(TestUriString);
+
+            bool? actual1 = null;
+            bool? actual2 = null;
+
+            //act
+            var actualFinal = await builder
+                .Advanced
+                .OnException(
+                    ctx =>
+                    {
+                        actual1 = ctx.ExceptionHandled;
+                        ctx.ExceptionHandled = true;
+                    })
+                .OnException(
+                    ctx =>
+                    {
+                        actual2 = ctx.ExceptionHandled;
+                    })
+                .ResultAsync<string>();
+
+            Assert.AreEqual(false, actual1);
+            Assert.AreEqual(true, actual2);
+            Assert.IsNull(actualFinal);
         }
 
         [Test]

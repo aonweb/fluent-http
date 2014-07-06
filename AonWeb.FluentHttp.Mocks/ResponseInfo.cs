@@ -16,6 +16,12 @@ namespace AonWeb.FluentHttp.Mocks
 
         public ResponseInfo(HttpStatusCode statusCode)
             : base(statusCode) { }
+
+        public ResponseInfo(HttpStatusCode statusCode, string content)
+            : base(statusCode)
+        {
+            Body = content;
+        }
     }
 
     public abstract class ResponseInfo<T>

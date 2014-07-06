@@ -4,16 +4,24 @@ using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class TypedHttpCallErrorContext<TError> : TypedHttpCallHandlerContext
+    public abstract class TypedHttpCallErrorContext : TypedHttpCallHandlerContext
     {
         private readonly ModifyTracker<bool> _errorHandled;
 
-        public TypedHttpCallErrorContext(TypedHttpCallContext context, HttpResponseMessage response, TError error)
+        protected TypedHttpCallErrorContext(TypedHttpCallContext context, HttpResponseMessage response, object error)
             : base(context)
         {
             Response = response;
-            Error = error;
+            ErrorInternal = error;
             _errorHandled = new ModifyTracker<bool>(false);
+        }
+
+        protected TypedHttpCallErrorContext(TypedHttpCallErrorContext context)
+            : base(context)
+        {
+            Response = context.Response;
+            ErrorInternal = context.ErrorInternal;
+            _errorHandled = context._errorHandled;
         }
 
         public HttpResponseMessage Response { get; private set; }
@@ -21,21 +29,29 @@ namespace AonWeb.FluentHttp.Handlers
 
         public bool ErrorHandled
         {
-            get
-            {
-                return _errorHandled.Value;
-            }
-            set
-            {
-                _errorHandled.Value = value;
-            }
+            get { return _errorHandled.Value; }
+            set {  _errorHandled.Value = value; }
         }
 
-        public TError Error { get; private set; }
+        protected object ErrorInternal { get; private set; }
 
         public override ModifyTracker GetHandlerResult()
         {
             return _errorHandled.ToResult();
+        }
+    }
+
+    public class TypedHttpCallErrorContext<TError> : TypedHttpCallErrorContext
+    {
+        public TypedHttpCallErrorContext(TypedHttpCallContext context, HttpResponseMessage response, TError error)
+            : base(context, response,  error) { }
+
+        public TypedHttpCallErrorContext(TypedHttpCallErrorContext context)
+            : base(context) { }
+
+        public TError Error
+        {
+            get { return (TError)ErrorInternal; }
         }
     }
 }

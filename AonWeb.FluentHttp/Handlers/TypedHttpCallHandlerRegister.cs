@@ -16,6 +16,7 @@ namespace AonWeb.FluentHttp.Handlers
         public TypedHttpCallHandlerRegister()
         {
             _callHandlers = new HashSet<ITypedHttpCallHandler>();
+
             _handlers = new Dictionary<HttpCallHandlerType, IList<KeyValuePair<HttpCallHandlerPriority, Delegate>>>();
 
             foreach (var callType in Enum.GetValues(typeof(HttpCallHandlerType)).Cast<HttpCallHandlerType>())
@@ -281,16 +282,32 @@ namespace AonWeb.FluentHttp.Handlers
 
         #endregion
 
+        private Type CreateHandlerContextType(object handler, Type openContextType, Type[] contextGenericTypeArgs, bool suppressTypeExceptions)
+        {
+            var contextType = CreateHandlerContextType(handler, openContextType, contextGenericTypeArgs);
+
+            if (contextType == null)
+            {
+                var tempCtxType = CreateHandlerContextType(openContextType, contextGenericTypeArgs);
+
+                if (!suppressTypeExceptions)
+                    throw new TypeMismatchException(tempCtxType, handler.GetType());
+
+                return null;
+            }
+
+            return contextType;
+        }
+
         private Type CreateHandlerContextType(object handler, Type contextType, Type[] genericTypes)
         {
-
             var handlerType = handler.GetType();
 
             //should be of the form Func<TContext, Task>
             if (!handlerType.IsGenericType)
                 return null;
 
-            //TODO: type caching
+            //TODO: type caching?
 
             var handlerContextType = handler.GetType().GetGenericArguments().FirstOrDefault();
 
@@ -344,7 +361,12 @@ namespace AonWeb.FluentHttp.Handlers
 
         private TypedHttpCallHandlerContext CreateHandlerContext(Type contextType, params object[] ctorArgs)
         {
-            return (TypedHttpCallHandlerContext)Activator.CreateInstance(contextType, ctorArgs);
+            var ctor = contextType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).FirstOrDefault(c => c.GetParameters().Count() == ctorArgs.Length);
+
+            if (ctor == null)
+                throw new MissingMethodException(string.Format(SR.ConstructorMissingErrorFormat, contextType.FormattedTypeName(), ctorArgs.Length));
+
+            return (TypedHttpCallHandlerContext)ctor.Invoke(ctorArgs);
         }
 
         private Type CreateHandlerType(Type contextType)
@@ -357,7 +379,9 @@ namespace AonWeb.FluentHttp.Handlers
             return (Task)handlerType.InvokeMember("Invoke", BindingFlags.InvokeMethod, null, handler, new object[] { context });
         }
 
-        private async Task<ModifyTracker> InvokeHandlers(HttpCallHandlerType callType, Type openContextType, Type[] defaultGenericContextTypes, object[] handlerConstructorArgs, bool suppressTypeExceptions)
+        
+
+        private async Task<ModifyTracker> InvokeHandlers(HttpCallHandlerType callType, Type openContextType, Type[] contextGenericTypeArgs, object[] contextCtorArgs, bool suppressTypeExceptions)
         {
             var tasks = new List<Task>();
 
@@ -365,28 +389,20 @@ namespace AonWeb.FluentHttp.Handlers
 
             foreach (var pair in _handlers[callType].OrderBy(kp => kp.Key))
             {
-                if (handlerContext != null && handlerConstructorArgs.Length > 0)
-                    handlerConstructorArgs[0] = handlerContext;
-
                 var priority = pair.Key;
                 var handler = pair.Value;
 
-                var contextType = CreateHandlerContextType(handler, openContextType, defaultGenericContextTypes);
+                var contextType = CreateHandlerContextType(handler, openContextType, contextGenericTypeArgs, suppressTypeExceptions);
 
                 if (contextType == null)
-                {
-                    var tempCtxType = CreateHandlerContextType(openContextType, defaultGenericContextTypes);
-
-                    if (!suppressTypeExceptions)
-                        throw new TypeMismatchException(tempCtxType, handler.GetType());
-
                     continue;
-                }
 
                 var handlerType = CreateHandlerType(contextType);
 
-                if (handlerContext == null || handlerContext.GetType() != contextType)
-                    handlerContext = CreateHandlerContext(contextType, handlerConstructorArgs);
+                if (handlerContext == null) // initially, pass in everything
+                    handlerContext = CreateHandlerContext(contextType, contextCtorArgs);
+                else if (handlerContext.GetType() != contextType) // subsequent, chain with previous context
+                    handlerContext = CreateHandlerContext(contextType, handlerContext);
 
                 var task = InvokeHandler(handlerType, handler, handlerContext);
 

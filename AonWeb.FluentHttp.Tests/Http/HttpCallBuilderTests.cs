@@ -15,7 +15,7 @@ using NUnit.Framework;
 namespace AonWeb.FluentHttp.Tests.Http
 {
     [TestFixture]
-    public class HttpCallBuilderMethodTests
+    public class HttpCallBuilderTests
     {
         #region Declarations, Set up, & Tear Down
 

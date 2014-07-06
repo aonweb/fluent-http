@@ -30,7 +30,7 @@ namespace AonWeb.FluentHttp.Mocks
         public static T WithResponse<T>(this IHttpMocker<T> mock, HttpStatusCode statusCode, string content)
             where T : IHttpMocker<T>
         {
-            return mock.WithResponse(new ResponseInfo(statusCode) { Body = content });
+            return mock.WithResponse(new ResponseInfo(statusCode, content));
         }
 
         public static T WithOkResponse<T>(this IHttpMocker<T> mock) where T : IHttpMocker<T>
@@ -78,7 +78,7 @@ namespace AonWeb.FluentHttp.Mocks
         public static T WithResult<T, TResult>(this IMockTypedBuilder<T> mock, TResult result, HttpStatusCode statusCode)
             where T : IMockTypedBuilder<T>
         {
-            return mock.WithResult((r, c) => result, new ResponseInfo(statusCode));
+            return mock.WithResult((r, c) => result, new ResponseInfo(statusCode, "This allows for caching to work properly"));
         }
 
         public static T WithError<T, TError>(this IMockTypedBuilder<T> mock, TError error, HttpStatusCode statusCode) 
