@@ -6,11 +6,7 @@ namespace AonWeb.FluentHttp.HAL.Representations
     public class HyperMediaLink
     {
         public string Rel { get; set; }
-
-        [JsonProperty("href")]
         public string Href { get; set; }
-
-        [JsonProperty("templated")]
         public bool IsTemplated { get; set; }
 
         public override string ToString()

@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-	<BuildPackage>true</BuildPackage>
+    <BuildPackage>true</BuildPackage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -77,7 +77,6 @@
     <Compile Include="Representations\IHalResource.cs" />
     <Compile Include="Serialization\HalEmbeddedAttribute.cs" />
     <Compile Include="Serialization\HalResourceConverter.cs" />
-    <Compile Include="Serialization\HyperMediaLinksConverter.cs" />
     <Compile Include="Serialization\SerializationErrorHelper.cs" />
     <Compile Include="SR.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -119,13 +118,13 @@
   </Target>
   -->
   <!-- Make the build depend on publish packages -->
-	<PropertyGroup>
-		<BuildDependsOn Condition=" '$(Configuration)' == 'Release' ">
+  <PropertyGroup>
+    <BuildDependsOn Condition=" '$(Configuration)' == 'Release' ">
 		  $(BuildDependsOn);
 		  PublishPackage;
 		</BuildDependsOn>
-	</PropertyGroup>
-	<Target Name="PublishPackage">
-	<Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="$(SolutionDir)\.nuget\push-hal.cmd" />
+  </PropertyGroup>
+  <Target Name="PublishPackage">
+    <Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="$(SolutionDir)\.nuget\push-hal.cmd" />
   </Target>
 </Project>

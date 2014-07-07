@@ -7,15 +7,12 @@ namespace AonWeb.FluentHttp.HAL.Representations
     public abstract class HalResource : IHalResource
     {
         public const string LinkKeySelf = "self";
-
-        [JsonProperty("_links")]
         public HyperMediaLinks Links { get; set; }
     }
 
     public abstract class HalResource<TLinks> : IHalResource<TLinks>
         where TLinks : HyperMediaLinks, new()
     {
-        [JsonIgnore]
         HyperMediaLinks IHalResource.Links
         {
             get
@@ -29,7 +26,6 @@ namespace AonWeb.FluentHttp.HAL.Representations
             }
         }
 
-        [JsonProperty("_links")]
         public TLinks Links { get; set; }
     } 
 }

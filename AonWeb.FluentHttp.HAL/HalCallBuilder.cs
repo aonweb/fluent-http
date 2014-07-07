@@ -26,11 +26,7 @@ namespace AonWeb.FluentHttp.HAL
         {
             _innerBuilder = builder;
             _innerBuilder.ConfigureMediaTypeFormatter<JsonMediaTypeFormatter>(
-                f =>
-                {
-                    f.SerializerSettings.Converters.Add(new HalResourceConverter());
-                    f.SerializerSettings.Converters.Add(new HyperMediaLinksConverter());
-                });
+                f => f.SerializerSettings.Converters.Add(new HalResourceConverter()));
         }
 
         public static IHalCallBuilder Create()

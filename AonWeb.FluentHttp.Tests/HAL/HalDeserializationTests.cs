@@ -77,5 +77,24 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 Assert.AreEqual("http://localhost:8889/canonical/1", result.Results[0].Links.Self().ToString());
             }
         }
+
+        [Test]
+        public void CanDeserializeListWithEmbeddedWithLinks()
+        {
+            var uri = LocalWebServer.DefaultListenerUri;
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+
+                server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddPrivateCacheHeader());
+
+                var result = HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListResourceWithLinks>().Result;
+
+                Assert.NotNull(result);
+                Assert.AreEqual("http://localhost:8889/list/1", result.Links.Self().ToString());
+                Assert.AreEqual(3, result.Results.Count);
+                Assert.AreEqual("http://localhost:8889/canonical/1", result.Results[0].Links.Self().ToString());
+            }
+        }
     }
 }

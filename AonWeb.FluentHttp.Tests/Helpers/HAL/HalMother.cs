@@ -41,4 +41,10 @@ namespace AonWeb.FluentHttp.Tests.Helpers.HAL
         [HalEmbedded("results")]
         public IList<TestResource> Results { get; set; }
     }
+
+    public class TestListResourceWithLinks : HalResource<TestLinks>
+    {
+        [HalEmbedded("results")]
+        public IList<TestResource> Results { get; set; }
+    }
 }
