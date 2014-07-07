@@ -76,13 +76,13 @@ namespace AonWeb.FluentHttp.Mocks
         public IMockHalCallBuilder VerifyOnSendingWithContent<TContent>(Action<TypedHttpSendingContext<IHalResource, TContent>> handler)
             where TContent : IHalRequest
         {
-            return VerifyOnSending<IHalResource, TContent>(handler);
+            return VerifyOnSending(handler);
         }
 
         public IMockHalCallBuilder VerifyOnSendingWithResult<TResult>(Action<TypedHttpSendingContext<TResult, IHalRequest>> handler)
             where TResult : IHalResource
         {
-            return VerifyOnSending<TResult, IHalRequest>(handler);
+            return VerifyOnSending(handler);
         }
 
         public IMockHalCallBuilder VerifyOnSent(Action<TypedHttpSentContext<IHalResource>> handler)
