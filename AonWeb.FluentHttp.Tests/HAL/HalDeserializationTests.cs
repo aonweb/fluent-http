@@ -96,5 +96,27 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 Assert.AreEqual("http://localhost:8889/canonical/1", result.Results[0].Links.Self().ToString());
             }
         }
+
+        [Test]
+        public void CanDeserializeListWithEmbeddedWithLinksWithEmbeddedJsonProperty()
+        {
+            var uri = LocalWebServer.DefaultListenerUri;
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+
+                server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListEmbeddedArrayChildJson }.AddPrivateCacheHeader());
+
+                var result = HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListEmbeddedArrayParentsResource>().Result;
+
+                Assert.NotNull(result, "Result was null");
+                Assert.NotNull(result.Results, "Result.Results was null");
+                Assert.AreEqual(result.Count, result.Results.Count, "Unexpected value for Result.Count");
+                Assert.NotNull(result.Results[0].Children, "Result.Results[0].Children was null");
+                Assert.AreEqual(result.Results[0].Children.Count, result.Results[0].Children.Results.Count, "Unexpected value for Result.Results[0].Children.Count");
+                Assert.NotNull(result.Results[0].Children.Results[0], "Result.Results[0].Children.Results[0] was null");
+                Assert.IsNotNullOrEmpty(result.Results[0].Children.Results[0].Result, "Unexpected value for Result.Results[0].Children.Results[0].Result");
+            }
+        }
     }
 }

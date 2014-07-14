@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+
 using AonWeb.FluentHttp.HAL.Representations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -96,9 +98,18 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             objectType = ObjectType ?? objectType;
             var json = JObject.Load(reader);
 
-            JToken embedded;
-            if (json.TryGetValue("_embedded", out embedded))
-                json.Remove("_embedded");
+            var hasJsonPropEmbedded =
+                objectType.GetProperties()
+                    .Select(p => p.GetCustomAttribute<JsonPropertyAttribute>())
+                    .Any(a => a != null && a.PropertyName == "_embedded");
+
+            JToken embedded = null;
+
+            if (!hasJsonPropEmbedded)
+            {
+                if (json.TryGetValue("_embedded", out embedded))
+                    json.Remove("_embedded");
+            }
 
             JToken links;
             if (json.TryGetValue("_links", out links))

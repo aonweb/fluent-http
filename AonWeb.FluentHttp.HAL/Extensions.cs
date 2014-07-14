@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
 using AonWeb.FluentHttp.HAL.Representations;
 
 namespace AonWeb.FluentHttp.HAL
@@ -53,34 +54,9 @@ namespace AonWeb.FluentHttp.HAL
 
         public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key)
         {
-            var uri = GetLinkString(linkEntity, key);
+            var uri = linkEntity.GetLinkImplementation(key).Href;
 
             return new Uri(uri);
-        }
-
-        private static string GetLinkString(this IEnumerable<HyperMediaLink> linkEntity, string key)
-        {
-            if (linkEntity == null)
-                throw new ArgumentNullException("linkEntity");
-
-            if (string.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException("key");
-
-            if (!linkEntity.Any())
-                throw new ArgumentException("HyperMediaLinks entity does not contain any links");
-
-            HyperMediaLink link;
-
-            try
-            {
-                link = linkEntity.Single(l => string.Equals(l.Rel, key, StringComparison.OrdinalIgnoreCase));
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new KeyNotFoundException(string.Format("Could not locate key '{0}' in HyperMediaLinks entity Links collection", key), ex);
-            }
-
-            return link.Href;
         }
 
         public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, string tokenKey, object tokenValue)
@@ -90,24 +66,9 @@ namespace AonWeb.FluentHttp.HAL
 
         public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, IDictionary<string, object> tokens)
         {
-            var formatUrl = linkEntity.GetLinkString(key);
+            var url = linkEntity.GetTemplatedLinkString(key, tokens);
 
-            if (tokens == null)
-                throw new ArgumentNullException("tokens");
-
-            var outputUrl = formatUrl;
-
-            foreach (var token in tokens)
-            {
-                if (string.IsNullOrWhiteSpace(token.Key))
-                    throw new ArgumentException(string.Format("A supplied url token for url '{0}' was null or empty.", formatUrl));
-
-                var val = HttpUtility.UrlEncode((token.Value ?? string.Empty).ToString());
-
-                outputUrl = outputUrl.Replace("{" + token.Key + "}", val);
-            }
-
-            return new Uri(outputUrl);
+            return new Uri(url);
         }
 
         #endregion
@@ -143,10 +104,12 @@ namespace AonWeb.FluentHttp.HAL
             if (string.IsNullOrWhiteSpace(key))
                 throw new ArgumentNullException("key");
 
-            if (!linkEntity.HasLink(key)) 
+            var link = linkEntity.GetLinkImplementation(key, false);
+
+            if (link == null)
                 return null;
 
-            return linkEntity.GetLink(key);
+            return new Uri(link.Href);
         }
 
         public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, string tokenKey, object tokenValue)
@@ -156,10 +119,12 @@ namespace AonWeb.FluentHttp.HAL
 
         public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, IDictionary<string, object> tokens)
         {
-            if (!linkEntity.HasLink(key))
+            var uri = linkEntity.GetTemplatedLinkString(key, tokens, false);
+
+            if (uri == null) 
                 return null;
 
-            return linkEntity.GetLink(key, tokens);
+            return new Uri(uri);
         }
 
         #endregion
@@ -177,6 +142,63 @@ namespace AonWeb.FluentHttp.HAL
         public static Uri GetSelf(this IEnumerable<HyperMediaLink> linkEntity)
         {
             return linkEntity.GetLink(HalResource.LinkKeySelf);
+        }
+
+        #endregion
+
+        #region Internals
+
+        private static HyperMediaLink GetLinkImplementation(this IEnumerable<HyperMediaLink> linkEntity, string key, bool throwOnMissingLink = true)
+        {
+            if (linkEntity == null)
+                throw new ArgumentNullException("linkEntity");
+
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentNullException("key");
+
+            if (!linkEntity.Any())
+                throw new ArgumentException("HyperMediaLinks entity does not contain any links");
+
+            var link = linkEntity.FirstOrDefault(l => string.Equals(l.Rel, key, StringComparison.OrdinalIgnoreCase));
+
+            if (link == null)
+            {
+                if (throwOnMissingLink)
+                    throw new KeyNotFoundException(string.Format("Could not locate key '{0}' in HyperMediaLinks entity Links collection", key));
+
+                return null;
+            }
+
+            return link;
+        }
+
+        private static string GetTemplatedLinkString(this IEnumerable<HyperMediaLink> linkEntity, string key, IEnumerable<KeyValuePair<string, object>> tokens, bool throwOnMissingLink = true)
+        {
+            var link = linkEntity.GetLinkImplementation(key, throwOnMissingLink);
+
+            if (link == null)
+                return null;
+
+            var formatUrl = link.Href;
+
+            if (tokens == null)
+                throw new ArgumentNullException("tokens");
+
+            //TODO: isTemplated and token validation?
+
+            var outputUrl = formatUrl;
+
+            foreach (var token in tokens)
+            {
+                if (string.IsNullOrWhiteSpace(token.Key))
+                    throw new ArgumentException(string.Format("A supplied url token for url '{0}' was null or empty.", formatUrl));
+
+                var val = HttpUtility.UrlEncode((token.Value ?? string.Empty).ToString());
+
+                outputUrl = outputUrl.Replace("{" + token.Key + "}", val);
+            }
+
+            return outputUrl;
         }
 
         #endregion
