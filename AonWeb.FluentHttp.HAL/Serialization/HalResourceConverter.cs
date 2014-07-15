@@ -32,6 +32,8 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 
             writer.WriteStartObject();
 
+            var embeds = new List<Tuple<HalEmbeddedAttribute, PropertyInfo>>();
+
             foreach (var property in value.GetType().GetProperties())
             {
                 if (!property.CanRead)
@@ -41,7 +43,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 
                 if (embeddedAttribute != null)
                 {
-                    WriteEmbedded(writer, embeddedAttribute, property.GetValue(value, null));
+                    embeds.Add(new Tuple<HalEmbeddedAttribute, PropertyInfo>(embeddedAttribute, property));
                 }
                 else if (property.Name == "Links")
                 {
@@ -54,16 +56,31 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 }
             }
 
+
+            WriteEmbeddeds(writer, embeds, value);
+
             writer.WriteEndObject();
         }
 
-        private static void WriteEmbedded(JsonWriter writer, HalEmbeddedAttribute embeddedAttribute, object embedValue)
+        private static void WriteEmbeddeds(JsonWriter writer, IList<Tuple<HalEmbeddedAttribute, PropertyInfo>> attributesAndProperties, object parentValue)
         {
             writer.WritePropertyName("_embedded");
-            writer.WriteStartObject();
-            writer.WritePropertyName(embeddedAttribute.Rel);
-            writer.WriteValue(embedValue);
-            writer.WriteEndObject();
+
+            if (attributesAndProperties.Count > 1)
+                writer.WriteStartArray();
+
+            foreach (var attributesAndProperty in attributesAndProperties)
+            {
+                var embeddedAttribute = attributesAndProperty.Item1;
+                var embedValue = attributesAndProperty.Item2.GetValue(parentValue);
+                writer.WriteStartObject();
+                writer.WritePropertyName(embeddedAttribute.Rel);
+                writer.WriteValue(embedValue);
+                writer.WriteEndObject();
+            }
+
+            if (attributesAndProperties.Count > 1)
+                writer.WriteEndArray();
         }
 
         private static void WriteLinks(JsonWriter writer, IEnumerable<HyperMediaLink> links)
@@ -184,26 +201,36 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             if (embedded == null) 
                 return;
 
-            var enumerator = ((JObject)embedded).GetEnumerator();
-
-            while (enumerator.MoveNext())
+            if (embedded.Type == JTokenType.Array)
             {
-                var rel = enumerator.Current.Key;
+                foreach (var item in ((JArray)embedded))
+                    TryPopulateEmbedded(item, objectType, serializer, resource);
+            }
+            else
+            {
+                var enumerator = ((JObject)embedded).GetEnumerator();
 
-                foreach (var property in objectType.GetProperties())
+                while (enumerator.MoveNext())
                 {
-                    var attribute = property.GetCustomAttributes(true).OfType<HalEmbeddedAttribute>().FirstOrDefault(attr => attr.Rel == rel);
+                    var rel = enumerator.Current.Key;
 
-                    if (attribute == null)
-                        continue;
+                    foreach (var property in objectType.GetProperties())
+                    {
+                        var attribute = property.GetCustomAttributes(true).OfType<HalEmbeddedAttribute>().FirstOrDefault(attr => attr.Rel == rel);
 
-                    var type = attribute.Type ?? property.PropertyType;
+                        if (attribute == null)
+                            continue;
 
-                    var propValue = enumerator.Current.Value.ToObject(type, serializer);
+                        var type = attribute.Type ?? property.PropertyType;
 
-                    property.SetValue(resource, propValue, null);
+                        var propValue = enumerator.Current.Value.ToObject(type, serializer);
+
+                        property.SetValue(resource, propValue, null);
+                    }
                 }
             }
+
+            
         }
 
         public override bool CanConvert(Type objectType)

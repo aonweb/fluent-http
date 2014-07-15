@@ -18,7 +18,24 @@ namespace AonWeb.FluentHttp.Tests.Helpers.HAL
         public static string TestListJson = "{\"_embedded\":{\"results\":[{\"result\":\"Response1ForItem1\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/1\",\"templated\":false}}},{\"result\":\"Response1ForItem2\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/2\",\"templated\":false}}},{\"result\":\"Response1ForItem3\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/1\",\"templated\":false}}}]},\"_links\":{\"self\":{\"href\":\"http://localhost:8889/list/1\",\"templated\":false}}}";
         public static string TestListJson2 = "{\"_embedded\":{\"results\":[{\"result\":\"Response2ForItem1\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/1\",\"templated\":false}}},{\"result\":\"Response2ForItem2\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/2\",\"templated\":false}}},{\"result\":\"Response2ForItem3\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/1\",\"templated\":false}}}]},\"_links\":{\"self\":{\"href\":\"http://localhost:8889/list/1\",\"templated\":false}}}";
 
-        public static string TestListEmbeddedArrayChildJson = @"{
+        public static string TestListEmbeddedArrayJson = @"{
+    ""result"": ""parent"",
+    ""_embedded"": [{
+        ""children"": [{
+            ""result"":""child1""
+        },
+        {
+            ""result"":""child1""
+        }]
+    }],
+    ""_links"": {
+        ""self"": {
+            ""href"": ""http://link.com"",
+            ""templated"": false
+        }
+    }
+}";
+        public static string TestListEmbeddedPropertyJson = @"{
   ""parent"": [
     {
       ""result"": ""parent1"",
@@ -101,20 +118,20 @@ namespace AonWeb.FluentHttp.Tests.Helpers.HAL
         public IList<TestResource> Results { get; set; }
     }
 
-    public class TestListEmbeddedArrayParentsResource : TestResource
+    public class TestListEmbeddedPropertyParentsResource : TestResource
     {
         [JsonProperty("parent")]
-        public IList<TestListEmbeddedArrayParentResource> Results { get; set; }
+        public IList<TestListEmbeddedPropertyParentResource> Results { get; set; }
         public int Count { get; set; }
     }
 
-    public class TestListEmbeddedArrayParentResource : TestResource
+    public class TestListEmbeddedPropertyParentResource : TestResource
     {
         [JsonProperty("_embedded")]
-        public TestListEmbeddedArrayChildrenResource Children { get; set; }
+        public TestListEmbeddedPropertyChildrenResource Children { get; set; }
     }
 
-    public class TestListEmbeddedArrayChildrenResource : TestResource
+    public class TestListEmbeddedPropertyChildrenResource : TestResource
     {
         [JsonProperty("children")]
         public IList<TestPoco> Results { get; set; }
@@ -124,5 +141,11 @@ namespace AonWeb.FluentHttp.Tests.Helpers.HAL
     public class TestPoco
     {
         public string Result { get; set; }
+    }
+
+    public class TestListEmbeddedArrayParentResource : TestResource
+    {
+        [HalEmbedded("children")]
+        public IList<TestPoco> Results { get; set; }
     }
 }

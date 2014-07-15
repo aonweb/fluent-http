@@ -104,10 +104,10 @@ namespace AonWeb.FluentHttp.Tests.HAL
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
             {
 
-                server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListEmbeddedArrayChildJson }.AddPrivateCacheHeader());
+                server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListEmbeddedPropertyJson }.AddPrivateCacheHeader());
 
                 var result = HalCallBuilder.Create()
-                    .WithLink(uri).ResultAsync<TestListEmbeddedArrayParentsResource>().Result;
+                    .WithLink(uri).ResultAsync<TestListEmbeddedPropertyParentsResource>().Result;
 
                 Assert.NotNull(result, "Result was null");
                 Assert.NotNull(result.Results, "Result.Results was null");
@@ -116,6 +116,25 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 Assert.AreEqual(result.Results[0].Children.Count, result.Results[0].Children.Results.Count, "Unexpected value for Result.Results[0].Children.Count");
                 Assert.NotNull(result.Results[0].Children.Results[0], "Result.Results[0].Children.Results[0] was null");
                 Assert.IsNotNullOrEmpty(result.Results[0].Children.Results[0].Result, "Unexpected value for Result.Results[0].Children.Results[0].Result");
+            }
+        }
+
+        [Test]
+        public void CanDeserializeWithEmbedAsArray()
+        {
+            var uri = LocalWebServer.DefaultListenerUri;
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+
+                server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListEmbeddedArrayJson }.AddPrivateCacheHeader());
+
+                var result = HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListEmbeddedArrayParentResource>().Result;
+
+                Assert.NotNull(result, "Result was null");
+                Assert.NotNull(result.Results, "Result.Results was null");
+                Assert.AreEqual(2, result.Results.Count, "Unexpected value for Result.Count");
+                Assert.IsNotNullOrEmpty(result.Results[0].Result, "Unexpected value for Result.Results[0].Result");
             }
         }
     }
