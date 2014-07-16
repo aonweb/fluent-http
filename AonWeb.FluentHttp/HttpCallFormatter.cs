@@ -47,7 +47,7 @@ namespace AonWeb.FluentHttp
         private static async Task<object> DeserializeResponse(HttpResponseMessage response, Type type, MediaTypeFormatterCollection formatters, CancellationToken token)
         {
             if (typeof(HttpResponseMessage).IsAssignableFrom(type)) 
-                return response; // ugh :(
+                return response;
 
             var content = response.Content;
 

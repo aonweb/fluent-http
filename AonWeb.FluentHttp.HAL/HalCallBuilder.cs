@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Handlers;
 
+using Newtonsoft.Json.Serialization;
+
 namespace AonWeb.FluentHttp.HAL
 {
     public class HalCallBuilder : IAdvancedHalCallBuilder
@@ -26,7 +28,11 @@ namespace AonWeb.FluentHttp.HAL
         {
             _innerBuilder = builder;
             _innerBuilder.ConfigureMediaTypeFormatter<JsonMediaTypeFormatter>(
-                f => f.SerializerSettings.Converters.Add(new HalResourceConverter()));
+                f =>
+                    {
+                        f.SerializerSettings.Converters.Add(new HalResourceConverter());
+                        f.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                    });
         }
 
         public static IHalCallBuilder Create()

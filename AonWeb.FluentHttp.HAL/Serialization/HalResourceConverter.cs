@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 using AonWeb.FluentHttp.HAL.Representations;
 using Newtonsoft.Json;
@@ -28,86 +29,43 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             if (resource == null)
                 return;
 
-            var resolver = serializer.ContractResolver as CamelCasePropertyNamesContractResolver;
-
             writer.WriteStartObject();
 
-            var embeds = new List<Tuple<HalEmbeddedAttribute, PropertyInfo>>();
+            var embeds = new List<Tuple<HalEmbeddedAttribute, MemberInfo>>();
 
-            foreach (var property in value.GetType().GetProperties())
+            foreach (var memberInfo in GetMembers(value.GetType()))
             {
-                if (!property.CanRead)
-                    continue;
-
-                var embeddedAttribute = property.GetCustomAttributes(true).OfType<HalEmbeddedAttribute>().FirstOrDefault();
+                var embeddedAttribute = memberInfo.GetCustomAttributes(true).OfType<HalEmbeddedAttribute>().FirstOrDefault();
 
                 if (embeddedAttribute != null)
                 {
-                    embeds.Add(new Tuple<HalEmbeddedAttribute, PropertyInfo>(embeddedAttribute, property));
+                    embeds.Add(new Tuple<HalEmbeddedAttribute, MemberInfo>(embeddedAttribute, memberInfo));
                 }
-                else if (property.Name == "Links")
+                else if (memberInfo.Name == "Links")
                 {
                     WriteLinks(writer, resource.Links);
+
                 }
                 else
                 {
-                    writer.WritePropertyName((resolver == null ? property.Name : resolver.GetResolvedPropertyName(property.Name)));
-                    writer.WriteValue(property.GetValue(value, null));
+                    if (memberInfo is PropertyInfo && !((PropertyInfo)memberInfo).CanRead)
+                        continue;
+
+                    var propertyName = GetPropertyName(value.GetType(), memberInfo, serializer.ContractResolver as CamelCasePropertyNamesContractResolver);
+                    var propertyValue = GetPropertyValue(value, memberInfo);
+
+                    writer.WritePropertyName(propertyName);
+
+                    if (propertyValue == null)
+                        writer.WriteNull();
+                    else
+                        serializer.Serialize(writer, propertyValue);
                 }
             }
 
-
-            WriteEmbeddeds(writer, embeds, value);
+            WriteEmbedded(writer, embeds, value, serializer);
 
             writer.WriteEndObject();
-        }
-
-        private static void WriteEmbeddeds(JsonWriter writer, IList<Tuple<HalEmbeddedAttribute, PropertyInfo>> attributesAndProperties, object parentValue)
-        {
-            writer.WritePropertyName("_embedded");
-
-            if (attributesAndProperties.Count > 1)
-                writer.WriteStartArray();
-
-            foreach (var attributesAndProperty in attributesAndProperties)
-            {
-                var embeddedAttribute = attributesAndProperty.Item1;
-                var embedValue = attributesAndProperty.Item2.GetValue(parentValue);
-                writer.WriteStartObject();
-                writer.WritePropertyName(embeddedAttribute.Rel);
-                writer.WriteValue(embedValue);
-                writer.WriteEndObject();
-            }
-
-            if (attributesAndProperties.Count > 1)
-                writer.WriteEndArray();
-        }
-
-        private static void WriteLinks(JsonWriter writer, IEnumerable<HyperMediaLink> links)
-        {
-            writer.WritePropertyName("_links");
-
-            if (links != null)
-            {
-                writer.WriteStartObject();
-
-                foreach (var link in links)
-                {
-                    writer.WritePropertyName(link.Rel);
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("href");
-                    writer.WriteValue(link.Href);
-                    writer.WritePropertyName("templated");
-                    writer.WriteValue(link.IsTemplated);
-                    writer.WriteEndObject();
-                }
-
-                writer.WriteEndObject();
-            }
-            else
-            {
-                writer.WriteNull();
-            }
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
@@ -115,9 +73,8 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             objectType = ObjectType ?? objectType;
             var json = JObject.Load(reader);
 
-            var hasJsonPropEmbedded =
-                objectType.GetProperties()
-                    .Select(p => p.GetCustomAttribute<JsonPropertyAttribute>())
+            var hasJsonPropEmbedded = GetMembers(objectType)
+                .Select(p => p.GetCustomAttribute<JsonPropertyAttribute>())
                     .Any(a => a != null && a.PropertyName == "_embedded");
 
             JToken embedded = null;
@@ -148,11 +105,134 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             TryPopulateLinks(reader, objectType, serializer, links, resource);
 
             TryPopulateEmbedded(embedded, objectType, serializer, resource);
-            
+
 
             return resource;
         }
 
+
+        private static void WriteEmbedded(JsonWriter writer, IList<Tuple<HalEmbeddedAttribute, MemberInfo>> attributesAndProperties, object parentValue, JsonSerializer serializer)
+        {
+            if (attributesAndProperties.Count == 0)
+                return;
+
+            writer.WritePropertyName("_embedded");
+
+            writer.WriteStartObject();
+
+            foreach (var attributesAndProperty in attributesAndProperties)
+            {
+                var memberInfo = attributesAndProperty.Item2;
+
+                if (memberInfo is PropertyInfo && !((PropertyInfo)memberInfo).CanRead)
+                    continue;
+
+                var embeddedAttribute = attributesAndProperty.Item1;
+                var embedValue = GetPropertyValue(parentValue, memberInfo);
+
+                writer.WritePropertyName(embeddedAttribute.Rel);
+
+                if (embedValue == null)
+                    writer.WriteNull();
+                else
+                    serializer.Serialize(writer, embedValue, embeddedAttribute.Type ?? embedValue.GetType());
+
+            }
+
+            writer.WriteEndObject();
+        }
+
+        private static void WriteLinks(JsonWriter writer, IEnumerable<HyperMediaLink> links)
+        {
+            writer.WritePropertyName("_links");
+
+            if (links != null)
+            {
+                writer.WriteStartObject();
+
+                foreach (var link in links)
+                {
+                    writer.WritePropertyName(link.Rel);
+                    writer.WriteStartObject();
+                    writer.WritePropertyName("href");
+                    writer.WriteValue(link.Href);
+                    writer.WritePropertyName("templated");
+                    writer.WriteValue(link.IsTemplated);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndObject();
+            }
+            else
+            {
+                writer.WriteStartObject();
+                writer.WriteEndObject();
+            }
+        }
+
+        private static IEnumerable<MemberInfo> GetMembers(Type type)
+        {
+            return type.GetProperties().Cast<MemberInfo>().Concat(type.GetFields());
+        }
+
+        private static string GetPropertyName(Type declaringType, MemberInfo memberInfo, DefaultContractResolver resolver)
+        {
+            var dataContractAttribute = declaringType.GetCustomAttribute<DataContractAttribute>(true);
+
+            var dataMemberAttribute = dataContractAttribute != null ? memberInfo.GetCustomAttribute<DataMemberAttribute>(true) : null;
+
+            var propertyAttribute = memberInfo.GetCustomAttribute<JsonPropertyAttribute>(true);
+
+            string name;
+            if (propertyAttribute != null && propertyAttribute.PropertyName != null)
+                name = propertyAttribute.PropertyName;
+            else if (dataMemberAttribute != null && dataMemberAttribute.Name != null)
+                name = dataMemberAttribute.Name;
+            else
+                name = memberInfo.Name;
+
+            return resolver != null ? resolver.GetResolvedPropertyName(name) : name;
+        }
+
+        private static object GetPropertyValue(object value, MemberInfo memberInfo)
+        {
+            switch (memberInfo.MemberType)
+            {
+                case MemberTypes.Field:
+                    return ((FieldInfo)memberInfo).GetValue(value);
+                case MemberTypes.Property:
+                    return ((PropertyInfo)memberInfo).GetValue(value);
+            }
+
+            return null;
+        }
+
+        private static void SetValue(object parent, object value, MemberInfo memberInfo)
+        {
+            switch (memberInfo.MemberType)
+            {
+                case MemberTypes.Field:
+                    ((FieldInfo)memberInfo).SetValue(parent, value);
+                    break;
+                case MemberTypes.Property:
+                    ((PropertyInfo)memberInfo).SetValue(parent, value);
+                    break;
+            }
+        }
+
+        public static Type GetUnderlyingType(MemberInfo member)
+        {
+            switch (member.MemberType)
+            {
+                case MemberTypes.Field:
+                    return ((FieldInfo)member).FieldType;
+                case MemberTypes.Property:
+                    return ((PropertyInfo)member).PropertyType;
+            }
+
+            return null;
+        }
+        
         private static void TryPopulateLinks(
             JsonReader reader,
             Type objectType,
@@ -174,7 +254,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 throw SerializationErrorHelper.CreateError(reader, string.Format("Could not create HyperMediaLinks object. Links property type '{0}' on type '{1}' is not assignable to IList<HyperMediaLink>", linkListType.Name, objectType.Name));
 
             IList<HyperMediaLink> list;
-            
+
             try
             {
                 list = (IList<HyperMediaLink>)Activator.CreateInstance(linkListType);
@@ -188,7 +268,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 
             while (enumerator.MoveNext())
             {
-                var link = new HyperMediaLink{ Rel = enumerator.Current.Key };
+                var link = new HyperMediaLink { Rel = enumerator.Current.Key };
                 serializer.Populate(enumerator.Current.Value.CreateReader(), link);
                 list.Add(link);
             }
@@ -198,7 +278,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 
         private static void TryPopulateEmbedded(JToken embedded, Type objectType, JsonSerializer serializer, object resource)
         {
-            if (embedded == null) 
+            if (embedded == null)
                 return;
 
             if (embedded.Type == JTokenType.Array)
@@ -214,23 +294,21 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 {
                     var rel = enumerator.Current.Key;
 
-                    foreach (var property in objectType.GetProperties())
+                    foreach (var memberInfo in GetMembers(objectType))
                     {
-                        var attribute = property.GetCustomAttributes(true).OfType<HalEmbeddedAttribute>().FirstOrDefault(attr => attr.Rel == rel);
+                        var attribute = memberInfo.GetCustomAttributes(true).OfType<HalEmbeddedAttribute>().FirstOrDefault(attr => attr.Rel == rel);
 
                         if (attribute == null)
                             continue;
 
-                        var type = attribute.Type ?? property.PropertyType;
+                        var type = attribute.Type ?? GetUnderlyingType(memberInfo);
 
                         var propValue = enumerator.Current.Value.ToObject(type, serializer);
 
-                        property.SetValue(resource, propValue, null);
+                        SetValue(resource, propValue, memberInfo);
                     }
                 }
             }
-
-            
         }
 
         public override bool CanConvert(Type objectType)

@@ -75,6 +75,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="HAL\AdvancedHalCallBuilderTests.cs" />
+    <Compile Include="HAL\HalSerializationTests.cs" />
     <Compile Include="HAL\HalDeserializationTests.cs" />
     <Compile Include="HAL\HalCachingTests.cs" />
     <Compile Include="Helpers\Extensions.cs" />
