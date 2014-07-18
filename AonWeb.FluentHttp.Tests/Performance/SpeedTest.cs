@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Net.Http;
 
 using AonWeb.FluentHttp.Mocks.WebServer;
-using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
 namespace AonWeb.FluentHttp.Tests.Performance
@@ -14,7 +13,6 @@ namespace AonWeb.FluentHttp.Tests.Performance
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
         [Test]
-        [Ignore]
         public void LessThan15PercentOverhead()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;

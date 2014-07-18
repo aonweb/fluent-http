@@ -37,7 +37,7 @@ namespace AonWeb.FluentHttp
             DeserializeResult = true;
             MediaType = HttpCallBuilderDefaults.DefaultMediaType;
             ContentEncoding = HttpCallBuilderDefaults.DefaultContentEncoding;
-            MediaTypeFormatters = new MediaTypeFormatterCollection(HttpCallBuilderDefaults.DefaultMediaTypeFormatters);
+            MediaTypeFormatters = new MediaTypeFormatterCollection(HttpCallBuilderDefaults.DefaultMediaTypeFormatters());
 
             Handler = new TypedHttpCallHandlerRegister();
 

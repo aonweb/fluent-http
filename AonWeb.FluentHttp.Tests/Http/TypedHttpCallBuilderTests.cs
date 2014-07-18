@@ -11,9 +11,11 @@ using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
-namespace AonWeb.FluentHttp.Tests.Http {
+namespace AonWeb.FluentHttp.Tests.Http
+{
     [TestFixture]
-    public class TypedMockHttpCallBuilderTests {
+    public class TypedMockHttpCallBuilderTests
+    {
         #region Declarations, Set up, & Tear Down
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
@@ -31,7 +33,8 @@ namespace AonWeb.FluentHttp.Tests.Http {
         public static string TestResultString = @"{""StringProperty"":""TestString"",""IntProperty"":2,""BoolProperty"":true,""DateOffsetProperty"":""2000-01-01T00:00:00-05:00"",""DateProperty"":""2000-01-01T00:00:00""}";
         public static TestResult TestResultValue = new TestResult();
 
-        public class TestResult : IEquatable<TestResult> {
+        public class TestResult : IEquatable<TestResult>
+        {
             public TestResult()
             {
                 StringProperty = "TestString";
@@ -242,6 +245,8 @@ namespace AonWeb.FluentHttp.Tests.Http {
         [Test]
         public async Task WhenPostingComplexType_ExpectRequestContentSerializedCorrectly()
         {
+            HttpCallBuilderDefaults.DefaultCacheStoreFactory().Clear();
+
             //arrange
             var expected = TestResultString;
             var builder = new MockTypedHttpCallBuilder().WithResponse(new ResponseInfo()).WithUri(TestUriString).Advanced;

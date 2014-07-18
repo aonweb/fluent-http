@@ -40,7 +40,7 @@ namespace AonWeb.FluentHttp
             DefaultSuccessfulResponseValidator = IsSuccessfulResponse;
             DefaultMediaType = "application/json";
             DefaultContentEncoding = Encoding.UTF8;
-            DefaultMediaTypeFormatters = new MediaTypeFormatterCollection().FluentAdd(new StringMediaFormatter());
+            DefaultMediaTypeFormatters = () => new MediaTypeFormatterCollection().FluentAdd(new StringMediaFormatter());
             DefaultHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
             DefaultChildHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
             DefaultTypedHandlerFactory = () => new ITypedHttpCallHandler[] { new TypedCacheHandler() };
@@ -123,7 +123,7 @@ namespace AonWeb.FluentHttp
         public static Func<IHttpCallHandler[]> DefaultHandlerFactory { get; set; }
         public static Func<IHttpCallHandler[]> DefaultChildHandlerFactory { get; set; }
         public static Func<ITypedHttpCallHandler[]> DefaultTypedHandlerFactory { get; set; }
-        public static MediaTypeFormatterCollection DefaultMediaTypeFormatters { get; set; }
+        public static Func<MediaTypeFormatterCollection> DefaultMediaTypeFormatters { get; set; }
         public static HttpMethod DefaultHttpMethod { get; set; }
         public static HttpCompletionOption DefaultCompletionOption { get; set; }
         public static Encoding DefaultContentEncoding { get; set; }

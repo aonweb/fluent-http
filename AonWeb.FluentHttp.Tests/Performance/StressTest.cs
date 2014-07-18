@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Mocks.WebServer;
-using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
 namespace AonWeb.FluentHttp.Tests.Performance
@@ -19,7 +17,7 @@ namespace AonWeb.FluentHttp.Tests.Performance
 
         [Test]
         [Ignore]
-        public void LessThan15PercentOverhead()
+        public void StressStuff()
         {
 
             const int iterations = 1000;
@@ -37,7 +35,7 @@ namespace AonWeb.FluentHttp.Tests.Performance
                 }
 
                 Task.WaitAll(tasks.ToArray());
-                Console.WriteLine("Completed in {0}", watch.Elapsed);
+                Console.WriteLine("Completed {0} calls in {1}", iterations, watch.Elapsed);
             }
         }
 

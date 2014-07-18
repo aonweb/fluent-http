@@ -157,7 +157,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                     writer.WritePropertyName("href");
                     writer.WriteValue(link.Href);
                     writer.WritePropertyName("templated");
-                    writer.WriteValue(link.IsTemplated);
+                    writer.WriteValue(link.Templated);
                     writer.WriteEndObject();
                 }
 

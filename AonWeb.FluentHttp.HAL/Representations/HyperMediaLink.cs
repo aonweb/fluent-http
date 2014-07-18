@@ -6,11 +6,11 @@ namespace AonWeb.FluentHttp.HAL.Representations
     {
         public string Rel { get; set; }
         public string Href { get; set; }
-        public bool IsTemplated { get; set; }
+        public bool Templated { get; set; }
 
         public override string ToString()
         {
-            return string.Format("Rel: '{0}', Href: '{1}', IsTemplated: '{2}'", Rel, Href, IsTemplated);
+            return string.Format("Rel: '{0}', Href: '{1}', Templated: '{2}'", Rel, Href, Templated);
         }
 
         #region IEquality Implementation
@@ -25,7 +25,7 @@ namespace AonWeb.FluentHttp.HAL.Representations
             {
                 return true;
             }
-            return string.Equals(Rel, other.Rel) && string.Equals(Href, other.Href) && IsTemplated.Equals(other.IsTemplated);
+            return string.Equals(Rel, other.Rel) && string.Equals(Href, other.Href) && Templated.Equals(other.Templated);
         }
 
         public override bool Equals(object obj)
@@ -51,7 +51,7 @@ namespace AonWeb.FluentHttp.HAL.Representations
             {
                 int hashCode = (Rel != null ? Rel.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Href != null ? Href.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ IsTemplated.GetHashCode();
+                hashCode = (hashCode * 397) ^ Templated.GetHashCode();
                 return hashCode;
             }
         }
