@@ -133,12 +133,7 @@ namespace AonWeb.FluentHttp
         internal static string BuildKey(Type resultType, Uri uri, HttpHeaders headers, IEnumerable<string> varyBy)
         {
 
-            var keyParts = new List<string>();
-
-            if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))
-                keyParts.Add("HttpResponseMessage");
-
-            keyParts.Add(uri.ToString());
+            var keyParts = new List<string> { resultType.Name, uri.ToString() };
 
             keyParts.AddRange(headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase)))
                 .SelectMany(h => h.Value.Select(v => string.Format("{0}:{1}", NormalizeHeader(h.Key), NormalizeHeader(v))))

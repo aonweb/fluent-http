@@ -719,6 +719,9 @@ namespace AonWeb.FluentHttp
 
             var result = await ResultAsync(new TypedHttpCallContext(this, _settings)).ConfigureAwait(false);
 
+            if (result != null && !(result is TResult))
+                throw new TypeMismatchException(typeof(TResult), result.GetType());
+
             return (TResult)result;
         }
 

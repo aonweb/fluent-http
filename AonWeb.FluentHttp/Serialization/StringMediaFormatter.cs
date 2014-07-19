@@ -18,7 +18,7 @@ namespace AonWeb.FluentHttp.Serialization
         }
         public override bool CanReadType(Type type)
         {
-            return true;
+            return (typeof(string).IsAssignableFrom(type));
         }
 
         public override bool CanWriteType(Type type)
