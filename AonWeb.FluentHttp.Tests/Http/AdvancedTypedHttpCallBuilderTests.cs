@@ -791,6 +791,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             //act
             var called = false;
             var result = await builder
+                .WithErrorType<TestResult>()
                 .Advanced
                 .OnError<object>(ctx => { called = true; })
                 .WithExceptionFactory(context => null)
@@ -799,6 +800,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             Assert.Null(result);
             Assert.IsTrue(called);
         }
+
 
         [Test]
         public async Task WhenErrorTypeSetMultipleTimes_ExpectLastWins()

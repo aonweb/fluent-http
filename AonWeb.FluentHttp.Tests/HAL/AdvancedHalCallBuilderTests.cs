@@ -428,6 +428,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
             //act
             var called = false;
             var result = await builder
+                .WithErrorType<TestResult>()
                 .Advanced
                 .OnError<object>(ctx => { called = true; })
                 .WithExceptionFactory(context => null)

@@ -136,10 +136,10 @@
     <value>A handler of type '{0}' has not been registered.</value>
   </data>
   <data name="MaxAutoRedirectsErrorFormat" xml:space="preserve">
-    <value>The maximum allowed number redirects ({0}) was reached. Last uri: '{1}'.</value>
+    <value>The maximum allowed number redirects ({0}) was reached. {1}</value>
   </data>
-  <data name="NowWriteFormatterForMimeTypeErrorFormat" xml:space="preserve">
-    <value>No MediaTypeFormatter is available to writean object of type '{0}' to content with media type 1.</value>
+  <data name="NoWriteFormatterForMimeTypeErrorFormat" xml:space="preserve">
+    <value>No MediaTypeFormatter is available to writean object of type '{0}' to content with media type {1}. {2}</value>
   </data>
   <data name="CacheContextRequestMessageRequiredError" xml:space="preserve">
     <value>The current Cache Context must have Request Message.</value>
@@ -148,10 +148,10 @@
     <value>The current Cache Context must have ResponseInfo.</value>
   </data>
   <data name="NoReadFormatterForMimeTypeErrorFormat" xml:space="preserve">
-    <value>No MediaTypeFormatter is available to read an object of type '{0}' from content with media type '{1}'.</value>
+    <value>No MediaTypeFormatter is available to read an object of type '{0}' from content with media type '{1}'. {2}</value>
   </data>
   <data name="TypeMismatchErrorFormat" xml:space="preserve">
-    <value>Expected type '{0}', actual type {1}.</value>
+    <value>Expected type '{0}', actual type {1}. {2}</value>
   </data>
   <data name="ConstructorMissingErrorFormat" xml:space="preserve">
     <value>Could not construct context of type {0}. Could not find constructor with {1} parameter(s)</value>

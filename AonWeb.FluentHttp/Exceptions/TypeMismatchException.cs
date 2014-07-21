@@ -10,14 +10,14 @@ namespace AonWeb.FluentHttp.Exceptions
     public class TypeMismatchException : Exception
     {
         public TypeMismatchException(Type expectedType, Type actualType)
-            : this(expectedType, actualType, string.Format(SR.TypeMismatchErrorFormat, expectedType.FormattedTypeName(), actualType.FormattedTypeName()))
+            : this(expectedType, actualType, string.Empty)
         {
             ExpectedType = expectedType;
             ActualType = actualType;
         }
 
         public TypeMismatchException(Type expectedType, Type actualType, string message)
-            : base(message)
+            : base(string.Format(SR.TypeMismatchErrorFormat, expectedType.FormattedTypeName(), actualType.FormattedTypeName(), message))
         {
             ExpectedType = expectedType;
             ActualType = actualType;
@@ -25,7 +25,7 @@ namespace AonWeb.FluentHttp.Exceptions
 
         [ExcludeFromCodeCoverage]
         public TypeMismatchException(Type expectedType, Type actualType, string message, Exception exception) :
-            base(message, exception)
+            base(string.Format(SR.TypeMismatchErrorFormat, expectedType.FormattedTypeName(), actualType.FormattedTypeName(), message), exception)
         {
             ExpectedType = expectedType;
             ActualType = actualType;

@@ -9,6 +9,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 
+using AonWeb.FluentHttp.Handlers;
+
 namespace AonWeb.FluentHttp
 {
     public static class Helper
@@ -132,8 +134,10 @@ namespace AonWeb.FluentHttp
 
         internal static string BuildKey(Type resultType, Uri uri, HttpHeaders headers, IEnumerable<string> varyBy)
         {
+            var keyParts = new List<string> { uri.ToString() };
 
-            var keyParts = new List<string> { resultType.Name, uri.ToString() };
+            if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))
+                keyParts.Add("HttpResponseMessage");
 
             keyParts.AddRange(headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase)))
                 .SelectMany(h => h.Value.Select(v => string.Format("{0}:{1}", NormalizeHeader(h.Key), NormalizeHeader(v))))
@@ -194,6 +198,45 @@ namespace AonWeb.FluentHttp
             
             var prettyName = name.Substring(0, name.IndexOf("`"));
             return prettyName + "<" + String.Join(",", args.Select(FormattedTypeName)) + ">";
+        }
+
+        internal static string DetailsForException(this HttpRequestMessage request)
+        {
+            if (request == null) 
+                return string.Empty;
+
+            return string.Format("Request: {0} - {1}{2}", request.Method, request.RequestUri, request.Content.DetailsForException());
+        }
+
+        internal static string DetailsForException(this HttpResponseMessage response)
+        {
+            if (response == null) 
+                return string.Empty;
+
+            return string.Format("{0}{1}", response.RequestMessage.DetailsForException(), response.Content.DetailsForException());
+        }
+
+        internal static string DetailsForException(this HttpContent content)
+        {
+            if (content == null) 
+                return string.Empty;
+
+            var type = string.Empty;
+            long length = 0;
+
+            if (content.Headers != null)
+            {
+                if (content.Headers.ContentType != null)
+                    type = content.Headers.ContentType.MediaType;
+
+                if (content.Headers.ContentLength != null) 
+                    length = content.Headers.ContentLength.Value;
+            }
+
+            if (string.IsNullOrWhiteSpace(type) || length <= 0) 
+                return string.Empty;
+
+            return string.Format(", Content: {0}, {1} bytes", type, length);
         }
     }
 }

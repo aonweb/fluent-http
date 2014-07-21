@@ -88,7 +88,7 @@ namespace AonWeb.FluentHttp.Handlers
             var redirectCount = context.Items["RedirectCount"].As<int?>().GetValueOrDefault();
 
             if (redirectCount >= MaxAutoRedirects)
-                throw new MaximumAutoRedirectsException(context.Response.StatusCode, string.Format(SR.MaxAutoRedirectsErrorFormat, redirectCount, uri));
+                throw new MaximumAutoRedirectsException(context.Response.StatusCode, string.Format(SR.MaxAutoRedirectsErrorFormat, redirectCount, context.Response.DetailsForException()));
 
             var newUri = GetRedirectUri(uri, context.Response);
 

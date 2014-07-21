@@ -142,7 +142,7 @@ namespace AonWeb.FluentHttp {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The maximum allowed number redirects ({0}) was reached. Last uri: &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The maximum allowed number redirects ({0}) was reached. {1}.
         /// </summary>
         internal static string MaxAutoRedirectsErrorFormat {
             get {
@@ -151,7 +151,7 @@ namespace AonWeb.FluentHttp {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No MediaTypeFormatter is available to read an object of type &apos;{0}&apos; from content with media type &apos;{1}&apos;..
+        ///   Looks up a localized string similar to No MediaTypeFormatter is available to read an object of type &apos;{0}&apos; from content with media type &apos;{1}&apos;. {2}.
         /// </summary>
         internal static string NoReadFormatterForMimeTypeErrorFormat {
             get {
@@ -160,16 +160,16 @@ namespace AonWeb.FluentHttp {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No MediaTypeFormatter is available to writean object of type &apos;{0}&apos; to content with media type 1..
+        ///   Looks up a localized string similar to No MediaTypeFormatter is available to writean object of type &apos;{0}&apos; to content with media type {1}. {2}.
         /// </summary>
-        internal static string NowWriteFormatterForMimeTypeErrorFormat {
+        internal static string NoWriteFormatterForMimeTypeErrorFormat {
             get {
-                return ResourceManager.GetString("NowWriteFormatterForMimeTypeErrorFormat", resourceCulture);
+                return ResourceManager.GetString("NoWriteFormatterForMimeTypeErrorFormat", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Expected type &apos;{0}&apos;, actual type {1}..
+        ///   Looks up a localized string similar to Expected type &apos;{0}&apos;, actual type {1}. {2}.
         /// </summary>
         internal static string TypeMismatchErrorFormat {
             get {

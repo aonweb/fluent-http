@@ -716,11 +716,9 @@ namespace AonWeb.FluentHttp
         public async Task<TResult> RecursiveResultAsync<TResult>()
         {
             _settings.SetResultType( typeof (TResult), true);
+            var context = new TypedHttpCallContext(this, _settings);
 
-            var result = await ResultAsync(new TypedHttpCallContext(this, _settings)).ConfigureAwait(false);
-
-            if (result != null && !(result is TResult))
-                throw new TypeMismatchException(typeof(TResult), result.GetType());
+            var result = await ResultAsync(context).ConfigureAwait(false);
 
             return (TResult)result;
         }
@@ -770,9 +768,19 @@ namespace AonWeb.FluentHttp
                     else
                         error = await _formatter.DeserializeError(response, context);
 
+                    if (error != null && !context.ErrorType.IsInstanceOfType(error))
+                    {
+                        if (!context.SuppressHandlerTypeExceptions)
+                            throw new TypeMismatchException(context.ErrorType, error.GetType(), response.DetailsForException());
+
+                        return Helper.GetDefaultValueForType(context.ResultType);
+                    } 
+
                     var errorResult = await context.Handler.OnError(context, response, error);
 
-                    if (!(bool)errorResult.Value && _settings.ExceptionFactory != null)
+                    var errorHandled = (bool)errorResult.Value;
+
+                    if (!errorHandled && _settings.ExceptionFactory != null)
                     {
                         var ex = _settings.ExceptionFactory(new HttpCallErrorContext(context, response, error));
 
@@ -799,7 +807,17 @@ namespace AonWeb.FluentHttp
 
                     var resultResult = await context.Handler.OnResult(context, response, result);
 
-                    return resultResult.Value;
+                    result = resultResult.Value;
+
+                    if (result != null && !context.ResultType.IsInstanceOfType(result))
+                    {
+                        if (!context.SuppressHandlerTypeExceptions)
+                            throw new TypeMismatchException(context.ResultType, result.GetType(), response.DetailsForException());
+
+                        return Helper.GetDefaultValueForType(context.ResultType);
+                    }
+
+                    return result;
                 }
             }
             catch (Exception ex)
@@ -829,7 +847,7 @@ namespace AonWeb.FluentHttp
             if (defaultResult != null && !context.ResultType.IsInstanceOfType(defaultResult))
             {
                 if (!context.SuppressHandlerTypeExceptions)
-                    throw new TypeMismatchException(context.ResultType, defaultResult.GetType());
+                    throw new TypeMismatchException(context.ResultType, defaultResult.GetType(), response.DetailsForException());
 
                 return Helper.GetDefaultValueForType(context.ResultType);
             }
