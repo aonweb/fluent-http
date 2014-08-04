@@ -1,4 +1,8 @@
-﻿using AonWeb.FluentHttp.HAL;
+﻿using System.Net;
+using System.Threading.Tasks;
+
+using AonWeb.FluentHttp.Exceptions;
+using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 using AonWeb.FluentHttp.Tests.Helpers.HAL;
@@ -23,7 +27,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        public void CanDeserializeResource()
+        public async Task CanDeserializeResource()
         {
             var uri = LocalWebServer.DefaultListenerUri;
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
@@ -32,8 +36,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 server
                     .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestResourceJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder.Create()
-                    .WithLink(uri).ResultAsync<TestResource>().Result;
+                var result = await HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestResource>();
 
                 Assert.NotNull(result);
                 Assert.AreEqual("Response1", result.Result);
@@ -42,7 +46,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        public void CanDeserializeResourceWithLinks()
+        public async Task CanDeserializeResourceWithLinks()
         {
             var uri = LocalWebServer.DefaultListenerUri;
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
@@ -51,8 +55,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 server
                     .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestResourceWithLinksJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder.Create()
-                    .WithLink(uri).ResultAsync<TestResourceWithLinks>().Result;
+                var result = await HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestResourceWithLinks>();
 
                 Assert.NotNull(result);
                 Assert.AreEqual("Response1", result.Result);
@@ -60,7 +64,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
             }
         }
         [Test]
-        public void CanDeserializeListWithEmbedded()
+        public async Task CanDeserializeListWithEmbedded()
         {
             var uri = LocalWebServer.DefaultListenerUri;
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
@@ -68,8 +72,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
                 server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder.Create()
-                    .WithLink(uri).ResultAsync<TestListResource>().Result;
+                var result = await HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListResource>();
 
                 Assert.NotNull(result);
                 Assert.AreEqual("http://localhost:8889/list/1", result.Links.Self().ToString());
@@ -79,7 +83,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        public void CanDeserializeListWithEmbeddedWithLinks()
+        public async Task CanDeserializeListWithEmbeddedWithLinks()
         {
             var uri = LocalWebServer.DefaultListenerUri;
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
@@ -87,8 +91,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
                 server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder.Create()
-                    .WithLink(uri).ResultAsync<TestListResourceWithLinks>().Result;
+                var result = await HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListResourceWithLinks>();
 
                 Assert.NotNull(result);
                 Assert.AreEqual("http://localhost:8889/list/1", result.Links.Self().ToString());
@@ -98,7 +102,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        public void CanDeserializeListWithEmbeddedWithLinksWithEmbeddedJsonProperty()
+        public async Task CanDeserializeListWithEmbeddedWithLinksWithEmbeddedJsonProperty()
         {
             var uri = LocalWebServer.DefaultListenerUri;
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
@@ -106,8 +110,8 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
                 server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListEmbeddedPropertyJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder.Create()
-                    .WithLink(uri).ResultAsync<TestListEmbeddedPropertyParentsResource>().Result;
+                var result = await HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListEmbeddedPropertyParentsResource>();
 
                 Assert.NotNull(result, "Result was null");
                 Assert.NotNull(result.Results, "Result.Results was null");
@@ -120,7 +124,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        public void CanDeserializeWithEmbedAsArray()
+        public async Task CanDeserializeWithEmbedAsArray()
         {
             var uri = LocalWebServer.DefaultListenerUri;
             using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
@@ -128,13 +132,30 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
                 server.AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListEmbeddedArrayJson }.AddPrivateCacheHeader());
 
-                var result = HalCallBuilder.Create()
-                    .WithLink(uri).ResultAsync<TestListEmbeddedArrayParentResource>().Result;
+                var result = await HalCallBuilder.Create()
+                    .WithLink(uri).ResultAsync<TestListEmbeddedArrayParentResource>();
 
                 Assert.NotNull(result, "Result was null");
                 Assert.NotNull(result.Results, "Result.Results was null");
                 Assert.AreEqual(2, result.Results.Count, "Unexpected value for Result.Count");
                 Assert.IsNotNullOrEmpty(result.Results[0].Result, "Unexpected value for Result.Results[0].Result");
+            }
+        }
+
+        [Test]
+        public void CanDeserializeCamelCaseError()
+        {
+            var uri = LocalWebServer.DefaultListenerUri;
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+
+                server
+                    .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestResourceJson, StatusCode = HttpStatusCode.NotFound}.AddPrivateCacheHeader());
+
+                var ex = Assert.Catch<HttpErrorException<TestError>>(async ()=> await HalCallBuilder.Create().WithLink(uri).WithErrorType<TestError>().SendAsync());
+
+                Assert.NotNull(ex);
+                Assert.AreEqual("Response1", ex.Error.Result);
             }
         }
     }

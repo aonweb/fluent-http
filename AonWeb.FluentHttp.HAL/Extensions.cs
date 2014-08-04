@@ -193,7 +193,7 @@ namespace AonWeb.FluentHttp.HAL
                 if (string.IsNullOrWhiteSpace(token.Key))
                     throw new ArgumentException(string.Format("A supplied url token for url '{0}' was null or empty.", formatUrl));
 
-                var val = HttpUtility.UrlEncode((token.Value ?? string.Empty).ToString());
+                var val = Uri.EscapeDataString((token.Value ?? string.Empty).ToString());
 
                 outputUrl = outputUrl.Replace("{" + token.Key + "}", val);
             }

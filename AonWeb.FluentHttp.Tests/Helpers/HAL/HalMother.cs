@@ -96,6 +96,11 @@ namespace AonWeb.FluentHttp.Tests.Helpers.HAL
         public string Result { get; set; }
     }
 
+    public class TestError
+    {
+        public string Result { get; set; }
+    }
+
     public class TestResourceWithLinks : HalResource<TestLinks>
     {
         public string Result { get; set; }

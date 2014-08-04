@@ -80,9 +80,9 @@ namespace AonWeb.FluentHttp
                     if (sb.Length != 0)
                         sb.Append("&");
 
-                    sb.Append(HttpUtility.UrlEncode(key));
+                    sb.Append(Uri.EscapeDataString(key));
                     sb.Append("=");
-                    sb.Append(HttpUtility.UrlEncode(value));
+                    sb.Append(Uri.EscapeDataString(value ?? string.Empty));
                 }
 
             }

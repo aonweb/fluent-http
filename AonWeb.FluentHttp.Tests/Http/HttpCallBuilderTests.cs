@@ -216,7 +216,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         [Test]
         [TestCase("q", "1", TestUriString + "?q=1")]
-        [TestCase("q", "1 and 2", TestUriString + "?q=1+and+2")]
+        [TestCase("q", "1 and 2", TestUriString + "?q=1%20and%202")]
         [TestCase("q", null, TestUriString + "?q=")]
         [TestCase("q", "", TestUriString + "?q=")]
         [TestCase(null, "1", TestUriString)]
@@ -242,7 +242,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var uri = new Uri(TestUriString + "?q1=1");
 
             var values = new NameValueCollection { { "q1", "2" }, { "q2", "1 and 2" }, { "q3", "3" } };
-            var expected = new Uri(TestUriString + "?q1=2&q2=1+and+2&q3=3");
+            var expected = new Uri(TestUriString + "?q1=2&q2=1%20and%202&q3=3");
 
             var builder = new MockHttpCallBuilder().WithUri(uri).Advanced;
             string actual = null;
