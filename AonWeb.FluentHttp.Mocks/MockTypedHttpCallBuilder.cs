@@ -125,14 +125,14 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockTypedHttpCallBuilder VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler)
+        public IMockTypedHttpCallBuilder VerifyOnError(Action<TypedHttpErrorContext<object>> handler)
         {
             return VerifyOnError<object>(handler);
         }
 
-        public IMockTypedHttpCallBuilder VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler)
+        public IMockTypedHttpCallBuilder VerifyOnError<TError>(Action<TypedHttpErrorContext<TError>> handler)
         {
-            var assert = new AssertAction<TypedHttpCallErrorContext<TError>>(handler, () => _assertFailure);
+            var assert = new AssertAction<TypedHttpErrorContext<TError>>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 
@@ -141,9 +141,9 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockTypedHttpCallBuilder VerifyOnException(Action<TypedHttpCallExceptionContext> handler)
+        public IMockTypedHttpCallBuilder VerifyOnException(Action<TypedHttpExceptionContext> handler)
         {
-            var assert = new AssertAction<TypedHttpCallExceptionContext>(handler, () => _assertFailure);
+            var assert = new AssertAction<TypedHttpExceptionContext>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 

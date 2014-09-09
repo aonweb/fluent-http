@@ -1,89 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-
-using AonWeb.FluentHttp.Handlers;
-using System.Net.Http;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Caching
 {
-    public class CacheHandler : CacheHandlerBase, IHttpCallHandler
+    public abstract class CacheHandler : ICacheHandler
     {
-        public CacheHandler() { }
+        private bool _enabled = true;
 
-        protected CacheHandler(CacheSettings settings)
-            : base(settings) { }
-
-        #region Configuration Methods
-
-        public CacheHandler WithCaching(bool enabled = true)
+        public virtual bool Enabled
         {
-            Settings.Enabled = enabled;
-
-            return this;
+            get { return _enabled; }
+            set { _enabled = value; }
         }
 
-        public CacheHandler WithDependentUris(IEnumerable<Uri> uris)
+        public virtual HttpCallHandlerPriority GetPriority(CacheHandlerType type)
         {
-            if (uris == null)
-                return this;
-
-            foreach (var uri in uris)
-                WithDependentUri(uri);
-
-            return this;
+            return HttpCallHandlerPriority.Default;
         }
 
-        public CacheHandler WithDependentUri(Uri uri)
-        {
-            if (uri == null)
-                return this;
-
-            uri = uri.NormalizeUri();
-
-            if (uri != null && !Settings.DependentUris.Contains(uri))
-                Settings.DependentUris.Add(uri);
-
-            return this;
-        }
-
-        #endregion
-
-        #region IHttpCallHandler Implementation
-
-        public async Task OnSending(HttpSendingContext context)
-        {
-            Settings.CacheResultConfiguration = cacheResult => ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Request;
-
-            var cacheContext = CreateCacheContext(context, context.Request);
-
-            await TryGetFromCache(cacheContext);
-
-            if (cacheContext.ResultFound)
-                context.Response = (HttpResponseMessage)cacheContext.Result;
-        }
-
-        public async Task OnSent(HttpSentContext context)
-        {
-            var cacheContext = CreateCacheContext(context, context.Response);
-
-            Settings.CacheResultConfiguration = cacheResult => ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Response.RequestMessage;
-
-            TryGetRevalidatedResult(cacheContext, context.Response);
-
-            if (cacheContext.ResultFound)
-                context.Response = (HttpResponseMessage)cacheContext.Result;
-
-            await TryCacheResult(cacheContext, context.Response, context.Response);
-        }
-
-        #endregion
-
-        #region Unimplemented IHttpCallHandler Methods
-
-        // TODO: invalidate caches for uri on exception?
-        public Task OnException(HttpExceptionContext context) { return Task.Delay(0); }
-
-        #endregion
+        public virtual Task OnHit<TResult>(CacheHitContext<TResult> context) { return Task.Delay(0); }
+        public virtual Task OnMiss<TResult>(CacheMissContext<TResult> context) { return Task.Delay(0); }
+        public virtual Task OnStore<TResult>(CacheStoreContext<TResult> context) { return Task.Delay(0); }
+        public virtual Task OnExpiring(CacheExpiringContext context) { return Task.Delay(0); }
+        public virtual Task OnExpired(CacheExpiredContext context) { return Task.Delay(0); }
     }
 }

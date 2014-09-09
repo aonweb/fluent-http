@@ -12,12 +12,15 @@ namespace AonWeb.FluentHttp.Caching
             if (!context.Enabled)
                 return false;
 
+            if (context.Request == null || string.IsNullOrWhiteSpace(context.Key))
+                return false;
+
             var request = context.Request;
 
             if (!context.CacheableMethods.Contains(request.Method))
                 return false;
 
-            // client can tell CachingHandler not to do caching for a particular request
+            // client can tell HttpCallCacheHandler not to do caching for a particular request
             // rather than expiring here and facing a thundering herd, let a success repopulate
             if (request.Headers.CacheControl != null)
             {
@@ -38,6 +41,9 @@ namespace AonWeb.FluentHttp.Caching
 
             var request = context.Request;
 
+            if (request == null)
+                return false;
+
             if (!context.CacheableMethods.Contains(request.Method))
                 return false;
 
@@ -46,7 +52,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public static ResponseValidationResult ResponseValidator(CacheContext context)
         {
-            //This is almost verbatim from the CacheCow CachingHandler's ResponseValidator func
+            //This is almost verbatim from the CacheCow HttpCallCacheHandler's ResponseValidator func
 
             // 13.4
             //Unless specifically constrained by a cache-control (section 14.9) directive, a caching system MAY always store 
@@ -92,7 +98,7 @@ namespace AonWeb.FluentHttp.Caching
             var request = context.Request;
             var responseInfo = context.ResponseInfo;
 
-            //This is almost verbatim from the CacheCow CachingHandler's  IsFreshOrStaleAcceptable 
+            //This is almost verbatim from the CacheCow HttpCallCacheHandler's  IsFreshOrStaleAcceptable 
 
             if (responseInfo == null)
                 throw new ArgumentException(SR.CacheContextResponseInfoRequiredError, "context");

@@ -2,25 +2,26 @@
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public interface IHttpCallHandler
+    public interface IHandler<in THandlerType>
     {
         bool Enabled { get; }
-        HttpCallHandlerPriority GetPriority(HttpCallHandlerType type);
+        HttpCallHandlerPriority GetPriority(THandlerType type);
+    }
+
+    public interface IHttpCallHandler : IHandler<HttpCallHandlerType>
+    {
         Task OnSending(HttpSendingContext context);
         Task OnSent(HttpSentContext context);
         Task OnException(HttpExceptionContext context);
     }
 
-    public interface ITypedHttpCallHandler
+    public interface ITypedHttpCallHandler : IHandler<HttpCallHandlerType>
     {
-        bool Enabled { get; }
-        HttpCallHandlerPriority GetPriority(HttpCallHandlerType type);
-
         Task OnSending<TResult, TContent>(TypedHttpSendingContext<TResult, TContent> context);
         Task OnSent<TResult>(TypedHttpSentContext<TResult> context);
         Task OnResult<TResult>(TypedHttpResultContext<TResult> context);
-        Task OnError<TError>(TypedHttpCallErrorContext<TError> context);
-        Task OnException(TypedHttpCallExceptionContext context);
+        Task OnError<TError>(TypedHttpErrorContext<TError> context);
+        Task OnException(TypedHttpExceptionContext context);
     }
     
     public interface ITypedHttpCallHandler<TResult, TContent, TError>: ITypedHttpCallHandler
@@ -28,7 +29,7 @@ namespace AonWeb.FluentHttp.Handlers
         Task OnSending(TypedHttpSendingContext<TResult, TContent> context);
         Task OnSent(TypedHttpSentContext<TResult> context);
         Task OnResult(TypedHttpResultContext<TResult> context);
-        Task OnError(TypedHttpCallErrorContext<TError> context);
+        Task OnError(TypedHttpErrorContext<TError> context);
     }
 
     public interface IBoxedHttpCallHandler : ITypedHttpCallHandler<object, object, object>

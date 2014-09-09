@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Caching
@@ -9,10 +10,10 @@ namespace AonWeb.FluentHttp.Caching
 
         Task AddOrUpdate(CacheContext context);
 
-        bool TryRemove(CacheContext context);
+        IList<string> TryRemove(CacheContext context, IEnumerable<Uri> additionalRelatedUris);
 
         void Clear();
 
-        void RemoveItem(Uri uri);
+        IEnumerable<string> RemoveItem(Uri uri);
     }
 }

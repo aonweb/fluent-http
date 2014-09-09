@@ -160,7 +160,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 var result = HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRetries(h => 
-                        h.WithRetryValidator(r => r.Response.StatusCode == HttpStatusCode.InternalServerError))
+                        h.WithRetryValidator(r => r.Result.StatusCode == HttpStatusCode.InternalServerError))
                     .ResultAsync().Result;
 
                 Assert.AreEqual(expected, actual);

@@ -305,7 +305,7 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
-        public IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory)
+        public IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpErrorContext, Exception> factory)
         {
             _innerBuilder.WithExceptionFactory(factory);
 
@@ -511,56 +511,56 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler)
+        public IAdvancedHalCallBuilder OnError<TError>(Action<TypedHttpErrorContext<TError>> handler)
         {
             _innerBuilder.OnError(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpCallErrorContext<TError>> handler)
+        public IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpErrorContext<TError>> handler)
         {
             _innerBuilder.OnError(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnErrorAsync<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnErrorAsync<TError>(Func<TypedHttpErrorContext<TError>, Task> handler)
         {
             _innerBuilder.OnErrorAsync(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public IAdvancedHalCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpErrorContext<TError>, Task> handler)
         {
             _innerBuilder.OnErrorAsync(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnException(Action<TypedHttpCallExceptionContext> handler)
+        public IAdvancedHalCallBuilder OnException(Action<TypedHttpExceptionContext> handler)
         {
             _innerBuilder.OnException(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpCallExceptionContext> handler)
+        public IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpExceptionContext> handler)
         {
             _innerBuilder.OnException(priority, handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnExceptionAsync(Func<TypedHttpCallExceptionContext, Task> handler)
+        public IAdvancedHalCallBuilder OnExceptionAsync(Func<TypedHttpExceptionContext, Task> handler)
         {
             _innerBuilder.OnExceptionAsync(handler);
 
             return this;
         }
 
-        public IAdvancedHalCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler)
+        public IAdvancedHalCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpExceptionContext, Task> handler)
         {
             _innerBuilder.OnExceptionAsync(priority, handler);
 

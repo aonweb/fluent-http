@@ -400,7 +400,7 @@ namespace AonWeb.FluentHttp {
 
         public IAdvancedHttpCallBuilder WithCaching(bool enabled = true)
         {
-            ConfigureHandler<CacheHandler>(handler => handler.WithCaching(enabled));
+            ConfigureHandler<HttpCallCacheHandler>(handler => handler.WithCaching(enabled));
 
             return this;
         }
@@ -414,12 +414,12 @@ namespace AonWeb.FluentHttp {
 
         public IAdvancedHttpCallBuilder WithDependentUri(Uri uri)
         {
-            return TryConfigureHandler<CacheHandler>(h => h.WithDependentUri(uri));
+            return TryConfigureHandler<HttpCallCacheHandler>(h => h.WithDependentUri(uri));
         }
 
         public IAdvancedHttpCallBuilder WithDependentUris(IEnumerable<Uri> uris)
         {
-            return TryConfigureHandler<CacheHandler>(h => h.WithDependentUris(uris));
+            return TryConfigureHandler<HttpCallCacheHandler>(h => h.WithDependentUris(uris));
         }
 
         public IAdvancedHttpCallBuilder OnSending(Action<HttpSendingContext> handler)
@@ -623,9 +623,9 @@ namespace AonWeb.FluentHttp {
 
                     await context.Handler.OnSending(sendingContext);
 
-                    if (sendingContext.Response != null)
+                    if (sendingContext.Result != null)
                     {
-                        response = sendingContext.Response;
+                        response = sendingContext.Result;
                     }
                     else
                     {
@@ -644,7 +644,7 @@ namespace AonWeb.FluentHttp {
 
                     await context.Handler.OnSent(sentContext);
 
-                    response = sentContext.Response;
+                    response = sentContext.Result;
                 }
             }
             catch (Exception ex)

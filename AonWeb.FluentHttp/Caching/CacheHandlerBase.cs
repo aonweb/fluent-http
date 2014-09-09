@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
@@ -5,7 +8,7 @@ using AonWeb.FluentHttp.Handlers;
 namespace AonWeb.FluentHttp.Caching
 {
     // this class is inspired by the excellent work in CacheCow Caching libraries - https://github.com/aliostad/CacheCow
-    // for whatever reason, I couldn't get the inmemory cache in the HttpClientHandler / CachingHandler 
+    // for whatever reason, I couldn't get the inmemory cache in the HttpClientHandler / HttpCallCacheHandler 
     // to play nice with call / client builders, and the cache kept disappearing
     // additionally I need an implementation that allows for deserialized object level caching in addition to http response caching
     // so I implemented a cachehandler that plugs in to the TypedHttpCallBuilder higher up,
@@ -13,9 +16,7 @@ namespace AonWeb.FluentHttp.Caching
     public abstract class CacheHandlerBase
     {
         protected CacheHandlerBase()
-        {
-            Settings = new CacheSettings();
-        }
+            : this(new CacheSettings()) { }
 
         protected CacheHandlerBase(CacheSettings settings)
         {
@@ -51,18 +52,15 @@ namespace AonWeb.FluentHttp.Caching
 
         #endregion
 
-        protected CacheContext CreateCacheContext(IHttpCallContext callContext, HttpRequestMessage request)
+        protected CacheContext CreateCacheContext(IHttpCallHandlerContext callContext)
         {
-            return new CacheContext(Settings, callContext, request);
+            return new CacheContext(Settings, callContext);
         }
 
-        protected CacheContext CreateCacheContext(IHttpCallContext callContext, HttpResponseMessage response)
+        protected async Task TryGetFromCache<TResult>(IHttpCallHandlerContextWithResult<TResult> callContext)
         {
-            return CreateCacheContext(callContext, response.RequestMessage);
-        }
+            var context = CreateCacheContext(callContext);
 
-        protected async Task TryGetFromCache(CacheContext context)
-        {
             if (!context.CacheValidator(context))
                 return;
 
@@ -78,17 +76,11 @@ namespace AonWeb.FluentHttp.Caching
 
             // TODO: Determine the need for conditional put - if so, that logic would go here
 
-            if (context.ValidationResult == ResponseValidationResult.OK)
-                return;
-            if (context.ValidationResult == ResponseValidationResult.Stale)
-            {
-                if (context.AllowStaleResultValidator(context))
-                    return;
 
+            if (context.ValidationResult == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context))
                 context.ValidationResult = ResponseValidationResult.MustRevalidate;
-            }
 
-            if (context.ValidationResult == ResponseValidationResult.MustRevalidate)
+            if (context.ValidationResult == ResponseValidationResult.MustRevalidate && context.Request != null)
             {
                 if (context.CacheResult.ResponseInfo.ETag != null)
                     context.Request.Headers.Add("If-None-Match", context.CacheResult.ResponseInfo.ETag.ToString());
@@ -98,10 +90,33 @@ namespace AonWeb.FluentHttp.Caching
                 //hang on to this we are going to need it in a sec. We could try to get it from cache store, but it may have expired by then
                 context.Items["CacheHandlerCachedItem"] = context.CacheResult;
             }
+            else
+            {
+                if (!context.ResultFound)
+                {
+                    var missedResult = await context.Handler.OnMiss(context);
+
+                    if (missedResult.Modified)
+                    {
+                        context.CacheResult = new CacheResult(missedResult.Value, null);
+                        context.ValidationResult = ResponseValidationResult.OK;
+                    }
+                }
+
+                if (context.ResultFound)
+                {
+                    var hitResult = await context.Handler.OnHit(context, context.Result);
+
+                    if (!hitResult.Modified || !(bool)hitResult.Value)
+                        callContext.Result = (TResult)context.Result;
+                } 
+            } 
         }
 
-        protected void TryGetRevalidatedResult(CacheContext context, HttpResponseMessage response)
+        protected async Task TryGetRevalidatedResult<TResult>(IHttpCallHandlerContextWithResult<TResult> callContext, HttpResponseMessage response)
         {
+            var context = CreateCacheContext(callContext);
+
             if (!context.RevalidateValidator(context))
                 return;
 
@@ -120,10 +135,31 @@ namespace AonWeb.FluentHttp.Caching
             {
                 context.CacheResult = CacheResult.Empty;
             }
+
+            if (!context.ResultFound)
+            {
+                var missedResult = await context.Handler.OnMiss(context);
+
+                if (missedResult.Modified)
+                {
+                    context.CacheResult = new CacheResult(missedResult.Value, null);
+                    context.ValidationResult = ResponseValidationResult.OK;
+                }
+            }
+
+            if (context.ResultFound)
+            {
+                var hitResult = await context.Handler.OnHit(context, context.Result);
+
+                if (hitResult.Modified && !(bool)hitResult.Value)
+                    callContext.Result = (TResult)context.Result;
+            }
         }
 
-        protected async Task TryCacheResult(CacheContext context, object result, HttpResponseMessage response)
+        protected async Task TryCacheResult(IHttpCallHandlerContext callContext, object result, HttpResponseMessage response)
         {
+            var context = CreateCacheContext(callContext);
+
             context.CacheResult = new CacheResult(result, response, context);
 
             if (context.CacheValidator(context))
@@ -137,11 +173,34 @@ namespace AonWeb.FluentHttp.Caching
 
                     context.VaryByStore.AddOrUpdate(context.Uri, response.Headers.Vary);
                 }
+
+                await context.Handler.OnStore(context, context.Result);
             }
             else
             {
-                context.CacheStore.TryRemove(context);
+                await ExpireResult(context);
             }
+        }
+
+        protected Task ExpireResult(IHttpCallHandlerContext callContext)
+        {
+            var context = CreateCacheContext(callContext);
+
+            return ExpireResult(context);
+        }
+
+        private static async Task ExpireResult(CacheContext context)
+        {
+            if ((context.Items["CacheHandler_ItemExpired"] as bool?).GetValueOrDefault())
+                return;
+
+            var expiringResult = await context.Handler.OnExpiring(context);
+
+            var keys = context.CacheStore.TryRemove(context, expiringResult.Value as IEnumerable<Uri>).ToList();
+
+            await context.Handler.OnExpired(context, keys);
+
+            context.Items["CacheHandler_ItemExpired"] = true;
         }
     }
 }

@@ -35,7 +35,7 @@ namespace AonWeb.FluentHttp.HAL
             where THandler : class, ITypedHttpCallHandler;
 
         IAdvancedHalCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
-        IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory);
+        IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpErrorContext, Exception> factory);
 
         IAdvancedHalCallBuilder WithCaching(bool enabled = true);
         IAdvancedHalCallBuilder WithNoCache(bool nocache = true);
@@ -92,15 +92,15 @@ namespace AonWeb.FluentHttp.HAL
         IAdvancedHalCallBuilder OnResultAsync<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler)
             where TResult : IHalResource;
 
-        IAdvancedHalCallBuilder OnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
-        IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpCallErrorContext<TError>> handler);
-        IAdvancedHalCallBuilder OnErrorAsync<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler);
-        IAdvancedHalCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler);
+        IAdvancedHalCallBuilder OnError<TError>(Action<TypedHttpErrorContext<TError>> handler);
+        IAdvancedHalCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpErrorContext<TError>> handler);
+        IAdvancedHalCallBuilder OnErrorAsync<TError>(Func<TypedHttpErrorContext<TError>, Task> handler);
+        IAdvancedHalCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpErrorContext<TError>, Task> handler);
 
-        IAdvancedHalCallBuilder OnException(Action<TypedHttpCallExceptionContext> handler);
-        IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpCallExceptionContext> handler);
-        IAdvancedHalCallBuilder OnExceptionAsync(Func<TypedHttpCallExceptionContext, Task> handler);
-        IAdvancedHalCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler);
+        IAdvancedHalCallBuilder OnException(Action<TypedHttpExceptionContext> handler);
+        IAdvancedHalCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpExceptionContext> handler);
+        IAdvancedHalCallBuilder OnExceptionAsync(Func<TypedHttpExceptionContext, Task> handler);
+        IAdvancedHalCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpExceptionContext, Task> handler);
 
         IAdvancedHalCallBuilder WithAutoDecompression(bool enabled = true);
         IAdvancedHalCallBuilder WithSuppressCancellationExceptions(bool suppress = true);

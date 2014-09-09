@@ -115,21 +115,21 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockHalCallBuilder VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler)
+        public IMockHalCallBuilder VerifyOnError(Action<TypedHttpErrorContext<object>> handler)
         {
             _innerBuilder.VerifyOnError(handler);
 
             return this;
         }
 
-        public IMockHalCallBuilder VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler)
+        public IMockHalCallBuilder VerifyOnError<TError>(Action<TypedHttpErrorContext<TError>> handler)
         {
             _innerBuilder.VerifyOnError(handler);
 
             return this;
         }
 
-        public IMockHalCallBuilder VerifyOnException(Action<TypedHttpCallExceptionContext> handler)
+        public IMockHalCallBuilder VerifyOnException(Action<TypedHttpExceptionContext> handler)
         {
             _innerBuilder.VerifyOnException(handler);
 

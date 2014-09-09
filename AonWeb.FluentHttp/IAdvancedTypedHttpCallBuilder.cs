@@ -46,7 +46,7 @@ namespace AonWeb.FluentHttp
             where THandler : class, ITypedHttpCallHandler;
 
         IAdvancedTypedHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
-        IAdvancedTypedHttpCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory);
+        IAdvancedTypedHttpCallBuilder WithExceptionFactory(Func<HttpErrorContext, Exception> factory);
 
         IAdvancedTypedHttpCallBuilder WithCaching(bool enabled = true);
         IAdvancedTypedHttpCallBuilder WithNoCache(bool nocache = true);
@@ -78,15 +78,15 @@ namespace AonWeb.FluentHttp
         IAdvancedTypedHttpCallBuilder OnResultAsync<TResult>(Func<TypedHttpResultContext<TResult>, Task> handler);
         IAdvancedTypedHttpCallBuilder OnResultAsync<TResult>(HttpCallHandlerPriority priority, Func<TypedHttpResultContext<TResult>, Task> handler);
         
-        IAdvancedTypedHttpCallBuilder OnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
-        IAdvancedTypedHttpCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpCallErrorContext<TError>> handler);
-        IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler);
-        IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler);
+        IAdvancedTypedHttpCallBuilder OnError<TError>(Action<TypedHttpErrorContext<TError>> handler);
+        IAdvancedTypedHttpCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpErrorContext<TError>> handler);
+        IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(Func<TypedHttpErrorContext<TError>, Task> handler);
+        IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpErrorContext<TError>, Task> handler);
         
-        IAdvancedTypedHttpCallBuilder OnException(Action<TypedHttpCallExceptionContext> handler);
-        IAdvancedTypedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpCallExceptionContext> handler);
-        IAdvancedTypedHttpCallBuilder OnExceptionAsync(Func<TypedHttpCallExceptionContext, Task> handler);
-        IAdvancedTypedHttpCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler);
+        IAdvancedTypedHttpCallBuilder OnException(Action<TypedHttpExceptionContext> handler);
+        IAdvancedTypedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpExceptionContext> handler);
+        IAdvancedTypedHttpCallBuilder OnExceptionAsync(Func<TypedHttpExceptionContext, Task> handler);
+        IAdvancedTypedHttpCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpExceptionContext, Task> handler);
         
         IAdvancedTypedHttpCallBuilder WithAutoDecompression(bool enabled = true);
         IAdvancedTypedHttpCallBuilder WithSuppressCancellationExceptions(bool suppress = true);

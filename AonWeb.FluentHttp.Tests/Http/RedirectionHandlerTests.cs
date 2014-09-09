@@ -223,7 +223,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                 //act
                 var result = await HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRedirect(h =>
-                        h.WithRedirectValidator(r => r.Response.StatusCode == HttpStatusCode.MultipleChoices))
+                        h.WithRedirectValidator(r => r.Result.StatusCode == HttpStatusCode.MultipleChoices))
                     .ResultAsync().ReadContentsAsync();
 
                 Assert.AreEqual(expected, actual);

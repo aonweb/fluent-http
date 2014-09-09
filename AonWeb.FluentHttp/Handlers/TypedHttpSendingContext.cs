@@ -7,9 +7,8 @@ namespace AonWeb.FluentHttp.Handlers
         private readonly ModifyTracker _result;
 
         protected TypedHttpSendingContext(TypedHttpCallContext context, HttpRequestMessage request, object content, bool hasContent)
-            : base(context)
+            : base(context, request)
         {
-            Request = request;
             _result = new ModifyTracker();
             ContentInternal = content;
             HasContent = hasContent;
@@ -18,13 +17,10 @@ namespace AonWeb.FluentHttp.Handlers
         protected TypedHttpSendingContext(TypedHttpSendingContext context)
             : base(context)
         {
-            Request = context.Request;
             _result = context._result;
             ContentInternal = context.ContentInternal;
             HasContent = context.HasContent;
         }
-
-        public HttpRequestMessage Request { get; private set; }
 
         protected object ResultInternal
         {
@@ -41,7 +37,7 @@ namespace AonWeb.FluentHttp.Handlers
         }
     }
 
-    public class TypedHttpSendingContext<TResult, TContent> : TypedHttpSendingContext
+    public class TypedHttpSendingContext<TResult, TContent> : TypedHttpSendingContext, IHttpCallHandlerContextWithResult<TResult>
     {
         public TypedHttpSendingContext(TypedHttpCallContext context, HttpRequestMessage request, TContent content, bool hasContent)
             : base(context, request, content, hasContent) { }

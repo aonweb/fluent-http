@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations">
+      <HintPath>..\packages\JetBrains.Annotations.Redist.7.1\lib\net40\JetBrains.Annotations.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -57,11 +60,21 @@
   <ItemGroup>
     <Compile Include="Caching\CacheContext.cs" />
     <Compile Include="Caching\CachedItem.cs" />
+    <Compile Include="Caching\CacheExpiredContext.cs" />
+    <Compile Include="Caching\CacheExpiringContext.cs" />
     <Compile Include="Caching\CacheHandler.cs" />
+    <Compile Include="Caching\CacheHandlerContext.cs" />
+    <Compile Include="Caching\CacheHandlerRegister.cs" />
+    <Compile Include="Caching\CacheHandlerType.cs" />
+    <Compile Include="Caching\CacheHitContext.cs" />
+    <Compile Include="Caching\CacheMissContext.cs" />
+    <Compile Include="Caching\CacheStoreContext.cs" />
+    <Compile Include="Caching\HttpCallCacheHandler.cs" />
     <Compile Include="Caching\CacheHandlerBase.cs" />
     <Compile Include="Caching\CacheHandlerDefaults.cs" />
     <Compile Include="Caching\CacheResult.cs" />
     <Compile Include="Caching\CacheSettings.cs" />
+    <Compile Include="Caching\ICacheHandler.cs" />
     <Compile Include="Caching\IVaryByStore.cs" />
     <Compile Include="Caching\IHttpCacheStore.cs" />
     <Compile Include="Caching\InMemoryVaryByStore.cs" />
@@ -69,23 +82,25 @@
     <Compile Include="Caching\ResponseInfo.cs" />
     <Compile Include="Caching\ResponseSerializer.cs" />
     <Compile Include="Caching\ResponseValidationResult.cs" />
-    <Compile Include="Caching\TypedCacheHandler.cs" />
+    <Compile Include="Caching\TypedHttpCallCacheHandler.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
     <Compile Include="Exceptions\HttpCallException.cs" />
     <Compile Include="Caching\ICacheableHttpResult.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
     <Compile Include="Client\HttpClientSettings.cs" />
+    <Compile Include="Handlers\HandlerRegistrationHelper.cs" />
     <Compile Include="Handlers\HttpCallContext.cs" />
     <Compile Include="Handlers\HttpCallHandler.cs" />
     <Compile Include="Handlers\HttpCallHandlerPriority.cs" />
     <Compile Include="Handlers\HttpCallHandlerRegister.cs" />
+    <Compile Include="Handlers\IHttpCallHandlerContextWithResult.cs" />
     <Compile Include="Handlers\ModifyTracker.cs" />
     <Compile Include="Handlers\HttpCallHandlerType.cs" />
     <Compile Include="Handlers\IHttpCallContext.cs" />
     <Compile Include="Handlers\TypedHttpCallContext.cs" />
     <Compile Include="Handlers\TypedHttpCallHandlerContext.cs" />
     <Compile Include="Handlers\TypedHttpCallHandlerRegister.cs" />
-    <Compile Include="Handlers\TypedHttpCallErrorContext.cs" />
+    <Compile Include="Handlers\TypedHttpErrorContext.cs" />
     <Compile Include="Handlers\HttpExceptionContext.cs" />
     <Compile Include="Handlers\HttpRedirectContext.cs" />
     <Compile Include="Exceptions\HttpErrorException.cs" />
@@ -95,11 +110,11 @@
     <Compile Include="Handlers\HttpSentContext.cs" />
     <Compile Include="Handlers\IHttpCallHandler.cs" />
     <Compile Include="Handlers\FollowLocationHandler.cs" />
-    <Compile Include="Handlers\TypedHttpCallExceptionContext.cs" />
+    <Compile Include="Handlers\TypedHttpExceptionContext.cs" />
     <Compile Include="Handlers\TypedHttpSendingContext.cs" />
     <Compile Include="Handlers\TypedHttpSentContext.cs" />
     <Compile Include="HttpCallBuilder.cs" />
-    <Compile Include="HttpCallErrorContext.cs" />
+    <Compile Include="HttpErrorContext.cs" />
     <Compile Include="IAdvancedTypedHttpCallBuilder.cs" />
     <Compile Include="ITypedHttpCallBuilder.cs" />
     <Compile Include="TypedHttpCallBuilder.cs" />
@@ -162,13 +177,13 @@
   </Target>
   -->
   <!-- Make the build depend on publish packages -->
-	<PropertyGroup>
-		<BuildDependsOn Condition=" '$(Configuration)' == 'Release' ">
+  <PropertyGroup>
+    <BuildDependsOn Condition=" '$(Configuration)' == 'Release' ">
 		  $(BuildDependsOn);
 		  PublishPackage;
 		</BuildDependsOn>
-	</PropertyGroup>
-	<Target Name="PublishPackage">
-	<Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="$(SolutionDir)\.nuget\push-http.cmd" />
+  </PropertyGroup>
+  <Target Name="PublishPackage">
+    <Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="$(SolutionDir)\.nuget\push-http.cmd" />
   </Target>
 </Project>

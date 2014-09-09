@@ -41,9 +41,9 @@ namespace AonWeb.FluentHttp
             DefaultMediaType = "application/json";
             DefaultContentEncoding = Encoding.UTF8;
             DefaultMediaTypeFormatters = () => new MediaTypeFormatterCollection().FluentAdd(new StringMediaFormatter());
-            DefaultHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
-            DefaultChildHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new CacheHandler() };
-            DefaultTypedHandlerFactory = () => new ITypedHttpCallHandler[] { new TypedCacheHandler() };
+            DefaultHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCallCacheHandler() };
+            DefaultChildHandlerFactory = () => new IHttpCallHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCallCacheHandler() };
+            DefaultTypedHandlerFactory = () => new ITypedHttpCallHandler[] { new TypedHttpCallCacheHandler() };
 
             DefaultResultType = typeof(string);
             DefaultErrorType = typeof(string);
@@ -171,7 +171,7 @@ namespace AonWeb.FluentHttp
             return ValidStatusCodes.Contains(response.StatusCode);
         }
 
-        public static Exception DefaultExceptionFactory(HttpCallErrorContext context)
+        public static Exception DefaultExceptionFactory(HttpErrorContext context)
         {
             var openExType = typeof(HttpErrorException<>);
 

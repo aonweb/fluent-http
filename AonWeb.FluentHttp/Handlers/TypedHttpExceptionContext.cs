@@ -1,26 +1,31 @@
 using System;
+using System.Net.Http;
+using System.Web;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class TypedHttpCallExceptionContext : TypedHttpCallHandlerContext
+    public class TypedHttpExceptionContext : TypedHttpCallHandlerContext
     {
         private readonly ModifyTracker<bool> _exceptionHandled;
 
-        public TypedHttpCallExceptionContext(TypedHttpCallContext context, Exception exception)
-            : base(context)
+        public TypedHttpExceptionContext(TypedHttpCallContext context, HttpResponseMessage response, Exception exception)
+            : base(context, response != null ? response.RequestMessage : null)
         {
             Exception = exception;
+            Response = response;
             _exceptionHandled = new ModifyTracker<bool>(false);
         }
 
-        public TypedHttpCallExceptionContext(TypedHttpCallExceptionContext context)
+        protected TypedHttpExceptionContext(TypedHttpExceptionContext context)
             : base(context)
         {
             Exception = context.Exception;
+            Response = context.Response;
             _exceptionHandled = context._exceptionHandled;
         }
 
         public Exception Exception { get; private set; }
+        public HttpResponseMessage Response { get; set; }
 
         public bool ExceptionHandled
         {

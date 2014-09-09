@@ -88,14 +88,14 @@ namespace AonWeb.FluentHttp.Handlers
             var redirectCount = context.Items["RedirectCount"].As<int?>().GetValueOrDefault();
 
             if (redirectCount >= MaxAutoRedirects)
-                throw new MaximumAutoRedirectsException(context.Response.StatusCode, string.Format(SR.MaxAutoRedirectsErrorFormat, redirectCount, context.Response.DetailsForException()));
+                throw new MaximumAutoRedirectsException(context.Result.StatusCode, string.Format(SR.MaxAutoRedirectsErrorFormat, redirectCount, context.Result.DetailsForException()));
 
-            var newUri = GetRedirectUri(uri, context.Response);
+            var newUri = GetRedirectUri(uri, context.Result);
 
             var ctx = new HttpRedirectContext
             {
-                StatusCode = context.Response.StatusCode,
-                RequestMessage = context.Response.RequestMessage,
+                StatusCode = context.Result.StatusCode,
+                RequestMessage = context.Result.RequestMessage,
                 RedirectUri = newUri,
                 CurrentUri = uri,
                 CurrentRedirectionCount = redirectCount
@@ -114,15 +114,15 @@ namespace AonWeb.FluentHttp.Handlers
             context.Items["RedirectCount"] = redirectCount + 1;
 
             // dispose of previous response
-            Helper.DisposeResponse(context.Response);
+            Helper.DisposeResponse(context.Result);
 
-            context.Response = await context.Builder.RecursiveResultAsync();
+            context.Result = await context.Builder.RecursiveResultAsync();
             
         }
 
         private bool ShouldRedirect(HttpSentContext context)
         {
-            return RedirectStatusCodes.Contains(context.Response.StatusCode);
+            return RedirectStatusCodes.Contains(context.Result.StatusCode);
         } 
 
         private static Uri GetRedirectUri(Uri originalUri, HttpResponseMessage response)

@@ -71,12 +71,12 @@ namespace AonWeb.FluentHttp.Handlers
             
             var uri = context.Uri;
 
-            var locationUri = GetLocationUri(uri, context.Response);
+            var locationUri = GetLocationUri(uri, context.Result);
 
             var ctx = new HttpFollowLocationContext
             {
-                StatusCode = context.Response.StatusCode,
-                RequestMessage = context.Response.RequestMessage,
+                StatusCode = context.Result.StatusCode,
+                RequestMessage = context.Result.RequestMessage,
                 LocationUri = locationUri,
                 CurrentUri = uri
             };
@@ -93,9 +93,9 @@ namespace AonWeb.FluentHttp.Handlers
             context.Builder.WithUri(ctx.LocationUri).AsGet().WithContent(string.Empty);
 
             // dispose of previous response
-            Helper.DisposeResponse(context.Response);
+            Helper.DisposeResponse(context.Result);
 
-            context.Response = await context.Builder.RecursiveResultAsync();
+            context.Result = await context.Builder.RecursiveResultAsync();
             
         }
 
@@ -104,10 +104,10 @@ namespace AonWeb.FluentHttp.Handlers
             if (!context.IsSuccessfulResponse())
                 return false;
 
-            if (!FollowedStatusCodes.Contains(context.Response.StatusCode))
+            if (!FollowedStatusCodes.Contains(context.Result.StatusCode))
                 return false;
 
-            if (context.Response.Headers.Location == null) 
+            if (context.Result.Headers.Location == null) 
                 return false;
 
             return true;

@@ -368,7 +368,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder WithExceptionFactory(Func<HttpCallErrorContext, Exception> factory)
+        public IAdvancedTypedHttpCallBuilder WithExceptionFactory(Func<HttpErrorContext, Exception> factory)
         {
             _settings.ExceptionFactory = factory;
 
@@ -378,7 +378,7 @@ namespace AonWeb.FluentHttp
         public IAdvancedTypedHttpCallBuilder WithCaching(bool enabled = true)
         {
 
-            ConfigureHandler<TypedCacheHandler>(handler => handler.WithCaching(enabled));
+            ConfigureHandler<TypedHttpCallCacheHandler>(handler => handler.WithCaching(enabled));
 
             return this;
         }
@@ -392,12 +392,12 @@ namespace AonWeb.FluentHttp
 
         public IAdvancedTypedHttpCallBuilder WithDependentUri(Uri uri)
         {
-            return TryConfigureHandler<TypedCacheHandler>(h => h.WithDependentUri(uri));
+            return TryConfigureHandler<TypedHttpCallCacheHandler>(h => h.WithDependentUri(uri));
         }
 
         public IAdvancedTypedHttpCallBuilder WithDependentUris(IEnumerable<Uri> uris)
         {
-            return TryConfigureHandler<TypedCacheHandler>(h => h.WithDependentUris(uris));
+            return TryConfigureHandler<TypedHttpCallCacheHandler>(h => h.WithDependentUris(uris));
         }
 
         public IAdvancedTypedHttpCallBuilder OnSending<TResult, TContent>(Action<TypedHttpSendingContext<TResult, TContent>> handler)
@@ -584,7 +584,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler)
+        public IAdvancedTypedHttpCallBuilder OnError<TError>(Action<TypedHttpErrorContext<TError>> handler)
         {
             _settings.SetErrorType(typeof(TError));
 
@@ -593,7 +593,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpCallErrorContext<TError>> handler)
+        public IAdvancedTypedHttpCallBuilder OnError<TError>(HttpCallHandlerPriority priority, Action<TypedHttpErrorContext<TError>> handler)
         {
             _settings.SetErrorType(typeof(TError));
 
@@ -602,7 +602,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(Func<TypedHttpErrorContext<TError>, Task> handler)
         {
             _settings.SetErrorType(typeof(TError));
 
@@ -611,7 +611,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpCallErrorContext<TError>, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnErrorAsync<TError>(HttpCallHandlerPriority priority, Func<TypedHttpErrorContext<TError>, Task> handler)
         {
             _settings.SetErrorType(typeof(TError));
 
@@ -620,28 +620,28 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnException(Action<TypedHttpCallExceptionContext> handler)
+        public IAdvancedTypedHttpCallBuilder OnException(Action<TypedHttpExceptionContext> handler)
         {
             _settings.Handler.AddExceptionHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpCallExceptionContext> handler)
+        public IAdvancedTypedHttpCallBuilder OnException(HttpCallHandlerPriority priority, Action<TypedHttpExceptionContext> handler)
         {
             _settings.Handler.AddExceptionHandler(priority, handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnExceptionAsync(Func<TypedHttpCallExceptionContext, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnExceptionAsync(Func<TypedHttpExceptionContext, Task> handler)
         {
             _settings.Handler.AddAsyncExceptionHandler(handler);
 
             return this;
         }
 
-        public IAdvancedTypedHttpCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpCallExceptionContext, Task> handler)
+        public IAdvancedTypedHttpCallBuilder OnExceptionAsync(HttpCallHandlerPriority priority, Func<TypedHttpExceptionContext, Task> handler)
         {
             _settings.Handler.AddAsyncExceptionHandler(priority, handler);
 
@@ -782,7 +782,7 @@ namespace AonWeb.FluentHttp
 
                     if (!errorHandled && _settings.ExceptionFactory != null)
                     {
-                        var ex = _settings.ExceptionFactory(new HttpCallErrorContext(context, response, error));
+                        var ex = _settings.ExceptionFactory(new HttpErrorContext(context, response, error));
 
                         if (ex != null)
                             throw ex;
@@ -831,7 +831,7 @@ namespace AonWeb.FluentHttp
 
             if (capturedException != null)
             {
-                var exceptionResult = await context.Handler.OnException(context, capturedException.SourceException);
+                var exceptionResult = await context.Handler.OnException(context, response, capturedException.SourceException);
 
                 if (!(bool)exceptionResult.Value)
                 {

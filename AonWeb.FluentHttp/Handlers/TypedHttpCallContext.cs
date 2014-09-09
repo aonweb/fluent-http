@@ -29,57 +29,24 @@ namespace AonWeb.FluentHttp.Handlers
         public IDictionary Items { get { return _settings.Items; } }
 
         public IRecursiveTypedHttpCallBuilder Builder { get { return _builder; } }
+
         public string MediaType { get { return _settings.MediaType; } }
+
         public Encoding ContentEncoding { get { return _settings.ContentEncoding; } }
+
         public MediaTypeFormatterCollection MediaTypeFormatters { get { return _settings.MediaTypeFormatters; } }
 
-        public bool DeserializeResult
-        {
-            get
-            {
-                return _settings.DeserializeResult;
-            }
-        }
+        public bool DeserializeResult { get { return _settings.DeserializeResult; } }
 
-        public CancellationTokenSource TokenSource
-        {
-            get
-            {
-                return _settings.TokenSource;
-            }
-        }
+        public CancellationTokenSource TokenSource { get { return _settings.TokenSource; } }
 
-        public Type ResultType
-        {
-            get
-            {
-                return _settings.ResultType;
-            }
-        }
+        public Type ResultType { get { return _settings.ResultType; } }
 
-        public Type ErrorType
-        {
-            get
-            {
-                return _settings.ErrorType;
-            }
-        }
+        public Type ErrorType { get { return _settings.ErrorType; } }
 
-        public Type ContentType
-        {
-            get
-            {
-                return _settings.ContentType;
-            }
-        }
+        public Type ContentType { get { return _settings.ContentType; } }
 
-        public bool SuppressHandlerTypeExceptions
-        {
-            get
-            {
-                return _settings.SuppressHandlerTypeExceptions;
-            }
-        }
+        public bool SuppressHandlerTypeExceptions { get { return _settings.SuppressHandlerTypeExceptions; } }
 
         public bool IsSuccessfulResponse(HttpResponseMessage response)
         {

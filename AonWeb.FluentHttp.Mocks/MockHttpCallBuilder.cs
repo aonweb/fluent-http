@@ -92,7 +92,7 @@ namespace AonWeb.FluentHttp.Mocks
         private void ConfigureMock()
         {
             OnSending(HttpCallHandlerPriority.Last, context => context.Items["MockRequest"] = context.Request);
-            OnSent(HttpCallHandlerPriority.First, context => context.Response.RequestMessage = context.Items["MockRequest"] as HttpRequestMessage);
+            OnSent(HttpCallHandlerPriority.First, context => context.Result.RequestMessage = context.Items["MockRequest"] as HttpRequestMessage);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace AonWeb.FluentHttp.Handlers
         private readonly ModifyTracker _result;
 
         protected TypedHttpSentContext(TypedHttpCallContext context, HttpResponseMessage response)
-            : base(context)
+            : base(context, response.RequestMessage)
         {
             Response = response;
             _result = new ModifyTracker();
@@ -34,7 +34,7 @@ namespace AonWeb.FluentHttp.Handlers
         }
     }
 
-    public class TypedHttpSentContext<TResult> : TypedHttpSentContext
+    public class TypedHttpSentContext<TResult> : TypedHttpSentContext, IHttpCallHandlerContextWithResult<TResult>
     {
         public TypedHttpSentContext(TypedHttpCallContext context, HttpResponseMessage response)
             : base(context, response) { }

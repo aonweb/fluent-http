@@ -4,19 +4,19 @@ using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public abstract class TypedHttpCallErrorContext : TypedHttpCallHandlerContext
+    public abstract class TypedHttpErrorContext : TypedHttpCallHandlerContext
     {
         private readonly ModifyTracker<bool> _errorHandled;
 
-        protected TypedHttpCallErrorContext(TypedHttpCallContext context, HttpResponseMessage response, object error)
-            : base(context)
+        protected TypedHttpErrorContext(TypedHttpCallContext context, HttpResponseMessage response, object error)
+            : base(context, response.RequestMessage)
         {
             Response = response;
             ErrorInternal = error;
             _errorHandled = new ModifyTracker<bool>(false);
         }
 
-        protected TypedHttpCallErrorContext(TypedHttpCallErrorContext context)
+        protected TypedHttpErrorContext(TypedHttpErrorContext context)
             : base(context)
         {
             Response = context.Response;
@@ -41,12 +41,12 @@ namespace AonWeb.FluentHttp.Handlers
         }
     }
 
-    public class TypedHttpCallErrorContext<TError> : TypedHttpCallErrorContext
+    public class TypedHttpErrorContext<TError> : TypedHttpErrorContext
     {
-        public TypedHttpCallErrorContext(TypedHttpCallContext context, HttpResponseMessage response, TError error)
+        public TypedHttpErrorContext(TypedHttpCallContext context, HttpResponseMessage response, TError error)
             : base(context, response,  error) { }
 
-        public TypedHttpCallErrorContext(TypedHttpCallErrorContext context)
+        public TypedHttpErrorContext(TypedHttpErrorContext context)
             : base(context) { }
 
         public TError Error

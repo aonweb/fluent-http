@@ -9,12 +9,7 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class ResponseInfo
     {
-        public ResponseInfo(object result,
-            HttpResponseMessage response,
-            TimeSpan defaultExpiration,
-            IEnumerable<string> defaultVaryByHeaders,
-            bool mustRevalidateByDefault,
-            IEnumerable<Uri> dependentUris)
+        public ResponseInfo(object result, HttpResponseMessage response, CacheContext context)
         {
             StatusCode = response.StatusCode;
             Date = response.Headers.Date ?? DateTimeOffset.UtcNow;
@@ -29,18 +24,18 @@ namespace AonWeb.FluentHttp.Caching
             {
                 NoStore = response.Headers.CacheControl.NoStore;
                 NoCache = response.Headers.CacheControl.NoCache;
-                ShouldRevalidate = mustRevalidateByDefault || response.Headers.CacheControl.MustRevalidate || NoCache;
+                ShouldRevalidate = context.MustRevalidateByDefault || response.Headers.CacheControl.MustRevalidate || NoCache;
             }
 
             ETag = response.Headers.ETag;
 
             var lastModified = LastModified ?? Date;
-            var expiration = GetExpiration(lastModified, result, response, defaultExpiration);
+            var expiration = GetExpiration(lastModified, result, response, context.DefaultExpiration);
             HasExpiration = expiration.HasValue;
-            Expiration = expiration ?? lastModified.Add(defaultExpiration);
+            Expiration = expiration ?? lastModified.Add(context.DefaultExpiration);
 
-            VaryHeaders = new HashSet<string>(response.Headers.Vary.Concat(defaultVaryByHeaders).Distinct(StringComparer.OrdinalIgnoreCase));
-            DependentUris = GetDependentUris(result, dependentUris);
+            VaryHeaders = new HashSet<string>(response.Headers.Vary.Concat(context.DefaultVaryByHeaders).Distinct(StringComparer.OrdinalIgnoreCase));
+            DependentUris = GetDependentUris(result, context.DependentUris);
         }
 
         public HttpStatusCode StatusCode { get; set; }
@@ -60,7 +55,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public ISet<Uri> DependentUris { get; private set; }
 
-        private DateTimeOffset? GetExpiration(DateTimeOffset lastModified, object result, HttpResponseMessage response, TimeSpan defaultExpiration)
+        private static DateTimeOffset? GetExpiration(DateTimeOffset lastModified, object result, HttpResponseMessage response, TimeSpan defaultExpiration)
         {
             var cacheableResult = result as ICacheableHttpResult;
             if (cacheableResult != null)
@@ -86,7 +81,7 @@ namespace AonWeb.FluentHttp.Caching
             return null;
         }
 
-        private ISet<Uri> GetDependentUris(object result, IEnumerable<Uri> dependentUris)
+        private static ISet<Uri> GetDependentUris(object result, IEnumerable<Uri> dependentUris)
         {
             var uris = dependentUris;
 

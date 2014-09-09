@@ -94,12 +94,12 @@ namespace AonWeb.FluentHttp.Handlers
             if (retryCount >= MaxAutoRetries)
                 return;
 
-            var retryAfter = GetRetryAfter(context.Response);
+            var retryAfter = GetRetryAfter(context.Result);
 
             var ctx = new HttpRetryContext
             {
-                StatusCode = context.Response.StatusCode,
-                RequestMessage = context.Response.RequestMessage,
+                StatusCode = context.Result.StatusCode,
+                RequestMessage = context.Result.RequestMessage,
                 Uri = uri,
                 ShouldRetry = retryAfter.HasValue,
                 RetryAfter = retryAfter ?? RetryAfter,
@@ -119,14 +119,14 @@ namespace AonWeb.FluentHttp.Handlers
             context.Items["RetryCount"] = retryCount + 1;
 
             // dispose of previous response
-            Helper.DisposeResponse(context.Response);
+            Helper.DisposeResponse(context.Result);
 
-            context.Response = await context.Builder.RecursiveResultAsync();
+            context.Result = await context.Builder.RecursiveResultAsync();
         }
 
         private bool ShouldRetry(HttpSentContext context)
         {
-            return RetryStatusCodes.Contains(context.Response.StatusCode);
+            return RetryStatusCodes.Contains(context.Result.StatusCode);
         }
 
         private TimeSpan? GetRetryAfter(HttpResponseMessage response)

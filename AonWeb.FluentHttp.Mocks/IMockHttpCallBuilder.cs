@@ -52,9 +52,9 @@ namespace AonWeb.FluentHttp.Mocks {
         IMockTypedHttpCallBuilder VerifyOnSent<TResult>(Action<TypedHttpSentContext<TResult>> handler);
         IMockTypedHttpCallBuilder VerifyOnResult(Action<TypedHttpResultContext<object>> handler);
         IMockTypedHttpCallBuilder VerifyOnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler);
-        IMockTypedHttpCallBuilder VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler);
-        IMockTypedHttpCallBuilder VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
-        IMockTypedHttpCallBuilder VerifyOnException(Action<TypedHttpCallExceptionContext> handler);
+        IMockTypedHttpCallBuilder VerifyOnError(Action<TypedHttpErrorContext<object>> handler);
+        IMockTypedHttpCallBuilder VerifyOnError<TError>(Action<TypedHttpErrorContext<TError>> handler);
+        IMockTypedHttpCallBuilder VerifyOnException(Action<TypedHttpExceptionContext> handler);
         IMockTypedHttpCallBuilder WithAssertFailure(Action failureAction);
     }
 
@@ -74,9 +74,9 @@ namespace AonWeb.FluentHttp.Mocks {
         IMockHalCallBuilder VerifyOnResult(Action<TypedHttpResultContext<IHalResource>> handler);
         IMockHalCallBuilder VerifyOnResult<TResult>(Action<TypedHttpResultContext<TResult>> handler)
             where TResult : IHalResource;
-        IMockHalCallBuilder VerifyOnError(Action<TypedHttpCallErrorContext<object>> handler);
-        IMockHalCallBuilder VerifyOnError<TError>(Action<TypedHttpCallErrorContext<TError>> handler);
-        IMockHalCallBuilder VerifyOnException(Action<TypedHttpCallExceptionContext> handler);
+        IMockHalCallBuilder VerifyOnError(Action<TypedHttpErrorContext<object>> handler);
+        IMockHalCallBuilder VerifyOnError<TError>(Action<TypedHttpErrorContext<TError>> handler);
+        IMockHalCallBuilder VerifyOnException(Action<TypedHttpExceptionContext> handler);
         IMockHalCallBuilder WithAssertFailure(Action failureAction);
     }
 }

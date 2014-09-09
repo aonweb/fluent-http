@@ -28,6 +28,7 @@ namespace AonWeb.FluentHttp.Caching
             DefaultVaryByHeaders = new HashSet<string>(HttpCallBuilderDefaults.DefaultVaryByHeaders);
             DependentUris = new HashSet<Uri>();
             DefaultExpiration = HttpCallBuilderDefaults.DefaultCacheExpiration;
+            Handler = new CacheHandlerRegister();
         }
 
         public Action<CacheResult> CacheResultConfiguration { get; set; }
@@ -45,6 +46,7 @@ namespace AonWeb.FluentHttp.Caching
         public ISet<Uri> DependentUris { get; private set; }
         public TimeSpan DefaultExpiration { get; set; }
         public bool MustRevalidateByDefault { get; set; }
+        public CacheHandlerRegister Handler { get; private set; }
 
         public ISet<string> GetVaryByHeaders(Uri uri)
         {

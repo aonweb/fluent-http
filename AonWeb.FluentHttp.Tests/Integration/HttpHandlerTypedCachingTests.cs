@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Caching;
+using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Mocks.WebServer;
-using AonWeb.FluentHttp.Tests.Helpers;
 
 using NUnit.Framework;
 
@@ -154,6 +155,8 @@ namespace AonWeb.FluentHttp.Tests.Integration
 
             public IEnumerable<Uri> DependentUris { get { yield break; } }
         }
+
+        private class TestException : Exception { }
 
         #endregion
 
@@ -462,6 +465,79 @@ namespace AonWeb.FluentHttp.Tests.Integration
                     .ResultAsync<TestResult>().Result;
 
                 Assert.AreNotEqual(result1, result2);
+            }
+        }
+
+        [Test]
+        public async Task WhenExceptionInCall_ExpectContentsExpired()
+        {
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+                server
+                    .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 }.AddPrivateCacheHeader())
+                    .AddResponse(_ => new LocalWebServerResponseInfo { StatusCode = HttpStatusCode.InternalServerError }.AddPrivateCacheHeader())
+                    .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
+
+                var result1 = await TypedHttpCallBuilder
+                    .Create(LocalWebServer.DefaultListenerUri)
+                    .ResultAsync<TestResult>();
+
+                try
+                {
+                    await TypedHttpCallBuilder
+                    .Create(LocalWebServer.DefaultListenerUri)
+                    .AsPut()
+                    .SendAsync();
+                }
+                catch (HttpCallException)
+                {
+                    // expected
+                }
+
+                var result2 = await TypedHttpCallBuilder
+                    .Create(LocalWebServer.DefaultListenerUri)
+                    .ResultAsync<TestResult>();
+
+                Assert.AreNotEqual(result1, result2);
+            }
+        }
+
+        [Test]
+        public async Task WhenExceptionBeforeCall_ExpectExpectedExceptionAndContentsUntouched()
+        {
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+                server
+                    .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString1 }.AddPrivateCacheHeader())
+                    .AddResponse(_ => new LocalWebServerResponseInfo { StatusCode = HttpStatusCode.InternalServerError }.AddPrivateCacheHeader())
+                    .AddResponse(_ => new LocalWebServerResponseInfo { Body = TestResultString2 }.AddPrivateCacheHeader());
+
+                var result1 = await TypedHttpCallBuilder
+                    .Create(LocalWebServer.DefaultListenerUri)
+                    .ResultAsync<TestResult>();
+
+                try
+                {
+                    await TypedHttpCallBuilder
+                    .Create(LocalWebServer.DefaultListenerUri)
+                    .Advanced.ConfigureClient(builder =>
+                    {
+                        throw new TestException(); 
+                    })
+                    .AsPut()
+                    .SendAsync();
+                }
+                catch (TestException)
+                {
+                    // expected
+                }
+
+
+                var result2 = await TypedHttpCallBuilder
+                    .Create(LocalWebServer.DefaultListenerUri)
+                    .ResultAsync<TestResult>();
+
+                Assert.AreEqual(result1, result2);
             }
         }
     }

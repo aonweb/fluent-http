@@ -77,7 +77,7 @@ namespace AonWeb.FluentHttp
         public MediaTypeFormatterCollection MediaTypeFormatters { get; set; }
         public TypedHttpCallHandlerRegister Handler { get; private set; }
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; private set; }
-        public Func<HttpCallErrorContext, Exception> ExceptionFactory { get; set; }
+        public Func<HttpErrorContext, Exception> ExceptionFactory { get; set; }
         public Func<Type, object> DefaultResultFactory { get; set; }
 
         public bool SuppressHandlerTypeExceptions { get; set; }
