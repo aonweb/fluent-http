@@ -5,6 +5,7 @@ using System.Net.Http;
 using AonWeb.FluentHttp.Handlers;
 using JetBrains.Annotations;
 
+
 namespace AonWeb.FluentHttp.Caching
 {
     public abstract class CacheHandlerContext : IHandlerContext
