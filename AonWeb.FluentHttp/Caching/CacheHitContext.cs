@@ -2,15 +2,22 @@
 
 namespace AonWeb.FluentHttp.Caching
 {
-    public class CacheHitContext<TResult> : CacheHandlerContext
+    public abstract class CacheHitContext : CacheHandlerContext
     {
         private readonly ModifyTracker<bool> _ignore;
 
-        public CacheHitContext(CacheContext context, TResult result)
+        protected CacheHitContext(CacheContext context, object result)
             : base(context)
         {
             _ignore = new ModifyTracker<bool>();
-            Result = result;
+            ResultInternal = result;
+        }
+
+        protected CacheHitContext(CacheHitContext context)
+            : base(context)
+        {
+            _ignore = context._ignore;
+            ResultInternal = context.ResultInternal;
         }
 
         public bool Ignore
@@ -19,11 +26,26 @@ namespace AonWeb.FluentHttp.Caching
             set { _ignore.Value = value; }
         }
 
-        public TResult Result { get; private set; }
+        protected object ResultInternal { get; set; }
 
         public override ModifyTracker GetHandlerResult()
         {
             return _ignore;
+        }
+    }
+
+    public class CacheHitContext<TResult> : CacheHitContext
+    {
+        public CacheHitContext(CacheContext context, TResult result)
+            : base(context,result) { }
+
+        internal CacheHitContext(CacheHitContext context)
+            : base(context) { }
+
+        public TResult Result
+        {
+            get { return (TResult)ResultInternal; }
+            set { ResultInternal = value; }
         }
     }
 }

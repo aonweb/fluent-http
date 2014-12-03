@@ -14,6 +14,12 @@ namespace AonWeb.FluentHttp.Caching
             _relatedUris = new UriListModifyTracker();
         }
 
+        public CacheExpiringContext(CacheExpiringContext context)
+            : base(context)
+        {
+            _relatedUris = context._relatedUris;
+        }
+
         public ICollection<Uri> RelatedUris
         {
             get { return _relatedUris.Value; }

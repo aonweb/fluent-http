@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
-
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
@@ -87,7 +90,230 @@ namespace AonWeb.FluentHttp.Tests.HAL
             }
         }
 
-        
+        [Test]
+        public async Task WhenCacheHandler_ExpectHandlerCalled()
+        {
 
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+                var listUri = LocalWebServer.DefaultListenerUri + "/list/1";
+
+                server
+                    .AddResponse(new LocalWebServerResponseInfo {Body = HalMother.TestListJson}.AddCacheHeader(expires: DateTime.Now.AddHours(1)));
+
+                var miss = false;
+                var hit = false;
+
+                var result1 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnMiss<TestListResource>(ctx =>
+                    {
+                        miss = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+                var result2 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnHit<TestListResource>(ctx =>
+                    {
+                        hit = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+
+                Assert.IsTrue(miss, "Miss Handler was not called");
+                Assert.IsTrue(hit, "Hit Handler was not called");
+                Assert.AreSame(result1, result2);
+            }
+        }
+
+        [Test]
+        public async Task WhenCacheHandler_WithObjectHandler_ExpectHandlerCalled()
+        {
+
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+                var listUri = LocalWebServer.DefaultListenerUri + "/list/1";
+
+                server
+                    .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddCacheHeader(expires: DateTime.Now.AddHours(1)));
+
+                var miss = false;
+                var hit = false;
+
+                var result1 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnMiss<object>(ctx =>
+                    {
+                        miss = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+                var result2 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnHit<object>(ctx =>
+                    {
+                        hit = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+
+                Assert.IsTrue(miss, "Miss Handler was not called");
+                Assert.IsTrue(hit, "Hit Handler was not called");
+                Assert.AreSame(result1, result2);
+            }
+        }
+
+        [Test]
+        public async Task WhenCacheHandler_WithPriority_ExpectHandlerCalled()
+        {
+
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+                var listUri = LocalWebServer.DefaultListenerUri + "/list/1";
+
+                server
+                    .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddCacheHeader(expires: DateTime.Now.AddHours(1)));
+
+                var miss = false;
+                var hit = false;
+
+                var result1 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnMiss<TestListResource>(HttpCallHandlerPriority.First, ctx =>
+                    {
+                        miss = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+                var result2 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnHit<TestListResource>(HttpCallHandlerPriority.First, ctx =>
+                    {
+                        hit = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+
+                Assert.IsTrue(miss, "Miss Handler was not called");
+                Assert.IsTrue(hit, "Hit Handler was not called");
+                Assert.AreSame(result1, result2);
+            }
+        }
+
+        [Test]
+        public async Task WhenCacheHandler_WithObjectHandlerAndPriority_ExpectHandlerCalled()
+        {
+
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+                var listUri = LocalWebServer.DefaultListenerUri + "/list/1";
+
+                server
+                    .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddCacheHeader(expires: DateTime.Now.AddHours(1)));
+
+                var miss = false;
+                var hit = false;
+
+                var result1 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnMiss<TestListResource>(HttpCallHandlerPriority.First, ctx =>
+                    {
+                        miss = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+                var result2 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c.OnHit<TestListResource>(ctx =>
+                    {
+                        hit = true;
+                    }))
+                    .ResultAsync<TestListResource>();
+
+
+                Assert.IsTrue(miss, "Miss Handler was not called");
+                Assert.IsTrue(hit, "Hit Handler was not called");
+                Assert.AreSame(result1, result2);
+            }
+        }
+
+        [Test]
+        public async Task WhenCacheHandler_WithMultipleHandlers_ExpectHandlerCalled()
+        {
+            using (var server = LocalWebServer.ListenInBackground(LocalWebServer.DefaultListenerUri))
+            {
+                var listUri = LocalWebServer.DefaultListenerUri + "/list/1";
+
+                server
+                    .AddResponse(new LocalWebServerResponseInfo { Body = HalMother.TestListJson }.AddCacheHeader(expires: DateTime.Now.AddHours(1)));
+
+                var miss1 = false;
+                var hit1 = false;
+                var miss2 = false;
+                var hit2 = false;
+
+                var result1 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c
+                        .OnMiss<object>(HttpCallHandlerPriority.First, ctx =>
+                        {
+                            miss1 = true;
+                        })
+                        .OnMiss<TestListResource>(HttpCallHandlerPriority.Last, ctx =>
+                        {
+                            miss2 = true;
+                        }))
+                    .ResultAsync<TestListResource>();
+
+                var result2 = await HalCallBuilder.Create().WithLink(listUri)
+                    .Advanced.ConfigureHandler<TypedHttpCallCacheHandler>(c => c
+                        .OnHit<object>(HttpCallHandlerPriority.First, ctx =>
+                        {
+                            hit1 = true;
+                        })
+                        .OnHit<TestListResource>(HttpCallHandlerPriority.Last, ctx =>
+                        {
+                            hit2 = true;
+                        }))
+                    .ResultAsync<TestListResource>();
+
+
+                Assert.IsTrue(miss1, "Miss Handler 1 was not called");
+                Assert.IsTrue(miss2, "Miss Handler 2 was not called");
+                Assert.IsTrue(hit1, "Hit Handler 1 was not called");
+                Assert.IsTrue(hit2, "Hit Handler 2 was not called");
+                Assert.AreSame(result1, result2);
+            }
+            
+        }
+
+        public class StubCacheHandler : CacheHandler
+        {
+            public bool Miss { get; set; }
+            public bool Hit { get; set; }
+            public bool Store { get; set; }
+            public bool Expired { get; set; }
+
+
+            public override Task OnMiss<TResult>(CacheMissContext<TResult> context)
+            {
+                Miss = true;
+
+                return Task.Delay(0);
+            }
+
+            public override Task OnHit<TResult>(CacheHitContext<TResult> context)
+            {
+
+                Hit = true;
+                return Task.Delay(0);
+            }
+
+            public override Task OnStore<TResult>(CacheStoreContext<TResult> context)
+            {
+
+                Store = true;
+                return Task.Delay(0);
+            }
+
+            public override Task OnExpired(CacheExpiredContext context)
+            {
+
+                Expired = true;
+                return Task.Delay(0);
+            }
+        }
     }
 }

@@ -11,6 +11,12 @@ namespace AonWeb.FluentHttp.Caching
             RelatedKeys = relatedKeys;
         }
 
+        public CacheExpiredContext(CacheExpiredContext context)
+            : base(context)
+        {
+            RelatedKeys = context.RelatedKeys;
+        }
+
         public IEnumerable<string> RelatedKeys { get; set; }
 
         public override ModifyTracker GetHandlerResult()

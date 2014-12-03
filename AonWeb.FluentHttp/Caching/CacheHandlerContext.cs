@@ -17,6 +17,11 @@ namespace AonWeb.FluentHttp.Caching
             _cacheContext = context;
         }
 
+        protected CacheHandlerContext(CacheHandlerContext context)
+        {
+            _cacheContext = context._cacheContext;
+        }
+
         public IDictionary Items { get { return _cacheContext.Items; } }
         public ResponseValidationResult ValidationResult { get { return _cacheContext.ValidationResult; } }
         public bool Enabled { get { return _cacheContext.Enabled; } }

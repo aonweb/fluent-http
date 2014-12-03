@@ -128,12 +128,72 @@ namespace AonWeb.FluentHttp.Handlers
 
         private static IHandlerContext CreateHandlerContext(Type contextType, params object[] ctorArgs)
         {
-            var ctor = contextType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).FirstOrDefault(c => c.GetParameters().Count() == ctorArgs.Length);
+            var ctors = contextType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                .Where(c => c.GetParameters().Count() == ctorArgs.Length).ToList();
+
+            ConstructorInfo ctor;
+
+            if (ctors.Count > 1)
+            {
+                ctor = ctors.FirstOrDefault(c =>
+                {
+                    var parameters = c.GetParameters().ToList();
+
+                    var isThisTheOne = true;
+
+                    for (var i = 0; i < parameters.Count; i++)
+                    {
+                        var arg = ctorArgs[i];
+                        var type = parameters[i].ParameterType;
+
+                        if ((arg == null && !TypeCanBeNull(type))
+                            || (arg != null && !CanAssignOrConvertType(type, arg.GetType())))
+                            isThisTheOne = false;
+                    }
+
+                    return isThisTheOne;
+                });
+            }
+            else
+            {
+                ctor = ctors.FirstOrDefault();
+            }
 
             if (ctor == null)
                 throw new MissingMethodException(string.Format(SR.ConstructorMissingErrorFormat, contextType.FormattedTypeName(), ctorArgs.Length));
 
             return (IHandlerContext)ctor.Invoke(ctorArgs);
+        }
+
+
+        public static bool CanAssignOrConvertType(Type targetType, Type currentType)
+        {
+            //if the context is not generic, we don't need to worry about construction
+            if (currentType.IsGenericType && targetType.IsGenericType)
+            {
+                var currentGenericTypes = currentType.GetGenericArguments();
+                var currentTypeDef = currentType.GetGenericTypeDefinition();
+                var targetGenericTypes = targetType.GetGenericArguments();
+                var targetTypeDef = targetType.GetGenericTypeDefinition();
+
+                return targetTypeDef.IsAssignableFrom(currentTypeDef) &&
+                       targetGenericTypes.Length == currentGenericTypes.Length;
+            }
+
+            return targetType.IsAssignableFrom(currentType);
+        }
+
+        public static bool IsNullableType(Type t)
+        {
+            if (t.IsGenericType)
+                return t.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+            return false;
+        }
+
+        public static bool TypeCanBeNull(Type t)
+        {
+            return !t.IsValueType || IsNullableType(t);
         }
 
         private static Type CreateHandlerType(Type contextType)
