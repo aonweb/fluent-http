@@ -101,7 +101,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncSendingHandler(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncSendingHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public HttpCallHandlerRegister AddAsyncSendingHandler(Func<HttpSendingContext, Task> handler)
@@ -133,7 +133,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncSentHandler(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncSentHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public HttpCallHandlerRegister AddAsyncSentHandler(Func<HttpSentContext, Task> handler)
@@ -165,7 +165,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncExceptionHandler(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncExceptionHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public HttpCallHandlerRegister AddAsyncExceptionHandler(Func<HttpExceptionContext, Task> handler)

@@ -133,7 +133,7 @@ namespace AonWeb.FluentHttp.Caching
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncHitHandler<TResult>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncHitHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public CacheHandlerRegister AddAsyncHitHandler<TResult>(Func<CacheHitContext<TResult>, Task> handler)
@@ -165,7 +165,7 @@ namespace AonWeb.FluentHttp.Caching
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncMissHandler<TResult>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncMissHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public CacheHandlerRegister AddAsyncMissHandler<TResult>(Func<CacheMissContext<TResult>, Task> handler)
@@ -197,7 +197,7 @@ namespace AonWeb.FluentHttp.Caching
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncStoreHandler<TResult>(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncStoreHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public CacheHandlerRegister AddAsyncStoreHandler<TResult>(Func<CacheStoreContext<TResult>, Task> handler)
@@ -229,7 +229,7 @@ namespace AonWeb.FluentHttp.Caching
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncExpiringHandler(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncExpiringHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public CacheHandlerRegister AddAsyncExpiringHandler(Func<CacheExpiringContext, Task> handler)
@@ -261,7 +261,7 @@ namespace AonWeb.FluentHttp.Caching
             if (handler == null)
                 throw new ArgumentNullException("handler");
 
-            return AddAsyncExpiredHandler(HttpCallHandlerPriority.Default, ctx => Task.Run(() => handler(ctx)));
+            return AddAsyncExpiredHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
         public CacheHandlerRegister AddAsyncExpiredHandler(Func<CacheExpiredContext, Task> handler)
