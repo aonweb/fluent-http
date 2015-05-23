@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
     [TestFixture]
     public class HalDeserializationTests
     {
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = true;
@@ -119,7 +119,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 Assert.NotNull(result.Results[0].Children, "Result.Results[0].Children was null");
                 Assert.AreEqual(result.Results[0].Children.Count, result.Results[0].Children.Results.Count, "Unexpected value for Result.Results[0].Children.Count");
                 Assert.NotNull(result.Results[0].Children.Results[0], "Result.Results[0].Children.Results[0] was null");
-                Assert.IsNotNullOrEmpty(result.Results[0].Children.Results[0].Result, "Unexpected value for Result.Results[0].Children.Results[0].Result");
+                Assert.That(result.Results[0].Children.Results[0].Result, Is.Not.Null.And.Not.Empty, "Unexpected value for Result.Results[0].Children.Results[0].Result");
             }
         }
 
@@ -138,7 +138,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 Assert.NotNull(result, "Result was null");
                 Assert.NotNull(result.Results, "Result.Results was null");
                 Assert.AreEqual(2, result.Results.Count, "Unexpected value for Result.Count");
-                Assert.IsNotNullOrEmpty(result.Results[0].Result, "Unexpected value for Result.Results[0].Result");
+                Assert.That(result.Results[0].Result, Is.Not.Null.And.Not.Empty, "Unexpected value for Result.Results[0].Result");
             }
         }
 

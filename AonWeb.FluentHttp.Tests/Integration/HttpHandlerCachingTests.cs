@@ -12,7 +12,7 @@ namespace AonWeb.FluentHttp.Tests.Integration
     [TestFixture]
     public class HttpHandlerCachingTests
     {
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = true;

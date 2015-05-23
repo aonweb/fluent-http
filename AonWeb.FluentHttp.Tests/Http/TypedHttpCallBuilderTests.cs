@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;
@@ -216,7 +216,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             //act
             var actual = await builder.ResultAsync<string>();
 
-            Assert.IsNullOrEmpty(actual);
+            Assert.That(actual, Is.Null.Or.Empty);
         }
 
         [Test]
@@ -444,7 +444,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             }
             catch (HttpErrorException<string> ex)
             {
-                Assert.IsNullOrEmpty(ex.Error);
+                Assert.That(ex.Error, Is.Null.Or.Empty);
             }
         }
 

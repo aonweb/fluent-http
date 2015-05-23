@@ -21,16 +21,12 @@ namespace AonWeb.FluentHttp.Exceptions
             StatusCode = statusCode;
         }
 
-        [ExcludeFromCodeCoverage]
+        
         public HttpCallException(HttpStatusCode statusCode, string message, Exception exception) :
             base(message, exception)
         {
             StatusCode = statusCode;
         }
-
-        [ExcludeFromCodeCoverage]
-        protected HttpCallException(SerializationInfo info, StreamingContext context) :
-            base(info, context) { }
 
         public HttpStatusCode StatusCode { get; private set; }
     }

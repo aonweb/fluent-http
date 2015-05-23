@@ -12,6 +12,7 @@ using System.Web;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
+using Microsoft.AspNet.Routing;
 
 namespace AonWeb.FluentHttp {
     public class HttpCallBuilder : IChildHttpCallBuilder, IRecursiveHttpCallBuilder {
@@ -104,7 +105,7 @@ namespace AonWeb.FluentHttp {
 
             var path = pathAndQuery;
 
-            if (!VirtualPathUtility.IsAbsolute(pathAndQuery))
+            if (pathAndQuery[0] != '/')
                 path = Helper.CombineVirtualPaths(_settings.Path, pathAndQuery);
 
             return WithPath(path);
@@ -214,13 +215,13 @@ namespace AonWeb.FluentHttp {
             if (string.IsNullOrEmpty(absolutePathAndQuery))
                 absolutePathAndQuery = "/";
 
-            if (!VirtualPathUtility.IsAbsolute(absolutePathAndQuery))
-                throw new ArgumentException(SR.ArgumentPathMustBeAbsoluteError, "absolutePathAndQuery");
+            if (!absolutePathAndQuery.StartsWith("/"))
+                throw new ArgumentException(SR.ArgumentPathMustBeAbsoluteError, nameof(absolutePathAndQuery));
 
             var index = absolutePathAndQuery.IndexOf("?", StringComparison.Ordinal);
             if (index > -1)
             {
-                var querystring = HttpUtility.ParseQueryString(absolutePathAndQuery.Substring(index + 1));
+                var querystring = absolutePathAndQuery.Substring(index + 1).ParseQueryString();
                 absolutePathAndQuery = absolutePathAndQuery.Substring(0, index);
 
                 WithQueryString(querystring);

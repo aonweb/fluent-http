@@ -52,7 +52,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 }";
             var deserialized = JsonConvert.DeserializeObject<TestResource>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Null.Or.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
             Assert.That(original, Is.EqualTo(deserialized).Using(GenericEqualityComparer.Default));
         }
@@ -75,7 +75,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 }";
             var deserialized = JsonConvert.DeserializeObject<TestResource>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Null.Or.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
         }
 
@@ -102,7 +102,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 }";
             var deserialized = JsonConvert.DeserializeObject<TestResource>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Null.Or.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
             Assert.That(original, Is.EqualTo(deserialized).Using(GenericEqualityComparer.Default));
         }
@@ -200,7 +200,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 }";
             var deserialized = JsonConvert.DeserializeObject<TestListResource>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Null.Or.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
             Assert.That(original, Is.EqualTo(deserialized).Using(GenericEqualityComparer.Default));
         }
@@ -299,7 +299,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 }";
             var deserialized = JsonConvert.DeserializeObject<TestListResourceWithLinks>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Null.Or.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
             Assert.That(original, Is.EqualTo(deserialized).Using(GenericEqualityComparer.Default));
         }
@@ -461,7 +461,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 }";
             var deserialized = JsonConvert.DeserializeObject<TestListEmbeddedPropertyParentsResource>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Null.Or.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
             Assert.That(original, Is.EqualTo(deserialized).Using(GenericEqualityComparer.Default));
         }
@@ -516,7 +516,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 }";
             var deserialized = JsonConvert.DeserializeObject<TestListEmbeddedArrayParentResource>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Null.Or.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
             Assert.That(original, Is.EqualTo(deserialized).Using(GenericEqualityComparer.Default));
         }
@@ -561,7 +561,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
             var deserialized = JsonConvert.DeserializeObject<TestListEmbeddedArrayParentResource>(json, _settings);
 
-            Assert.IsNotNullOrEmpty(json);
+            Assert.That(json, Is.Not.Null.And.Not.Empty);
             AssertAreEqualIgnoringWhitespace(expected, json);
             Assert.That(original, Is.EqualTo(deserialized).Using(GenericEqualityComparer.Default));
         }

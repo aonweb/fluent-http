@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;
@@ -232,21 +232,17 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task WithRedirectValidator_WithValidatorIsNull_ExpectException()
+        public void WithRedirectValidator_WithValidatorIsNull_ExpectException()
         {
-                //act
-                await HttpCallBuilder.Create(TestUriString)
+            //act
+            Assert.Throws<ArgumentNullException>(async () => await HttpCallBuilder.Create(TestUriString)
                     .Advanced.ConfigureRedirect(h =>
                         h.WithRedirectValidator(null))
-                    .ResultAsync();
-
-            Assert.Fail();
+                    .ResultAsync());
         }
 
         [Test]
-        [ExpectedException(typeof(MaximumAutoRedirectsException ))]
-        public async Task WithAutoRedirect_WithMaxRedirect_ExpectException()
+        public void WithAutoRedirect_WithMaxRedirect_ExpectException()
         {
             var redirectUrl = Helper.CombineVirtualPaths(TestUriString, "redirect");
             using (var server = LocalWebServer.ListenInBackground(TestUriString))
@@ -256,8 +252,7 @@ namespace AonWeb.FluentHttp.Tests.Http
                         .AddHeader("Location", redirectUrl));
 
                 //act
-                await HttpCallBuilder.Create(TestUriString).Advanced.ConfigureRedirect(h => h.WithAutoRedirect(1)).ResultAsync();
-
+                Assert.Throws<MaximumAutoRedirectsException>(async () => await HttpCallBuilder.Create(TestUriString).Advanced.ConfigureRedirect(h => h.WithAutoRedirect(1)).ResultAsync());
             }
         }
     }

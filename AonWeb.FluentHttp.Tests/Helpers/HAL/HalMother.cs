@@ -162,7 +162,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers.HAL
         private static Lazy<GenericEqualityComparer> _default = new Lazy<GenericEqualityComparer>(() => new GenericEqualityComparer());
         public static GenericEqualityComparer Default { get { return _default.Value; } }
 
-        public bool Equals(object x, object y)
+        public new bool Equals(object x, object y)
         {
             return Equals(x, y, string.Empty);
         }

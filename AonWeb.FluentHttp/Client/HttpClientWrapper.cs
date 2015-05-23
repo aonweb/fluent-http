@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Client
 {
-    [ExcludeFromCodeCoverage]
+    
     public class HttpClientWrapper : IHttpClient
     {
         public void Dispose()

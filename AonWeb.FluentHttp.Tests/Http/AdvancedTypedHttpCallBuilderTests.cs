@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;
@@ -142,7 +142,6 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithMethod_WhenNullString_ExpectException()
         {
             //arrange
@@ -150,11 +149,11 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = TypedHttpCallBuilder.Create();
 
             //act
-            builder.Advanced.WithMethod(method);
+            Assert.Throws<ArgumentException>(() =>
+                builder.Advanced.WithMethod(method));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithMethod_WhenEmptyString_ExpectException()
         {
             //arrange
@@ -162,7 +161,8 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = TypedHttpCallBuilder.Create();
 
             //act
-            builder.Advanced.WithMethod(method);
+            Assert.Throws<ArgumentException>(() =>
+                builder.Advanced.WithMethod(method));
         }
 
         [Test]
@@ -185,17 +185,15 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task WithMethod_WhenNullMethod_ExpectException()
+        public void WithMethod_WhenNullMethod_ExpectException()
         {
             //arrange
             HttpMethod method = null;
             var builder = TypedHttpCallBuilder.Create().Advanced.WithMethod(method);
 
             //act
-            await builder.SendAsync();
-
-            Assert.Fail();
+            Assert.Throws<ArgumentException>(async () =>
+                await builder.SendAsync());
         }
 
         [Test]
@@ -253,8 +251,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         #region Timeout & Cancellation
 
         [Test]
-        [ExpectedException(typeof(TaskCanceledException))]
-        public async Task CancelRequest_WhenSuppressCancelOff_ExpectException()
+        public void CancelRequest_WhenSuppressCancelOff_ExpectException()
         {
             //arrange
             var uri = TestUriString;
@@ -269,9 +266,13 @@ namespace AonWeb.FluentHttp.Tests.Http
                 watch.Start();
                 var task = builder.Advanced.WithSuppressCancellationExceptions(false).SendAsync();
 
-                builder.CancelRequest();
+                Assert.Throws<TaskCanceledException>(async () =>
+                {
+                    builder.CancelRequest();
 
-                await Task.WhenAll(task);
+                    await Task.WhenAll(task);
+                });
+
             }
         }
 
@@ -301,8 +302,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(TaskCanceledException))]
-        public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
+        public void WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
         {
             //arrange
             var uri = TestUriString;
@@ -313,7 +313,8 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => Thread.Sleep(delay));
 
                 // act
-                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).SendAsync();
+                Assert.Throws<TaskCanceledException>(async () =>
+                    await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).SendAsync());
             }
         }
 
@@ -371,16 +372,14 @@ namespace AonWeb.FluentHttp.Tests.Http
         #region Handlers
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenResultAndSendingHandlerTypesMismatch_ExpectException()
+        public void WhenResultAndSendingHandlerTypesMismatch_ExpectException()
         {
 
             var builder = TypedHttpCallBuilder.Create(TestUriString);
 
             //act
-            await builder.Advanced.OnSendingWithResult<Uri>(ctx => { }).ResultAsync<TestResult>();
-
-            Assert.Fail();
+            Assert.Throws<TypeMismatchException>(async () =>
+                await builder.Advanced.OnSendingWithResult<Uri>(ctx => { }).ResultAsync<TestResult>());
         }
 
         [Test]
@@ -396,16 +395,14 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenContentAndSendingHandlerTypesMismatch_ExpectException()
+        public void WhenContentAndSendingHandlerTypesMismatch_ExpectException()
         {
 
             var builder = TypedHttpCallBuilder.Create(TestUriString);
 
             //act
-            await builder.WithContent(TestResultValue).AsPost().Advanced.OnSendingWithContent<Uri>(ctx => { }).ResultAsync<TestResult>();
-
-            Assert.Fail();
+            Assert.Throws<TypeMismatchException>(async () =>
+                await builder.WithContent(TestResultValue).AsPost().Advanced.OnSendingWithContent<Uri>(ctx => { }).ResultAsync<TestResult>());
         }
 
         [Test]
@@ -620,16 +617,14 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
+        public void WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
         {
 
             var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
-            await builder.WithErrorType<TestResult>().Advanced.OnError<Uri>(ctx => { }).ResultAsync<TestResult>();
-
-            Assert.Fail();
+            Assert.Throws<TypeMismatchException>(async () => 
+                await builder.WithErrorType<TestResult>().Advanced.OnError<Uri>(ctx => { }).ResultAsync<TestResult>());
         }
 
         [Test]
@@ -651,16 +646,14 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenDefaultResultAndResultTypesMismatch_ExpectException()
+        public void WhenDefaultResultAndResultTypesMismatch_ExpectException()
         {
 
             var builder = new MockTypedHttpCallBuilder().WithError(TestResultValue).WithUri(TestUriString);
 
             //act
-            await builder.WithDefaultResult(TestResultValue).Advanced.WithExceptionFactory(context => null).ResultAsync<Uri>();
-
-            Assert.Fail();
+            Assert.Throws<TypeMismatchException>(async () =>
+                await builder.WithDefaultResult(TestResultValue).Advanced.WithExceptionFactory(context => null).ResultAsync<Uri>());
         }
 
         [Test]
@@ -696,19 +689,17 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenHandlerIsSuperTypeOfResult_ExpectException()
+        public void WhenHandlerIsSuperTypeOfResult_ExpectException()
         {
 
             var builder = new MockTypedHttpCallBuilder().WithResult(TestResultValue).WithUri(TestUriString);
 
             //act
-            var actual = await builder
-                .Advanced
-                .OnResult<SubTestResult>(ctx => { })
-                .ResultAsync<TestResult>();
-
-            Assert.IsNull(actual);
+            Assert.Throws<TypeMismatchException>(async () => 
+                await builder
+                    .Advanced
+                    .OnResult<SubTestResult>(ctx => { })
+                    .ResultAsync<TestResult>());
         }
 
         [Test]

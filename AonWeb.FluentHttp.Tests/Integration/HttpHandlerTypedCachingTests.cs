@@ -16,7 +16,7 @@ namespace AonWeb.FluentHttp.Tests.Integration
     {
         #region Declarations, Set up, & Tear Down
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = true;

@@ -1,0 +1,26 @@
+﻿{
+  "version": "2.0.0-beta-*",
+  "description": "An fluent interface for making http calls.",
+  "authors": [ "Adam Anderson" ],
+  "tags": [ "fluent, http" ],
+  "projectUrl": "https://github.com/aonweb/fluent-http",
+  "licenseUrl": "http://opensource.org/licenses/MIT",
+  "summary": "An fluent interface for making http calls, with retry, redirect, caching, and serialzation pre-configured.",
+  "copyright": "Copyright ©  2014",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.Net.Http.Client": "1.0.0-*",
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Http.Core": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-*"
+  },
+
+  "frameworks": {
+    "dnx451": { }
+  },
+  "scripts": {
+    "postpack": "..\\.nuget\\push \"%project:Name%\" \"%project:Version%\""
+  }
+}

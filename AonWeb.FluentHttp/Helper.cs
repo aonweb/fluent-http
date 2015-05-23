@@ -126,10 +126,44 @@ namespace AonWeb.FluentHttp
         /// <returns>Uri Builder with modified query</returns>
         internal static UriBuilder NormalizeQuery(this UriBuilder builder)
         {
-            var qsCollection = HttpUtility.ParseQueryString(builder.Query);
+            var qsCollection = ParseQueryString(builder.Query);
             builder.Query = qsCollection.ToEncodedString();
 
             return builder;
+        }
+
+        internal static NameValueCollection ParseQueryString(this string query)
+        {
+            var queryParameters = new NameValueCollection();
+
+            if (string.IsNullOrWhiteSpace(query))
+                return queryParameters;
+
+            if (query[0] == '?')
+                query = query.Substring(1);
+
+            // TODO: perf - switch split to while and walk the string
+
+            var segments = query.Split('&');
+            foreach (var segment in segments)
+            {
+                var parts = segment.Split('=');
+                if (parts.Length == 0)
+                    continue;
+
+                var key = UrlDecode(parts[0].Trim());
+                var val = UrlDecode(parts[1].Trim());
+
+                queryParameters.Add(key, val);
+                
+            }
+
+            return queryParameters;
+        }
+
+        internal static string UrlDecode(this string data)
+        {
+            return Uri.UnescapeDataString(data.Replace("+", " "));
         }
 
         internal static string BuildKey(Type resultType, Uri uri, HttpHeaders headers, IEnumerable<string> varyBy)

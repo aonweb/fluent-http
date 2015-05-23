@@ -3,8 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.Caching;
 using System.Threading.Tasks;
+using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.OptionsModel;
 
 namespace AonWeb.FluentHttp.Caching
 {
@@ -70,7 +71,10 @@ namespace AonWeb.FluentHttp.Caching
                 cachedItem.ResponseInfo.Merge(context.CacheResult.ResponseInfo);
             }
 
-            _cache.Set(context.Key, cachedItem, cachedItem.ResponseInfo.Expiration);
+            _cache.Set(context.Key, cachedItem, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpiration = cachedItem.ResponseInfo.Expiration
+            });
 
             AddCacheKey(context.Uri, context.Key);
         }
@@ -80,7 +84,9 @@ namespace AonWeb.FluentHttp.Caching
             if (string.IsNullOrWhiteSpace(context.Key))
                 return new string[0];
 
-            var item = _cache.Remove(context.Key) as CachedItem;
+            var item = _cache.Get(context.Key) as CachedItem;
+
+            _cache.Remove(context.Key);
 
             if (context.Uri != null)
                 RemoveCacheKey(context.Uri, context.Key);
@@ -102,7 +108,7 @@ namespace AonWeb.FluentHttp.Caching
 
         private static MemoryCache CreateCache()
         {
-            return new MemoryCache(CacheName);
+            return new MemoryCache(new MemoryCacheOptions());
         }
 
         private IEnumerable<string> RemoveRelatedUris(CachedItem cachedItem, CacheContext cacheContext, IEnumerable<Uri> additionalRelatedUris)
@@ -165,7 +171,6 @@ namespace AonWeb.FluentHttp.Caching
 
         private static UriCacheInfo GetCacheInfo(Uri uri)
         {
-
             var key = uri.GetLeftPart(UriPartial.Path);
 
             UriCacheInfo cacheInfo;

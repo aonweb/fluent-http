@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
-using AonWeb.FluentHttp.Tests.Helpers;
 
 using NUnit.Framework;
 
@@ -18,7 +16,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;
@@ -83,7 +81,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 {
                     return true;
                 }
-                if (obj.GetType() != this.GetType())
+                if (obj.GetType() != GetType())
                 {
                     return false;
                 }
@@ -162,7 +160,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
                 {
                     return true;
                 }
-                if (obj.GetType() != this.GetType())
+                if (obj.GetType() != GetType())
                 {
                     return false;
                 }
@@ -204,16 +202,14 @@ namespace AonWeb.FluentHttp.Tests.HAL
         #region Handlers
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenResultAndSendingHandlerTypesMismatch_ExpectException()
+        public void WhenResultAndSendingHandlerTypesMismatch_ExpectException()
         {
-
             var builder = HalCallBuilder.Create().WithLink(TestUriString);
 
             //act
-            await builder.Advanced.OnSendingWithResult<TestResult2>(ctx => { }).ResultAsync<TestResult>();
-
-            Assert.Fail();
+            Assert.Throws<TypeMismatchException>(
+                async () =>
+                    await builder.Advanced.OnSendingWithResult<TestResult2>(ctx => { }).ResultAsync<TestResult>());
         }
 
         [Test]
@@ -229,14 +225,14 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenContentAndSendingHandlerTypesMismatch_ExpectException()
+        public void WhenContentAndSendingHandlerTypesMismatch_ExpectException()
         {
 
             var builder = HalCallBuilder.Create().WithLink(TestUriString);
 
             //act
-            await builder.WithContent(TestRequestValue).AsPost().Advanced.OnSendingWithContent<TestRequest2>(ctx => { }).ResultAsync<TestResult>();
+            Assert.Throws<TypeMismatchException>(async () => 
+                await builder.WithContent(TestRequestValue).AsPost().Advanced.OnSendingWithContent<TestRequest2>(ctx => { }).ResultAsync<TestResult>());
 
             Assert.Fail();
         }
@@ -257,14 +253,14 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
+        public void WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
         {
-
             var builder = new MockHalCallBuilder().WithError(TestResultValue).WithLink(TestUriString);
 
             //act
-            await builder.WithErrorType<TestResult>().Advanced.OnError<TestResult2>(ctx => { }).ResultAsync<TestResult>();
+
+            Assert.Throws<TypeMismatchException>(async () =>
+                await builder.WithErrorType<TestResult>().Advanced.OnError<TestResult2>(ctx => { }).ResultAsync<TestResult>());
 
             Assert.Fail();
         }
@@ -288,14 +284,14 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenDefaultResultAndResultTypesMismatch_ExpectException()
+        public void WhenDefaultResultAndResultTypesMismatch_ExpectException()
         {
 
             var builder = new MockHalCallBuilder().WithError(TestResultValue).WithLink(TestUriString);
 
             //act
-            await builder.WithDefaultResult(TestResultValue).Advanced.WithExceptionFactory(context => null).ResultAsync<TestResult2>();
+            Assert.Throws<TypeMismatchException>(async () =>
+                await builder.WithDefaultResult(TestResultValue).Advanced.WithExceptionFactory(context => null).ResultAsync<TestResult2>());
 
             Assert.Fail();
         }
@@ -333,19 +329,17 @@ namespace AonWeb.FluentHttp.Tests.HAL
         }
 
         [Test]
-        [ExpectedException(typeof(TypeMismatchException))]
-        public async Task WhenHandlerIsSuperTypeOfResult_ExpectException()
+        public void WhenHandlerIsSuperTypeOfResult_ExpectException()
         {
 
             var builder = new MockHalCallBuilder().WithResult(TestResultValue).WithLink(TestUriString);
 
             //act
-            var actual = await builder
+            Assert.Throws<TypeMismatchException>(async () =>
+                await builder
                 .Advanced
                 .OnResult<SubTestResult>(ctx => { })
-                .ResultAsync<TestResult>();
-
-            Assert.IsNull(actual);
+                .ResultAsync<TestResult>());
         }
 
         [Test]

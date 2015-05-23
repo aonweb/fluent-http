@@ -174,18 +174,18 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
             if (!EnableLogging)
                 return;
 
-            Console.WriteLine("Request: {0} - {1}", request.HttpMethod, request.Url);
+            Write("Request: {0} - {1}", request.HttpMethod, request.Url);
 
             if (request.HasEntityBody)
             {
                 if (request.ContentType != null)
-                    Console.WriteLine("   ContentType: {0}", request.ContentType);
+                    Write("   ContentType: {0}", request.ContentType);
 
-                Console.WriteLine("   ContentLength: {0}", request.ContentLength);
-                Console.WriteLine("   Body:");
-                Console.WriteLine(request.Body);
-                Console.WriteLine("---- End Request ----");
-                Console.WriteLine();
+                Write("   ContentLength: {0}", request.ContentLength);
+                Write("   Body:");
+                Write(request.Body);
+                Write("---- End Request ----");
+                Write();
             } 
         }
 
@@ -194,20 +194,20 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
             if (!EnableLogging)
                 return;
 
-            Console.WriteLine("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
-            Console.WriteLine("  Headers:");
+            Write("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
+            Write("  Headers:");
             foreach (var name in response.Headers.AllKeys)
             {
-                Console.WriteLine("   {0}: {1}", name, response.Headers[name]);
+                Write("   {0}: {1}", name, response.Headers[name]);
             }
 
             if (!string.IsNullOrEmpty(body))
             {
-                Console.WriteLine("   Body: {0}", body);
+                Write("   Body: {0}", body);
             }
 
-            Console.WriteLine("---- End Response ----");
-            Console.WriteLine();
+            Write("---- End Response ----");
+            Write();
         }
 
         private LocalWebServerResponseInfo GetResponseInfo(LocalWebServerRequestInfo requestInfo)
@@ -241,6 +241,16 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
             {
                 response.OutputStream.Close();
             }
+        }
+
+        public void Write(string output = "")
+        {
+            Console.WriteLine(output);
+        }
+
+        public void Write(string output, params object[] args)
+        {
+            Console.WriteLine(output, args);
         }
 
         public void Dispose()

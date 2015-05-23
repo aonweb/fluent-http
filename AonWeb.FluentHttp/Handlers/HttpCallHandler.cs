@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    [ExcludeFromCodeCoverage]
+    
     public abstract class HttpCallHandler : IHttpCallHandler
     {
         private bool _enabled = true;
@@ -24,7 +24,7 @@ namespace AonWeb.FluentHttp.Handlers
         public virtual Task OnException(HttpExceptionContext context) { return Task.Delay(0); }
     }
 
-    [ExcludeFromCodeCoverage]
+    
     public abstract class TypedHttpCallHandler : ITypedHttpCallHandler
     {
         private bool _enabled = true;

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
-using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
 namespace AonWeb.FluentHttp.Tests.Http
@@ -94,7 +93,6 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(UriFormatException))]
         public void WithUri_WhenInvalidString_ExpectException()
         {
             //arrange
@@ -102,11 +100,10 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = new MockHttpCallBuilder();
 
             //act
-            builder.WithUri(uri);
+            Assert.Throws<UriFormatException>(() => builder.WithUri(uri));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithUri_WhenNullString_ExpectException()
         {
             //arrange
@@ -114,11 +111,10 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = new MockHttpCallBuilder();
 
             //act
-            builder.WithUri(uri);
+            Assert.Throws<ArgumentException>(() => builder.WithUri(uri));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithUri_WhenEmptyString_ExpectException()
         {
             //arrange
@@ -126,7 +122,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = new MockHttpCallBuilder();
 
             //act
-            builder.WithUri(uri);
+            Assert.Throws<ArgumentException>(() => builder.WithUri(uri));
         }
 
         [Test]
@@ -147,23 +143,20 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void WithUri_WhenNullUri_ExpectException()
         {
 
             Uri uri = null;
-            new MockHttpCallBuilder().WithUri(uri);
+            Assert.Throws<ArgumentNullException>(() => new MockHttpCallBuilder().WithUri(uri));
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public async Task WithUri_WhenNeverSet_ExpectException()
+        public void WithUri_WhenNeverSet_ExpectException()
         {
-            await new MockHttpCallBuilder().ResultAsync();
+            Assert.Throws<InvalidOperationException>(async () => await new MockHttpCallBuilder().ResultAsync());
         }
 
         [Test]
-        [ExpectedException(typeof(UriFormatException))]
         public void WithUri_WhenUriIsNotAbsolute_ExpectException()
         {
             //arrange
@@ -171,7 +164,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = new MockHttpCallBuilder();
 
             //act
-            builder.WithUri(uri);
+            Assert.Throws<UriFormatException>(() => builder.WithUri(uri));
         }
 
         [Test]
@@ -298,6 +291,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
             // act
             var result = await builder.WithQueryString(new NameValueCollection { { "q", "2" } }).ResultAsync();
+
             // assert
             Assert.AreEqual(expected, actual);
 
@@ -492,7 +486,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             await builder.AsPost().WithContent(expected).ResultAsync();
 
             //assert
-            Assert.AreEqual(expected ?? string.Empty, actual);
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -659,13 +653,12 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void WithContent_AsFactoryFuncWithNullValue_ExpectException()
         {
             //arrange
             var uri = TestUriString;
 
-            new MockHttpCallBuilder().WithUri(uri).Advanced.AsPost().WithContent((Func<string>)null);
+            Assert.Throws<ArgumentNullException>(() => new MockHttpCallBuilder().WithUri(uri).Advanced.AsPost().WithContent((Func<string>)null));
 
         }
 
@@ -796,13 +789,12 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void WithContent_AsHttpContentFactoryFuncWithNullValue_ExpectException()
         {
             //arrange
             var uri = TestUriString;
 
-            new MockHttpCallBuilder().WithUri(uri).Advanced.AsPost().WithContent((Func<HttpContent>)null);
+            Assert.Throws<ArgumentNullException>(() => new MockHttpCallBuilder().WithUri(uri).Advanced.AsPost().WithContent((Func<HttpContent>)null));
 
         }
 

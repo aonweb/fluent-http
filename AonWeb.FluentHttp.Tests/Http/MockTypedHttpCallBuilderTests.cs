@@ -17,7 +17,7 @@ namespace AonWeb.FluentHttp.Tests.Http {
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;

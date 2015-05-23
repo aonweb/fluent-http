@@ -16,23 +16,19 @@ namespace AonWeb.FluentHttp.Exceptions
             Error = error;
         }
 
-        [ExcludeFromCodeCoverage]
+        
         public HttpErrorException(TError error, HttpStatusCode statusCode, string message)
             : base(statusCode, message)
         {
             Error = error;
         }
 
-        [ExcludeFromCodeCoverage]
+        
         public HttpErrorException(TError error, HttpStatusCode statusCode, string message, Exception exception) :
             base(statusCode, message, exception)
         {
             Error = error;
         }
-
-        [ExcludeFromCodeCoverage]
-        protected HttpErrorException(SerializationInfo info, StreamingContext context) :
-            base(info, context) { }
 
         public TError Error { get; private set; }
     }

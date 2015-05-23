@@ -18,7 +18,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
     public class HalCachingTests
     {
         
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = true;
@@ -34,7 +34,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
         //get by non-canonical, put to canonical, expires both
         [Test]
-        [Ignore]
+        [Ignore("Because")]
         public void WhenGetResourceByNonCanonicalUri_ThenModifyResourceByCanonicalUri_ExpectBothExpiredInCache()
         {
 
@@ -65,7 +65,7 @@ namespace AonWeb.FluentHttp.Tests.HAL
 
         //get to list with embeds, put to canonical, expires list
         [Test]
-        [Ignore]
+        [Ignore("Because")]
         public void WhenGetListWithEmbeddedResources_ThenModifyOneEmbeddedResource_ExpectListExpired()
         {
 

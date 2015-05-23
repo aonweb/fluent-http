@@ -23,17 +23,13 @@ namespace AonWeb.FluentHttp.Exceptions
             ActualType = actualType;
         }
 
-        [ExcludeFromCodeCoverage]
+        
         public TypeMismatchException(Type expectedType, Type actualType, string message, Exception exception) :
             base(string.Format(SR.TypeMismatchErrorFormat, expectedType.FormattedTypeName(), actualType.FormattedTypeName(), message), exception)
         {
             ExpectedType = expectedType;
             ActualType = actualType;
         }
-
-        [ExcludeFromCodeCoverage]
-        protected TypeMismatchException(SerializationInfo info, StreamingContext context) :
-            base(info, context) { }
 
         public Type ExpectedType { get; private set; }
         public Type ActualType { get; private set; }

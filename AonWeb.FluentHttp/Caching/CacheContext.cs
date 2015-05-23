@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-
 using AonWeb.FluentHttp.Handlers;
 using JetBrains.Annotations;
 

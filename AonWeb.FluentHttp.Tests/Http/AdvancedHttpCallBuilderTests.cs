@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
-using AonWeb.FluentHttp.Tests.Helpers;
 using NUnit.Framework;
 
 namespace AonWeb.FluentHttp.Tests.Http
@@ -19,7 +18,7 @@ namespace AonWeb.FluentHttp.Tests.Http
 
         private const string TestUriString = LocalWebServer.DefaultListenerUri;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
             HttpCallBuilderDefaults.CachingEnabled = false;
@@ -49,7 +48,6 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithMethod_WhenNullString_ExpectException()
         {
             //arrange
@@ -57,11 +55,10 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = HttpCallBuilder.Create();
 
             //act
-            builder.Advanced.WithMethod(method);
+            Assert.Throws<ArgumentException>(() => builder.Advanced.WithMethod(method));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithMethod_WhenEmptyString_ExpectException()
         {
             //arrange
@@ -69,7 +66,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = HttpCallBuilder.Create();
 
             //act
-            builder.Advanced.WithMethod(method);
+            Assert.Throws<ArgumentException>(() => builder.Advanced.WithMethod(method));
         }
 
         [Test]
@@ -92,7 +89,6 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void WithMethod_WhenNullMethod_ExpectException()
         {
             //arrange
@@ -100,9 +96,7 @@ namespace AonWeb.FluentHttp.Tests.Http
             var builder = HttpCallBuilder.Create().Advanced.WithMethod(method);
 
             //act
-            builder.ResultAsync();
-
-            Assert.Fail();
+            Assert.Throws<ArgumentNullException>(async () => await builder.ResultAsync());
         }
 
         [Test]
@@ -156,7 +150,6 @@ namespace AonWeb.FluentHttp.Tests.Http
         #region Timeout & Cancellation
 
         [Test]
-        [ExpectedException(typeof(AggregateException))]
         public void CancelRequest_WhenSuppressCancelOff_ExpectException()
         {
             //arrange
@@ -172,9 +165,12 @@ namespace AonWeb.FluentHttp.Tests.Http
                 watch.Start();
                 var task = builder.Advanced.WithSuppressCancellationExceptions(false).ResultAsync();
 
-                builder.CancelRequest();
+                Assert.Throws<AggregateException>(async () =>
+                {
+                    builder.CancelRequest();
 
-                Task.WaitAll(task);
+                    await Task.WhenAll(task);
+                });
             }
         }
 
@@ -202,8 +198,7 @@ namespace AonWeb.FluentHttp.Tests.Http
         }
 
         [Test]
-        [ExpectedException(typeof(TaskCanceledException))]
-        public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
+        public void WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
         {
             //arrange
             var uri = TestUriString;
@@ -214,7 +209,8 @@ namespace AonWeb.FluentHttp.Tests.Http
                 server.InspectRequest(r => Thread.Sleep(delay));
 
                 // act
-                await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).ResultAsync();
+                Assert.Throws<TaskCanceledException>(async () => 
+                    await builder.Advanced.WithTimeout(TimeSpan.FromMilliseconds(100)).WithSuppressCancellationExceptions(false).ResultAsync());
             }
         }
 
