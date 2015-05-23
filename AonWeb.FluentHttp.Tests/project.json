@@ -14,9 +14,9 @@
     "Microsoft.AspNet.Mvc": "6.0.0-*",
     "Microsoft.AspNet.Http.Core": "1.0.0-*",
     "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-*",
-    "System.Runtime": "4.0.20-beta-22913",
-    "NUnit": "3.0.0-beta-2",
-    "Moq": "4.2.1502.911"
+    "System.Runtime": "4.0.20-*",
+    "NUnit": "3.0.0-*",
+    "Moq": "4.2.1502-*"
   },
 
   "frameworks": {
