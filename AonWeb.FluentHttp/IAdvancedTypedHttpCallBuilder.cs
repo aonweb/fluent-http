@@ -45,6 +45,13 @@ namespace AonWeb.FluentHttp
         IAdvancedTypedHttpCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure)
             where THandler : class, ITypedHttpCallHandler;
 
+        IAdvancedTypedHttpCallBuilder ConfigureHttpHandler<THandler>(Action<THandler> configure)
+                    where THandler : class, IHttpCallHandler;
+        IAdvancedTypedHttpCallBuilder TryConfigureHttpHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler;
+        IAdvancedTypedHttpCallBuilder ConfigureRetries(Action<RetryHandler> configuration);
+        IAdvancedTypedHttpCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration);
+
         IAdvancedTypedHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
         IAdvancedTypedHttpCallBuilder WithExceptionFactory(Func<HttpErrorContext, Exception> factory);
 

@@ -298,6 +298,36 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
+        public IAdvancedHalCallBuilder ConfigureHttpHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler
+        {
+            _innerBuilder.ConfigureHttpHandler(configure);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder TryConfigureHttpHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler
+        {
+            _innerBuilder.TryConfigureHttpHandler(configure);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder ConfigureRetries(Action<RetryHandler> configuration)
+        {
+            _innerBuilder.ConfigureRetries(configuration);
+
+            return this;
+        }
+
+        public IAdvancedHalCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration)
+        {
+            _innerBuilder.ConfigureRedirect(configuration);
+
+            return this;
+        }
+
         public IAdvancedHalCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
             _innerBuilder.WithSuccessfulResponseValidator(validator);

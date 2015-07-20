@@ -358,6 +358,36 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public IAdvancedTypedHttpCallBuilder ConfigureHttpHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler
+        {
+            _innerBuilder.ConfigureHandler(configure);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder TryConfigureHttpHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler
+        {
+            _innerBuilder.TryConfigureHandler(configure);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder ConfigureRetries(Action<RetryHandler> configuration)
+        {
+            _innerBuilder.ConfigureRetries(configuration);
+
+            return this;
+        }
+
+        public IAdvancedTypedHttpCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration)
+        {
+            _innerBuilder.ConfigureRedirect(configuration);
+
+            return this;
+        }
+
         public IAdvancedTypedHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator)
         {
             if (validator == null)

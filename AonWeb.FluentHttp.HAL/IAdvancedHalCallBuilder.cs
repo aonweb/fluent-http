@@ -34,6 +34,13 @@ namespace AonWeb.FluentHttp.HAL
         IAdvancedHalCallBuilder TryConfigureHandler<THandler>(Action<THandler> configure)
             where THandler : class, ITypedHttpCallHandler;
 
+        IAdvancedHalCallBuilder ConfigureHttpHandler<THandler>(Action<THandler> configure)
+                   where THandler : class, IHttpCallHandler;
+        IAdvancedHalCallBuilder TryConfigureHttpHandler<THandler>(Action<THandler> configure)
+            where THandler : class, IHttpCallHandler;
+        IAdvancedHalCallBuilder ConfigureRetries(Action<RetryHandler> configuration);
+        IAdvancedHalCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration);
+
         IAdvancedHalCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);
         IAdvancedHalCallBuilder WithExceptionFactory(Func<HttpErrorContext, Exception> factory);
 
