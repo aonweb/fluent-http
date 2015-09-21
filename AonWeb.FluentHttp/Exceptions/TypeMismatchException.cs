@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization;
+using System.Reflection;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
@@ -10,28 +10,20 @@ namespace AonWeb.FluentHttp.Exceptions
     public class TypeMismatchException : Exception
     {
         public TypeMismatchException(Type expectedType, Type actualType)
-            : this(expectedType, actualType, string.Empty)
-        {
-            ExpectedType = expectedType;
-            ActualType = actualType;
-        }
+            : this(expectedType, actualType, string.Empty) { }
 
         public TypeMismatchException(Type expectedType, Type actualType, string message)
-            : base(string.Format(SR.TypeMismatchErrorFormat, expectedType.FormattedTypeName(), actualType.FormattedTypeName(), message))
-        {
-            ExpectedType = expectedType;
-            ActualType = actualType;
-        }
+           : this(expectedType, actualType, string.Empty, null)
+        { }
 
-        
         public TypeMismatchException(Type expectedType, Type actualType, string message, Exception exception) :
             base(string.Format(SR.TypeMismatchErrorFormat, expectedType.FormattedTypeName(), actualType.FormattedTypeName(), message), exception)
         {
-            ExpectedType = expectedType;
-            ActualType = actualType;
+            ExpectedType = expectedType?.GetTypeInfo();
+            ActualType = actualType?.GetTypeInfo();
         }
 
-        public Type ExpectedType { get; private set; }
-        public Type ActualType { get; private set; }
+        public TypeInfo ExpectedType { get; private set; }
+        public TypeInfo ActualType { get; private set; }
     }
 }

@@ -4,13 +4,16 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using AonWeb.FluentHttp.Handlers.Caching;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Caching
 {
     public class ResponseInfo
     {
-        public ResponseInfo(object result, HttpResponseMessage response, CacheContext context)
+        public ResponseInfo(object result, HttpResponseMessage response, ICacheContext context)
         {
+            Uri = response.RequestMessage.RequestUri;
             StatusCode = response.StatusCode;
             Date = response.Headers.Date ?? DateTimeOffset.UtcNow;
 
@@ -38,22 +41,20 @@ namespace AonWeb.FluentHttp.Caching
             DependentUris = GetDependentUris(result, context.DependentUris);
         }
 
+        public Uri Uri { get; set; }
         public HttpStatusCode StatusCode { get; set; }
         public bool HasContent { get; set; }
-
         public DateTimeOffset Date { get; set; }
         public EntityTagHeaderValue ETag { get; set; }
         public DateTimeOffset? LastModified { get; set; }
-
         public bool NoStore { get; set; }
         public bool NoCache { get; set; }
         public bool ShouldRevalidate { get; set; }
         public DateTimeOffset Expiration { get; set; }
         public bool HasExpiration { get; set; }
-
-        public ISet<string> VaryHeaders { get; private set; }
-
-        public ISet<Uri> DependentUris { get; private set; }
+        public ISet<string> VaryHeaders { get; }
+        public ISet<Uri> DependentUris { get; }
+        
 
         private static DateTimeOffset? GetExpiration(DateTimeOffset lastModified, object result, HttpResponseMessage response, TimeSpan defaultExpiration)
         {
@@ -75,10 +76,7 @@ namespace AonWeb.FluentHttp.Caching
                     return lastModified.Add(response.Headers.CacheControl.SharedMaxAge.Value);
             }
 
-            if (response.Content != null && response.Content.Headers.Expires.HasValue)
-                return response.Content.Headers.Expires.Value;
-
-            return null;
+            return response.Content?.Headers.Expires;
         }
 
         private static ISet<Uri> GetDependentUris(object result, IEnumerable<Uri> dependentUris)
@@ -98,7 +96,7 @@ namespace AonWeb.FluentHttp.Caching
         {
             var lastModified = response.Headers.Date ?? DateTimeOffset.UtcNow;
 
-            if (response.Content != null && response.Content.Headers.LastModified.HasValue)
+            if (response.Content?.Headers.LastModified != null)
                 lastModified = response.Content.Headers.LastModified.Value;
 
             var newExpiration = GetExpiration(lastModified, result, response, defaultExpiration);
@@ -127,16 +125,14 @@ namespace AonWeb.FluentHttp.Caching
            if (responseInfo.Expiration > Expiration)
                Expiration = responseInfo.Expiration;
 
-            foreach (var header in responseInfo.VaryHeaders)
+            foreach (var header in responseInfo.VaryHeaders.Where(header => !VaryHeaders.Contains(header)))
             {
-                if (!VaryHeaders.Contains(header))
-                    VaryHeaders.Add(header);
+                VaryHeaders.Add(header);
             }
 
-            foreach (var uri in responseInfo.DependentUris)
+            foreach (var uri in responseInfo.DependentUris.Where(uri => !DependentUris.Contains(uri)))
             {
-                if (!DependentUris.Contains(uri))
-                    DependentUris.Add(uri);
+                DependentUris.Add(uri);
             }
         }
     }

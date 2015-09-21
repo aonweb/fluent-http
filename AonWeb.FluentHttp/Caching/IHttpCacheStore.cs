@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Handlers.Caching;
 
 namespace AonWeb.FluentHttp.Caching
 {
     public interface IHttpCacheStore
     {
-        Task<CacheResult> GetCachedResult(CacheContext context);
+        Task<CacheResult> GetCachedResult(ICacheContext context);
 
-        Task AddOrUpdate(CacheContext context);
+        Task AddOrUpdate(ICacheContext context);
 
-        IList<string> TryRemove(CacheContext context, IEnumerable<Uri> additionalRelatedUris);
+        IEnumerable<Uri> TryRemove(ICacheContext context, IEnumerable<Uri> additionalRelatedUris);
 
         void Clear();
 
-        IEnumerable<string> RemoveItem(Uri uri);
+        IEnumerable<Uri> RemoveItem(Uri uri);
     }
 }

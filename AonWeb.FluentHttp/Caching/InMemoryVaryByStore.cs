@@ -2,21 +2,22 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Caching
 {
     public class InMemoryVaryByStore : IVaryByStore
     {
-        private static readonly object _lock = new object();
-        private static readonly ConcurrentDictionary<string, ISet<string>> _cache = new ConcurrentDictionary<string, ISet<string>>();
+        private static readonly object Lock = new object();
+        private static readonly ConcurrentDictionary<string, ISet<string>> Cache = new ConcurrentDictionary<string, ISet<string>>();
 
         public IEnumerable<string> Get(Uri uri)
         {
-            var key = uri.GetLeftPart(UriPartial.Path);
+            var key = uri.GetSchemeHostPath();
 
             ISet<string> headers;
 
-            if (!_cache.TryGetValue(key, out headers))
+            if (!Cache.TryGetValue(key, out headers))
                 return Enumerable.Empty<string>();
 
             return headers;
@@ -28,18 +29,18 @@ namespace AonWeb.FluentHttp.Caching
 
             ISet<string> headers;
 
-            if (!_cache.TryGetValue(key, out headers))
+            if (!Cache.TryGetValue(key, out headers))
                 headers = new HashSet<string>();
 
-            lock (_lock)
-                headers = Helper.MergeSet(headers, newHeaders.Select(Helper.NormalizeHeader));
+            lock (Lock)
+                headers = CollectionHelpers.MergeSet(headers, newHeaders.Select(FluentHttp.Cache.NormalizeHeader));
 
-            _cache[key] = headers;
+            Cache[key] = headers;
         }
 
         public void Clear()
         {
-            _cache.Clear();
+            Cache.Clear();
         }
 
         public bool TryRemove(Uri uri)
@@ -48,7 +49,7 @@ namespace AonWeb.FluentHttp.Caching
 
             ISet<string> headers;
 
-            return _cache.TryRemove(key, out headers);
+            return Cache.TryRemove(key, out headers);
         }
     }
 }

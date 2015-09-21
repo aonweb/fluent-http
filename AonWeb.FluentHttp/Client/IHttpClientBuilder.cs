@@ -1,29 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace AonWeb.FluentHttp.Client
 {
-    public interface IHttpClientBuilder
+    public interface IHttpClientBuilder : 
+        IFluentConfigurable<IHttpClientBuilder, HttpClientSettings>,
+        IFluentConfigurable<IHttpClientBuilder, IHttpClient>
     {
-        HttpClientSettings Settings { get; }
-        IHttpClient Create();
-        IHttpClientBuilder Configure(Action<IHttpClient> configuration);
-        IHttpClientBuilder WithHeaders(Action<HttpRequestHeaders> configuration);
-        IHttpClientBuilder WithHeaders(string name, string value);
-        IHttpClientBuilder WithHeaders(string name, IEnumerable<string> values);
-        IHttpClientBuilder WithTimeout(TimeSpan? timeout);
-        IHttpClientBuilder WithDecompressionMethods(DecompressionMethods options);
-        IHttpClientBuilder WithClientCertificateOptions(ClientCertificateOption options);
-        IHttpClientBuilder WithUseCookies();
-        IHttpClientBuilder WithUseCookies(CookieContainer container);
-        IHttpClientBuilder WithCredentials(ICredentials credentials);
-        IHttpClientBuilder WithMaxBufferSize(long bufferSize);
-        IHttpClientBuilder WithProxy(IWebProxy proxy);
-        IHttpClientBuilder WithNoCache(bool nocache = true);
-
-        void ApplyRequestHeaders(HttpRequestMessage request);
+        /// <summary>
+        /// Builds configured instance of <see cref="IHttpClient"/> using the specified settings.
+        /// </summary>
+        /// <returns>An configured <see cref="IHttpClient"/>.</returns>
+        IHttpClient Build();
     }
 }

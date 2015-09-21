@@ -1,25 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{7BAED64B-B6C5-4FFD-AE70-630BFC63FFDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp", "AonWeb.FluentHttp\AonWeb.FluentHttp.csproj", "{930566B9-044B-45AB-B231-87EC4C222A4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.HAL", "AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj", "{83DE5005-470A-421A-AF25-59DF14D7458B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Autofac", "AonWeb.FluentHttp.Autofac\AonWeb.FluentHttp.Autofac.csproj", "{88B42254-124B-453D-B1C9-C0E56AE18022}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Tests", "AonWeb.FluentHttp.Tests\AonWeb.FluentHttp.Tests.csproj", "{7C2A76F9-76F5-43C2-ADFE-B66B26AF8879}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Mocks", "AonWeb.FluentHttp.Mocks\AonWeb.FluentHttp.Mocks.csproj", "{819F270C-4105-4380-8EA5-310832A54B7F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{00E49101-6115-4ECF-AD69-D2E250A44BC2}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
+		.nuget\push-hal.cmd = .nuget\push-hal.cmd
 		.nuget\push-http.cmd = .nuget\push-http.cmd
 		.nuget\push-mocks.cmd = .nuget\push-mocks.cmd
-		.nuget\push.cmd = .nuget\push.cmd
 	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AonWeb.FluentHttp", "AonWeb.FluentHttp\AonWeb.FluentHttp.xproj", "{F623301A-C2F6-4D92-8759-5E8B55073FF9}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AonWeb.FluentHttp.HAL", "AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.xproj", "{BAE3EAC2-2613-4DD1-AE19-D7AB66C6A932}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AonWeb.FluentHttp.Mocks", "AonWeb.FluentHttp.Mocks\AonWeb.FluentHttp.Mocks.xproj", "{C68F2263-EABA-4427-A4F3-109E9B7F18CC}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AonWeb.FluentHttp.Tests", "AonWeb.FluentHttp.Tests\AonWeb.FluentHttp.Tests.xproj", "{2D58A355-E9AA-4943-8CDC-64B8AE16D165}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,22 +29,26 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F623301A-C2F6-4D92-8759-5E8B55073FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F623301A-C2F6-4D92-8759-5E8B55073FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F623301A-C2F6-4D92-8759-5E8B55073FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F623301A-C2F6-4D92-8759-5E8B55073FF9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BAE3EAC2-2613-4DD1-AE19-D7AB66C6A932}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BAE3EAC2-2613-4DD1-AE19-D7AB66C6A932}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BAE3EAC2-2613-4DD1-AE19-D7AB66C6A932}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BAE3EAC2-2613-4DD1-AE19-D7AB66C6A932}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C68F2263-EABA-4427-A4F3-109E9B7F18CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C68F2263-EABA-4427-A4F3-109E9B7F18CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C68F2263-EABA-4427-A4F3-109E9B7F18CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C68F2263-EABA-4427-A4F3-109E9B7F18CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2D58A355-E9AA-4943-8CDC-64B8AE16D165}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2D58A355-E9AA-4943-8CDC-64B8AE16D165}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2D58A355-E9AA-4943-8CDC-64B8AE16D165}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2D58A355-E9AA-4943-8CDC-64B8AE16D165}.Release|Any CPU.Build.0 = Release|Any CPU
+		{930566B9-044B-45AB-B231-87EC4C222A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{930566B9-044B-45AB-B231-87EC4C222A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{930566B9-044B-45AB-B231-87EC4C222A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{930566B9-044B-45AB-B231-87EC4C222A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83DE5005-470A-421A-AF25-59DF14D7458B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83DE5005-470A-421A-AF25-59DF14D7458B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83DE5005-470A-421A-AF25-59DF14D7458B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83DE5005-470A-421A-AF25-59DF14D7458B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88B42254-124B-453D-B1C9-C0E56AE18022}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88B42254-124B-453D-B1C9-C0E56AE18022}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88B42254-124B-453D-B1C9-C0E56AE18022}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88B42254-124B-453D-B1C9-C0E56AE18022}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C2A76F9-76F5-43C2-ADFE-B66B26AF8879}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C2A76F9-76F5-43C2-ADFE-B66B26AF8879}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C2A76F9-76F5-43C2-ADFE-B66B26AF8879}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C2A76F9-76F5-43C2-ADFE-B66B26AF8879}.Release|Any CPU.Build.0 = Release|Any CPU
+		{819F270C-4105-4380-8EA5-310832A54B7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{819F270C-4105-4380-8EA5-310832A54B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{819F270C-4105-4380-8EA5-310832A54B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{819F270C-4105-4380-8EA5-310832A54B7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

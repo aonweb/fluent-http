@@ -1,4 +1,4 @@
-namespace AonWeb.FluentHttp.Caching
+﻿namespace AonWeb.FluentHttp.Caching
 {
     public class CachedItem
     {

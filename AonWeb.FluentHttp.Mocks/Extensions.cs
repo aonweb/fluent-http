@@ -2,59 +2,60 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Mocks.WebServer;
 
 namespace AonWeb.FluentHttp.Mocks
 {
     public static class Extensions
     {
-        #region IHttpMocker<T>
+        #region IResponseMocker<T>
 
-        public static T WithResponse<T>(this IHttpMocker<T> mock, HttpResponseMessage response) 
-            where T : IHttpMocker<T>
+        public static T WithResponse<T>(this IResponseMocker<T> mock, HttpResponseMessage response) 
+            where T : IResponseMocker<T>
         {
             return mock.WithResponse(r => response);
         }
 
-        public static T WithResponse<T>(this IHttpMocker<T> mock, ResponseInfo response) 
-            where T : IHttpMocker<T>
+        public static T WithResponse<T>(this IResponseMocker<T> mock, ILocalResponse response) 
+            where T : IResponseMocker<T>
         {
             return mock.WithResponse(r => response.ToHttpResponseMessage());
         }
 
-        public static T WithResponse<T>(this IHttpMocker<T> mock, HttpStatusCode statusCode) 
-            where T : IHttpMocker<T>
+        public static T WithResponse<T>(this IResponseMocker<T> mock, HttpStatusCode statusCode) 
+            where T : IResponseMocker<T>
         {
-            return mock.WithResponse(new ResponseInfo(statusCode));
+            return mock.WithResponse(new LocalResponse(statusCode));
         }
 
-        public static T WithResponse<T>(this IHttpMocker<T> mock, HttpStatusCode statusCode, string content)
-            where T : IHttpMocker<T>
+        public static T WithResponse<T>(this IResponseMocker<T> mock, HttpStatusCode statusCode, string content)
+            where T : IResponseMocker<T>
         {
-            return mock.WithResponse(new ResponseInfo(statusCode, content));
+            return mock.WithResponse(new LocalResponse(statusCode).WithContent(content));
         }
 
-        public static T WithOkResponse<T>(this IHttpMocker<T> mock) where T : IHttpMocker<T>
+        public static T WithOkResponse<T>(this IResponseMocker<T> mock) where T : IResponseMocker<T>
         {
             return mock.WithResponse(HttpStatusCode.OK);
         }
 
-        public static T WithOkResponse<T>(this IHttpMocker<T> mock, string content) where T : IHttpMocker<T>
+        public static T WithOkResponse<T>(this IResponseMocker<T> mock, string content) where T : IResponseMocker<T>
         {
             return mock.WithResponse(HttpStatusCode.OK, content);
         }
 
         #endregion
 
-        #region IHttpTypedMocker<T>
+        #region ITypedResultMocker<T>
 
-        public static T WithResult<T, TResult>(this IHttpTypedMocker<T> mock, TResult result)
-            where T : IHttpTypedMocker<T>
+        public static T WithResult<T, TResult>(this ITypedResultMocker<T> mock, TResult result)
+            where T : ITypedResultMocker<T>
         {
             return mock.WithResult((r, c) => result);
         }
 
-        public static T WithError<T, TError>(this IHttpTypedMocker<T> mock, TError error) 
-            where T : IHttpTypedMocker<T>
+        public static T WithError<T, TError>(this ITypedResultMocker<T> mock, TError error) 
+            where T : ITypedResultMocker<T>
         {
             return mock.WithError((r, c) => error);
         }
@@ -78,13 +79,13 @@ namespace AonWeb.FluentHttp.Mocks
         public static T WithResult<T, TResult>(this IMockTypedBuilder<T> mock, TResult result, HttpStatusCode statusCode)
             where T : IMockTypedBuilder<T>
         {
-            return mock.WithResult((r, c) => result, new ResponseInfo(statusCode, "This allows for caching to work properly"));
+            return mock.WithResult((r, c) => result, new LocalResponse(statusCode).WithContent("This allows for caching to work properly"));
         }
 
         public static T WithError<T, TError>(this IMockTypedBuilder<T> mock, TError error, HttpStatusCode statusCode) 
             where T : IMockTypedBuilder<T>
         {
-            return mock. WithError((r, c) => error, new ResponseInfo(statusCode));
+            return mock.WithError((r, c) => error, new LocalResponse(statusCode));
         }
 
         #endregion
@@ -95,16 +96,6 @@ namespace AonWeb.FluentHttp.Mocks
         {
             using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
                 return reader.ReadToEnd();
-        }
-
-        public static string ReadContents(this Task<HttpResponseMessage> response)
-        {
-            return response.Result.ReadContents();
-        }
-
-        public static string ReadContents(this HttpResponseMessage response)
-        {
-            return response.Content.ReadAsStringAsync().Result;
         }
 
         public static async Task<string> ReadContentsAsync(this Task<HttpResponseMessage> responseTask)

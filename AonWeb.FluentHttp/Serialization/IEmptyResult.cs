@@ -1,7 +1,4 @@
 ﻿namespace AonWeb.FluentHttp.Serialization
 {
-    public interface IEmptyResult
-    {
-        
-    }
+    public interface IEmptyResult { }
 }

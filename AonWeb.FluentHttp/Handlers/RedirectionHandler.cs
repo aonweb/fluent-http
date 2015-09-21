@@ -4,25 +4,26 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class RedirectHandler : HttpCallHandler
+    public class RedirectHandler : Handler
     {
         
         public RedirectHandler()
         {
-            Enabled = HttpCallBuilderDefaults.AutoRedirectEnabled;
-            MaxAutoRedirects = HttpCallBuilderDefaults.DefaultMaxAutoRedirects;
-            RedirectStatusCodes = new HashSet<HttpStatusCode>(HttpCallBuilderDefaults.DefaultRedirectStatusCodes);
+            Enabled = Defaults.Handlers.AutoRedirectEnabled;
+            MaxAutoRedirects = Defaults.Handlers.MaxAutoRedirects;
+            RedirectStatusCodes = new HashSet<HttpStatusCode>(Defaults.Handlers.RedirectStatusCodes);
 
             RedirectValidtor = ShouldRedirect;
         }
 
         private int MaxAutoRedirects { get; set; }
         private static ISet<HttpStatusCode> RedirectStatusCodes { get; set; }
-        private Func<HttpSentContext, bool> RedirectValidtor { get; set; }
-        private Action<HttpRedirectContext> OnRedirect { get; set; }
+        private Func<SentContext, bool> RedirectValidtor { get; set; }
+        private Action<RedirectContext> OnRedirect { get; set; }
 
         public RedirectHandler WithAutoRedirect(bool enabled = true)
         {
@@ -52,32 +53,32 @@ namespace AonWeb.FluentHttp.Handlers
             return this;
         }
 
-        public RedirectHandler WithRedirectValidator(Func<HttpSentContext, bool> validator)
+        public RedirectHandler WithRedirectValidator(Func<SentContext, bool> validator)
         {
             if (validator == null)
-                throw new ArgumentNullException("validator");
+                throw new ArgumentNullException(nameof(validator));
 
             RedirectValidtor = validator;
 
             return this;
         }
 
-        public RedirectHandler WithCallback(Action<HttpRedirectContext> callback)
+        public RedirectHandler WithCallback(Action<RedirectContext> callback)
         {
-            OnRedirect = Helper.MergeAction(OnRedirect, callback);
+            OnRedirect = (Action<RedirectContext>)Delegate.Combine(OnRedirect, callback);
 
             return this;
         }
 
-        public override HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
+        public override HandlerPriority GetPriority(HandlerType type)
         {
-            if (type == HttpCallHandlerType.Sent)
-                return HttpCallHandlerPriority.High;
+            if (type == HandlerType.Sent)
+                return HandlerPriority.High;
 
             return base.GetPriority(type);
         }
 
-        public override async Task OnSent(HttpSentContext context)
+        public override async Task OnSent(SentContext context)
         {
             if (!RedirectValidtor(context)) 
                 return;
@@ -91,7 +92,7 @@ namespace AonWeb.FluentHttp.Handlers
 
             var newUri = GetRedirectUri(uri, context.Result);
 
-            var ctx = new HttpRedirectContext
+            var ctx = new RedirectContext
             {
                 StatusCode = context.Result.StatusCode,
                 RequestMessage = context.Result.RequestMessage,
@@ -103,8 +104,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (ctx.RedirectUri == null)
                 return;
 
-            if (OnRedirect != null)
-                OnRedirect(ctx);
+            OnRedirect?.Invoke(ctx);
 
             if (!ctx.ShouldRedirect) 
                 return;
@@ -113,13 +113,13 @@ namespace AonWeb.FluentHttp.Handlers
             context.Items["RedirectCount"] = redirectCount + 1;
 
             // dispose of previous response
-            Helper.DisposeResponse(context.Result);
+            ObjectHelpers.DisposeResponse(context.Result);
 
-            context.Result = await context.Builder.RecursiveResultAsync();
+            context.Result = await context.Builder.RecursiveResultAsync(context.Token);
             
         }
 
-        private bool ShouldRedirect(HttpSentContext context)
+        private bool ShouldRedirect(SentContext context)
         {
             return RedirectStatusCodes.Contains(context.Result.StatusCode);
         } 
@@ -134,10 +134,10 @@ namespace AonWeb.FluentHttp.Handlers
             if (locationUri.IsAbsoluteUri)
                 return locationUri;
 
-            if (locationUri.IsAbsoluteUri)
+            if (UriHelpers.IsAbsolutePath(locationUri.OriginalString))
                 return new Uri(originalUri, locationUri);
 
-            return new Uri(Helper.CombineVirtualPaths(originalUri.GetLeftPart(UriPartial.Path), locationUri.OriginalString));
+            return new Uri(UriHelpers.CombineVirtualPaths(originalUri.GetSchemeHostPath(), locationUri.OriginalString));
         }   
     }
 }

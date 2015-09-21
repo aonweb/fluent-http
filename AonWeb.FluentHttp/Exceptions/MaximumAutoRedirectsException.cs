@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Runtime.Serialization;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
@@ -10,14 +8,12 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class MaximumAutoRedirectsException : HttpCallException
     {
-        
         public MaximumAutoRedirectsException(HttpStatusCode statusCode)
             : base(statusCode) { }
 
         public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message)
             : base(statusCode, message) { }
 
-        
         public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message, Exception exception) :
             base(statusCode, message, exception) { }
     }

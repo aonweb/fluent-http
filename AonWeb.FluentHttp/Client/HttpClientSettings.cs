@@ -8,24 +8,37 @@ namespace AonWeb.FluentHttp.Client
     public class HttpClientSettings
     {
         public HttpClientSettings()
+            : this(true) { }
+
+        private HttpClientSettings(bool init)
         {
-            Timeout = HttpCallBuilderDefaults.DefaultClientTimeout;
-            MaxRequestContentBufferSize = HttpCallBuilderDefaults.DefaultMaxRequestContentBufferSize;
-            ClientConfiguration = HttpCallBuilderDefaults.DefaultClientConfiguration;
-            HeaderConfiguration = HttpCallBuilderDefaults.DefaultRequestHeadersConfiguration;
-            DecompressionMethods = HttpCallBuilderDefaults.DefaultDecompressionMethods;
-            ClientCertificateOptions = HttpCallBuilderDefaults.DefaultClientCertificateOptions;
-            Credentials = HttpCallBuilderDefaults.DefaultCredentials;
+            if (init)
+                Init();
         }
 
-        public Action<IHttpClient> ClientConfiguration { get; internal set; }
-        public Action<HttpRequestHeaders> HeaderConfiguration { get; internal set; }
-        public DecompressionMethods? DecompressionMethods { get; internal set; }
-        public ClientCertificateOption? ClientCertificateOptions { get; internal set; }
-        public CookieContainer CookieContainer { get; internal set; }
-        public ICredentials Credentials { get; internal set; }
-        public long? MaxRequestContentBufferSize { get; internal set; }
-        public IWebProxy Proxy { get; internal set; }
-        public TimeSpan? Timeout { get; internal set; }
+        private void Init()
+        {
+            Timeout = Defaults.Client.Timeout;
+            MaxRequestContentBufferSize = Defaults.Client.MaxRequestContentBufferSize;
+            ClientConfiguration = Defaults.Client.ClientConfiguration;
+            RequestHeaderConfiguration = Defaults.Client.RequestHeaderConfiguration;
+            DecompressionMethods = Defaults.Client.DecompressionMethods;
+            ClientCertificateOptions = Defaults.Client.ClientCertificateOptions;
+            Credentials = Defaults.Client.Credentials;
+            CookieContainer = Defaults.Client.CookieContainer;
+            Proxy = Defaults.Client.Proxy;
+        }
+
+        public Action<IHttpClient> ClientConfiguration { get; set; }
+        public Action<HttpRequestHeaders> RequestHeaderConfiguration { get; set; }
+        public DecompressionMethods? DecompressionMethods { get; set; }
+        public ClientCertificateOption? ClientCertificateOptions { get; set; }
+        public CookieContainer CookieContainer { get; set; }
+        public ICredentials Credentials { get; set; }
+        public long? MaxRequestContentBufferSize { get; set; }
+        public IWebProxy Proxy { get; set; }
+        public TimeSpan? Timeout { get; set; }
+
+        public static HttpClientSettings Empty => new HttpClientSettings(false);
     }
 }

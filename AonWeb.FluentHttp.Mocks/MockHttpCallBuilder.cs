@@ -2,69 +2,67 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-
+using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockHttpCallBuilder : HttpCallBuilder, IMockHttpCallBuilder
+    public class MockHttpBuilder : HttpBuilder, IMockHttpBuilder
     {
         private readonly IList<IAssertAction> _asserts;
         private Action _assertFailure;
 
-        public MockHttpCallBuilder()
-            : this(new MockHttpClientBuilder()) { }
-
-        protected MockHttpCallBuilder(IMockHttpClientBuilder clientBuilder)
-            : base(clientBuilder)
+        public MockHttpBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder,
+            IReadOnlyCollection<IHandler> defaultHandlers)
+            : base(settings, clientBuilder, defaultHandlers)
         {
-            _asserts = new List<IAssertAction>();
+             _asserts = new List<IAssertAction>();
             _assertFailure = (() => { throw new Exception("assertion was never called"); });
 
             ConfigureMock();
         }
 
-        public IMockHttpCallBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public IMockHttpBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
         {
-            ConfigureClient(b => ((MockHttpClientBuilder)b).WithResponse(responseFactory));
+            WithClientConfiguration(b => ((MockHttpClientBuilder)b).WithResponse(responseFactory));
 
             return this;
         }
 
-        public IMockHttpCallBuilder VerifyOnSending(Action<HttpSendingContext> handler)
+        public IMockHttpBuilder VerifyOnSending(Action<SendingContext> handler)
         {
-            var assert = new AssertAction<HttpSendingContext>(handler, () => _assertFailure);
+            var assert = new AssertAction<SendingContext>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 
-            OnSending(HttpCallHandlerPriority.Last, assert);
+            this.OnSending(HandlerPriority.Last, assert);
 
             return this;
         }
 
-        public IMockHttpCallBuilder VerifyOnSent(Action<HttpSentContext> handler)
+        public IMockHttpBuilder VerifyOnSent(Action<SentContext> handler)
         {
-            var assert = new AssertAction<HttpSentContext>(handler, () => _assertFailure);
+            var assert = new AssertAction<SentContext>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 
-            OnSent(HttpCallHandlerPriority.Last, assert);
+            this.OnSent(HandlerPriority.Last, assert);
 
             return this;
         }
 
-        public IMockHttpCallBuilder VerifyOnException(Action<HttpExceptionContext> handler)
+        public IMockHttpBuilder VerifyOnException(Action<ExceptionContext> handler)
         {
-            var assert = new AssertAction<HttpExceptionContext>(handler, () => _assertFailure);
+            var assert = new AssertAction<ExceptionContext>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 
-            OnException(HttpCallHandlerPriority.Last, assert);
+            this.OnException(HandlerPriority.Last, assert);
 
             return this;
         }
 
-        public IMockHttpCallBuilder WithAssertFailure(Action failureAction)
+        public IMockHttpBuilder WithAssertFailure(Action failureAction)
         {
             _assertFailure = failureAction;
 
@@ -91,8 +89,8 @@ namespace AonWeb.FluentHttp.Mocks
 
         private void ConfigureMock()
         {
-            OnSending(HttpCallHandlerPriority.Last, context => context.Items["MockRequest"] = context.Request);
-            OnSent(HttpCallHandlerPriority.First, context => context.Result.RequestMessage = context.Items["MockRequest"] as HttpRequestMessage);
+            this.OnSending(HandlerPriority.Last, context => context.Items["MockRequest"] = context.Request);
+            this.OnSent(HandlerPriority.First, context => context.Result.RequestMessage = context.Items["MockRequest"] as HttpRequestMessage);
         }
     }
 }

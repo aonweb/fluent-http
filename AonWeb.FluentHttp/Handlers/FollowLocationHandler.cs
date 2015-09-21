@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class FollowLocationHandler : HttpCallHandler
+    public class FollowLocationHandler : Handler
     {
-
         public FollowLocationHandler()
         {
-            Enabled = HttpCallBuilderDefaults.AutoFollowLocationEnabled;
-            FollowedStatusCodes = new HashSet<HttpStatusCode>(HttpCallBuilderDefaults.DefaultFollowedStatusCodes);
+            Enabled = Defaults.Handlers.AutoFollowLocationEnabled;
+            FollowedStatusCodes = new HashSet<HttpStatusCode>(Defaults.Handlers.FollowedStatusCodes);
             FollowValidtor = ShouldFollow;
         }
 
-        private Func<HttpSentContext, bool> FollowValidtor { get; set; }
+        private Func<SentContext, bool> FollowValidtor { get; set; }
         private Action<HttpFollowLocationContext> OnFollow { get; set; }
         private static ISet<HttpStatusCode> FollowedStatusCodes { get; set; }
 
@@ -38,10 +38,10 @@ namespace AonWeb.FluentHttp.Handlers
         }
         
 
-        public FollowLocationHandler WithFollowValidator(Func<HttpSentContext, bool> validator)
+        public FollowLocationHandler WithFollowValidator(Func<SentContext, bool> validator)
         {
             if (validator == null)
-                throw new ArgumentNullException("validator");
+                throw new ArgumentNullException(nameof(validator));
 
             FollowValidtor = validator;
 
@@ -50,20 +50,20 @@ namespace AonWeb.FluentHttp.Handlers
 
         public FollowLocationHandler WithCallback(Action<HttpFollowLocationContext> callback)
         {
-            OnFollow = Helper.MergeAction(OnFollow, callback);
+            OnFollow = (Action<HttpFollowLocationContext>)Delegate.Combine(OnFollow, callback);
 
             return this;
         }
 
-        public override HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
+        public override HandlerPriority GetPriority(HandlerType type)
         {
-            if (type == HttpCallHandlerType.Sent)
-                return HttpCallHandlerPriority.High;
+            if (type == HandlerType.Sent)
+                return HandlerPriority.High;
 
             return base.GetPriority(type);
         }
 
-        public override async Task OnSent(HttpSentContext context)
+        public override async Task OnSent(SentContext context)
         {
             if (!FollowValidtor(context)) 
                 return;
@@ -83,8 +83,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (ctx.LocationUri == null)
                 return;
 
-            if (OnFollow != null)
-                OnFollow(ctx);
+            OnFollow?.Invoke(ctx);
 
             if (!ctx.ShouldFollow) 
                 return;
@@ -92,13 +91,12 @@ namespace AonWeb.FluentHttp.Handlers
             context.Builder.WithUri(ctx.LocationUri).AsGet().WithContent(string.Empty);
 
             // dispose of previous response
-            Helper.DisposeResponse(context.Result);
+            ObjectHelpers.DisposeResponse(context.Result);
 
-            context.Result = await context.Builder.RecursiveResultAsync();
-            
+            context.Result = await context.Builder.RecursiveResultAsync(context.Token);
         }
 
-        private bool ShouldFollow(HttpSentContext context)
+        private static bool ShouldFollow(SentContext context)
         {
             if (!context.IsSuccessfulResponse())
                 return false;
@@ -123,10 +121,10 @@ namespace AonWeb.FluentHttp.Handlers
             if (locationUri.IsAbsoluteUri)
                 return locationUri;
 
-            if (locationUri.IsAbsoluteUri)
+            if (UriHelpers.IsAbsolutePath(locationUri.OriginalString))
                 return new Uri(originalUri, locationUri);
 
-            return new Uri(Helper.CombineVirtualPaths(originalUri.GetLeftPart(UriPartial.Path), locationUri.OriginalString));
+            return new Uri(UriHelpers.CombineVirtualPaths(originalUri.GetSchemeHostPath(), locationUri.OriginalString));
         }   
     }
 

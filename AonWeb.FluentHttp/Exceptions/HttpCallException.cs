@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Runtime.Serialization;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
@@ -21,7 +19,6 @@ namespace AonWeb.FluentHttp.Exceptions
             StatusCode = statusCode;
         }
 
-        
         public HttpCallException(HttpStatusCode statusCode, string message, Exception exception) :
             base(message, exception)
         {

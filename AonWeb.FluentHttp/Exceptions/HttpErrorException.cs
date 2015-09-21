@@ -11,19 +11,17 @@ namespace AonWeb.FluentHttp.Exceptions
     public class HttpErrorException<TError> : HttpCallException
     {
         public HttpErrorException(TError error, HttpStatusCode statusCode)
-            : base(statusCode)
+            : this(error ,statusCode, error?.ToString())
         {
             Error = error;
         }
 
-        
         public HttpErrorException(TError error, HttpStatusCode statusCode, string message)
             : base(statusCode, message)
         {
             Error = error;
         }
 
-        
         public HttpErrorException(TError error, HttpStatusCode statusCode, string message, Exception exception) :
             base(statusCode, message, exception)
         {

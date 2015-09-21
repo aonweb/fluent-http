@@ -9,7 +9,7 @@ using AonWeb.FluentHttp.Client;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockHttpClient : IHttpClient, IHttpMocker<MockHttpClient>
+    public class MockHttpClient : IHttpClient, IResponseMocker<MockHttpClient>
     {
         private readonly HttpClient _client = new HttpClient();
 
@@ -49,17 +49,10 @@ namespace AonWeb.FluentHttp.Mocks
 
         public void Dispose()
         {
-            if (_client != null)
-                _client.Dispose();
+            _client?.Dispose();
         }
 
-        public HttpRequestHeaders DefaultRequestHeaders
-        {
-            get
-            {
-                return _client.DefaultRequestHeaders;
-            }
-        }
+        public HttpRequestHeaders DefaultRequestHeaders => _client.DefaultRequestHeaders;
 
         public void CancelPendingRequests() { }
 

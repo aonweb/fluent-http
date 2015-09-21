@@ -18,7 +18,7 @@ namespace AonWeb.FluentHttp.HAL.Representations
         }
 
         [JsonIgnore]
-        public IEnumerable<Uri> DependentUris { get; private set; }
+        public IEnumerable<Uri> DependentUris { get; }
     }
 
     public class HalRequest<T> : HalRequest

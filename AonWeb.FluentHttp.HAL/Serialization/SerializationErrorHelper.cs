@@ -23,10 +23,10 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 message = message + " ";
             }
 
-            message = message + String.Format("Path '{0}'", path);
+            message = message + $"Path '{path}'";
 
             if (lineInfo != null && lineInfo.HasLineInfo())
-                message = message + String.Format(", line {0}, position {1}", lineInfo.LineNumber, lineInfo.LinePosition);
+                message = message + $", line {lineInfo.LineNumber}, position {lineInfo.LinePosition}";
 
             message = message + ".";
             return message;

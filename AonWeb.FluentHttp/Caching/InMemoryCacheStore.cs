@@ -4,22 +4,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.OptionsModel;
+using AonWeb.FluentHttp.Handlers.Caching;
+using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Caching
 {
     public class InMemoryCacheStore : IHttpCacheStore
     {
-        private const string CacheName = "HttpCallCacheInMemoryStore";
+        //private const string CacheName = "HttpCallCacheInMemoryStore";
 
-        private static MemoryCache _cache = CreateCache();
-        private static readonly ConcurrentDictionary<string, UriCacheInfo> _uriCache = new ConcurrentDictionary<string, UriCacheInfo>();
-        private static readonly ResponseSerializer _serializer = new ResponseSerializer();
+        private static readonly ConcurrentDictionary<string, CachedItem> Cache = new ConcurrentDictionary<string, CachedItem>();
+        private static readonly ConcurrentDictionary<Uri, UriCacheInfo> UriCache = new ConcurrentDictionary<Uri, UriCacheInfo>();
+        private static readonly ResponseSerializer Serializer = new ResponseSerializer();
 
-        public async Task<CacheResult> GetCachedResult(CacheContext context)
+        public async Task<CacheResult> GetCachedResult(ICacheContext context)
         {
-            var cachedItem = _cache.Get(context.Key) as CachedItem;
+            var key = FluentHttp.Cache.BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+
+            CachedItem cachedItem = null;
+            CachedItem temp;
+            if (Cache.TryGetValue(key, out temp))
+            {
+                if (context.ResponseValidator(context, temp.ResponseInfo) == ResponseValidationResult.OK)
+                    cachedItem = temp;
+            }
 
             if (cachedItem == null)
                 return CacheResult.Empty;
@@ -30,7 +39,7 @@ namespace AonWeb.FluentHttp.Caching
             {
                 var responseBuffer = cachedItem.Result as byte[];
 
-                result = await _serializer.Deserialize(responseBuffer);
+                result = await Serializer.Deserialize(responseBuffer);
             }
             else
             {
@@ -40,27 +49,35 @@ namespace AonWeb.FluentHttp.Caching
             return new CacheResult(result, cachedItem.ResponseInfo);
         }
 
-        public async Task AddOrUpdate(CacheContext context)
+        public async Task AddOrUpdate(ICacheContext context)
         {
             var isResponseMessage = false;
 
-            var response = context.CacheResult.Result as HttpResponseMessage;
+            var key = FluentHttp.Cache.BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
 
-            var cachedItem = _cache.Get(context.Key) as CachedItem;
+            CachedItem cachedItem = null;
+            CachedItem temp;
+            if (Cache.TryGetValue(key, out temp))
+            {
+                if (context.ResponseValidator(context, temp.ResponseInfo) == ResponseValidationResult.OK)
+                    cachedItem = temp;
+            }
+
+            var response = context.Result.Result as HttpResponseMessage;
 
             if (cachedItem == null)
             {
                 object result;
                 if (response != null)
                 {
-                    result = await _serializer.Serialize(response);
+                    result = await Serializer.Serialize(response);
                     isResponseMessage = true;
                 }
                 else
                 {
-                    result = context.CacheResult.Result;
+                    result = context.Result.Result;
                 }
-                cachedItem = new CachedItem(context.CacheResult.ResponseInfo)
+                cachedItem = new CachedItem(context.Result.ResponseInfo)
                 {
                     Result = result,
                     IsHttpResponseMessage = isResponseMessage
@@ -68,65 +85,47 @@ namespace AonWeb.FluentHttp.Caching
             }
             else
             {
-                cachedItem.ResponseInfo.Merge(context.CacheResult.ResponseInfo);
+                cachedItem.ResponseInfo.Merge(context.Result.ResponseInfo);
             }
 
-            _cache.Set(context.Key, cachedItem, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpiration = cachedItem.ResponseInfo.Expiration
-            });
+            Cache.TryAdd(key, cachedItem);
 
-            AddCacheKey(context.Uri, context.Key);
+            AddCacheKey(context.Uri, key);
         }
 
-        public IList<string> TryRemove(CacheContext context, IEnumerable<Uri> additionalRelatedUris)
+        public IEnumerable<Uri> TryRemove(ICacheContext context, IEnumerable<Uri> additionalRelatedUris)
         {
-            if (string.IsNullOrWhiteSpace(context.Key))
-                return new string[0];
-
-            var item = _cache.Get(context.Key) as CachedItem;
-
-            _cache.Remove(context.Key);
+            var key = FluentHttp.Cache.BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+            CachedItem cachedItem;
+            if (string.IsNullOrWhiteSpace(key) || !Cache.TryRemove(key, out cachedItem))
+                yield break;
 
             if (context.Uri != null)
-                RemoveCacheKey(context.Uri, context.Key);
+                RemoveCacheKey(context.Uri, key);
 
-            return new []{ context.Key}.Concat(RemoveRelatedUris(item, context, additionalRelatedUris)).ToList();
+            yield return context.Uri;
+
+            foreach (var uri in RemoveRelatedUris(cachedItem, context, additionalRelatedUris))
+            {
+                yield return uri;
+            }
         }
 
         public void Clear()
         {
-            _cache.Dispose();
-
-            _cache = CreateCache();
+            Cache.Clear();
         }
 
-        public IEnumerable<string> RemoveItem(Uri uri)
+        public IEnumerable<Uri> RemoveItem(Uri uri)
         {
             return RemoveRelatedUris(new[] { uri });
         }
 
-        private static MemoryCache CreateCache()
+        private IEnumerable<Uri> RemoveRelatedUris(CachedItem cachedItem, ICacheContext cacheContext, IEnumerable<Uri> additionalRelatedUris)
         {
-            return new MemoryCache(new MemoryCacheOptions());
-        }
+            var uris = cacheContext.Result.ResponseInfo?.DependentUris ?? Enumerable.Empty<Uri>();
 
-        private IEnumerable<string> RemoveRelatedUris(CachedItem cachedItem, CacheContext cacheContext, IEnumerable<Uri> additionalRelatedUris)
-        {
-            IEnumerable<Uri> uris;
-
-            if (cacheContext != null
-                && cacheContext.CacheResult != null
-                && cacheContext.CacheResult.ResponseInfo != null)
-            {
-                uris = cacheContext.CacheResult.ResponseInfo.DependentUris ?? Enumerable.Empty<Uri>();
-            }
-            else
-            {
-                uris = Enumerable.Empty<Uri>();
-            } 
-
-            if (cachedItem != null && cachedItem.ResponseInfo != null)
+            if (cachedItem?.ResponseInfo != null)
                 uris = uris.Concat(cachedItem.ResponseInfo.DependentUris ?? Enumerable.Empty<Uri>());
 
             uris = uris.Concat(additionalRelatedUris ?? Enumerable.Empty<Uri>());
@@ -134,7 +133,7 @@ namespace AonWeb.FluentHttp.Caching
             return RemoveRelatedUris(uris);
         }
 
-        private static IEnumerable<string> RemoveRelatedUris(IEnumerable<Uri> uris)
+        private static IEnumerable<Uri> RemoveRelatedUris(IEnumerable<Uri> uris)
         {
             foreach (var uri in uris.Where(u => u != null).Distinct())
             {
@@ -152,14 +151,12 @@ namespace AonWeb.FluentHttp.Caching
                         if (cacheInfo.CacheKeys.Contains(key))
                             cacheInfo.CacheKeys.Remove(key);
 
-                        var cachedItem = _cache.Get(key) as CachedItem;
+                        CachedItem cachedItem;
 
-                        if (cachedItem == null)
+                        if (!Cache.TryRemove(key, out cachedItem) || cachedItem == null)
                             continue;
 
-                        _cache.Remove(key);
-
-                        yield return key;
+                        yield return cachedItem.ResponseInfo.Uri;
 
                         foreach (var child in RemoveRelatedUris(cachedItem.ResponseInfo.DependentUris))
                             yield return child;
@@ -171,11 +168,11 @@ namespace AonWeb.FluentHttp.Caching
 
         private static UriCacheInfo GetCacheInfo(Uri uri)
         {
-            var key = uri.GetLeftPart(UriPartial.Path);
+            var normalizedUri = uri.NormalizeUri();
 
             UriCacheInfo cacheInfo;
 
-            if (_uriCache.TryGetValue(key, out cacheInfo))
+            if (UriCache.TryGetValue(normalizedUri, out cacheInfo))
                 return cacheInfo;
 
             return null;
@@ -183,11 +180,11 @@ namespace AonWeb.FluentHttp.Caching
 
         private static void AddCacheKey(Uri uri, string cacheKey)
         {
-            var key = uri.GetLeftPart(UriPartial.Path);
+            var normalizedUri = uri.NormalizeUri();
 
             UriCacheInfo cacheInfo;
 
-            if (!_uriCache.TryGetValue(key, out cacheInfo))
+            if (!UriCache.TryGetValue(normalizedUri, out cacheInfo))
                 cacheInfo = new UriCacheInfo();
 
             lock (cacheInfo)
@@ -196,16 +193,16 @@ namespace AonWeb.FluentHttp.Caching
                     cacheInfo.CacheKeys.Add(cacheKey);
             }
 
-            _uriCache[key] = cacheInfo;
+            UriCache[normalizedUri] = cacheInfo;
         }
 
         private static void RemoveCacheKey(Uri uri, string cacheKey)
         {
-            var key = uri.GetLeftPart(UriPartial.Path);
+            var normalizedUri = uri.NormalizeUri();
 
             UriCacheInfo cacheInfo;
 
-            if (!_uriCache.TryGetValue(key, out cacheInfo))
+            if (!UriCache.TryGetValue(normalizedUri, out cacheInfo))
                 return;
 
             lock (cacheInfo)

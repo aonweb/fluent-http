@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -10,32 +12,32 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
     public class LocalWebServer : IDisposable
     {
         public const string DefaultListenerUri = "http://localhost:8889/";
-       
-        private readonly ResponseQueue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>> _responses;
+
+        private readonly List<KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse>> _responses;
         private readonly AutoResetEvent _handle;
         private readonly IList<string> _prefixes;
 
         private HttpListener _listener = new HttpListener();
-        private Action<LocalWebServerRequestInfo> _requestInspector;
+        private Action<ILocalRequestContext> _requestInspector;
+        private long _totalCount;
+        private readonly ConcurrentDictionary<string, long> _urlCount;
+        private bool _loggingEnabled;
 
         public LocalWebServer()
-            : this(DefaultListenerUri) { }
+            : this(DefaultListenerUri)
+        { }
+
 
         public LocalWebServer(string listenerUri)
-            : this(listenerUri, new Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[0]) { }
-
-        public LocalWebServer(Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[] responses)
-            : this(DefaultListenerUri, responses) { }
-
-        public LocalWebServer(params LocalWebServerResponseInfo[] responses)
-            : this(DefaultListenerUri, responses.Select(r => (Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>)(request => r)).ToArray()) { }
-
-        public LocalWebServer(string listenerUri, params Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>[] responses)
         {
-            EnableLogging = true;
+            _loggingEnabled = true;
             _prefixes = new List<string> { listenerUri };
             _handle = new AutoResetEvent(false);
-            _responses = new ResponseQueue<Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo>>(r => new LocalWebServerResponseInfo(), responses);
+            _responses = new List<KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse>>();
+
+            _totalCount = 0;
+
+            _urlCount = new ConcurrentDictionary<string, long>();
         }
 
         public static LocalWebServer ListenInBackground()
@@ -62,17 +64,16 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
             return listener;
         }
 
-        public WaitHandle WaitHandle
+        public WaitHandle WaitHandle => _handle;
+
+        public LocalWebServer WithLogging(bool logging)
         {
-            get
-            {
-                return _handle;
-            }
+            _loggingEnabled = logging;
+
+            return this;
         }
 
-        public bool EnableLogging { get; set; }
-
-        public void Start(params string[] additionalUris)
+        public LocalWebServer Start(params string[] additionalUris)
         {
             _listener = new HttpListener();
 
@@ -86,41 +87,48 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
                 var result = _listener.BeginGetContext(ListenerCallback, _listener);
                 result.AsyncWaitHandle.WaitOne();
             }
+
+            return this;
         }
 
-        public void Stop()
+        public LocalWebServer Stop()
         {
-            if (_listener != null)
+            if (_listener != null && _listener.IsListening)
             {
                 _listener.Stop();
                 _listener.Close();
             }
 
             _handle.Set();
+
+            return this;
         }
 
-        public LocalWebServer AddResponse(LocalWebServerResponseInfo response)
+        public LocalWebServer Reset()
         {
-            return AddResponse(request => response);
+            Stop();
+
+            _loggingEnabled = true;
+
+            _responses.Clear();
+
+            _totalCount = 0;
+
+            _urlCount.Clear();
+
+            return this;
         }
 
-        public LocalWebServer AddResponse(Func<LocalWebServerRequestInfo, LocalWebServerResponseInfo> response)
+        public LocalWebServer WithResponse(KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse> response)
         {
             _responses.Add(response);
 
             return this;
         }
 
-        public LocalWebServer InspectRequest(Action<LocalWebServerRequestInfo> inspector)
+        public LocalWebServer WithRequestInspector(Action<ILocalRequestContext> visitor)
         {
-            _requestInspector = inspector;
-
-            return this;
-        }
-
-        public LocalWebServer RemoveNextResponse()
-        {
-             _responses.RemoveNext();
+            _requestInspector = (Action<ILocalRequestContext>)Delegate.Combine(_requestInspector, visitor);
 
             return this;
         }
@@ -138,21 +146,13 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
                 return;
             }
 
-            var requestInfo = GetRequestInfo(context.Request);
+            var request = context.Request;
+            var url = request.Url.ToString();
+            long urlCount;
 
-            Log(requestInfo);
+            _urlCount.TryGetValue(url, out urlCount);
 
-            if (_requestInspector != null)
-                _requestInspector(requestInfo);
-
-            var responseInfo = GetResponseInfo(requestInfo);
-
-            CreateResponse(context, responseInfo);
-        }
-
-        private LocalWebServerRequestInfo GetRequestInfo(HttpListenerRequest request)
-        {
-            return new LocalWebServerRequestInfo
+            var requestInfo = new LocalRequestSettings
             {
                 ContentEncoding = request.ContentEncoding,
                 ContentLength = request.ContentLength64,
@@ -165,57 +165,80 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
                 RawUrl = request.RawUrl,
                 AcceptTypes = request.AcceptTypes,
                 UserAgent = request.UserAgent,
-                Body = request.ReadContents()
+                Body = request.ReadContents(),
+                RequestCount = _totalCount,
+                RequestCountForThisUrl = urlCount
             };
+
+            Log(requestInfo);
+
+            _requestInspector?.Invoke(requestInfo);
+
+            var responseInfo = GetResponseInfo(requestInfo);
+
+            CreateResponse(context, responseInfo);
+
+            Interlocked.Increment(ref _totalCount);
+            _urlCount.AddOrUpdate(url, 0, (u, c) => c + 1);
         }
 
-        private void Log(LocalWebServerRequestInfo request)
+        private void Log(ILocalRequestContext request)
         {
-            if (!EnableLogging)
+            if (!_loggingEnabled)
                 return;
 
-            Write("Request: {0} - {1}", request.HttpMethod, request.Url);
+            Debug.WriteLine("Request: {0} - {1}", request.HttpMethod, request.Url);
 
             if (request.HasEntityBody)
             {
                 if (request.ContentType != null)
-                    Write("   ContentType: {0}", request.ContentType);
+                    Debug.WriteLine("   ContentType: {0}", request.ContentType);
 
-                Write("   ContentLength: {0}", request.ContentLength);
-                Write("   Body:");
-                Write(request.Body);
-                Write("---- End Request ----");
-                Write();
-            } 
+                Debug.WriteLine("   ContentLength: {0}", request.ContentLength);
+                Debug.WriteLine("   Content:");
+                Debug.WriteLine(request.Body);
+                Debug.WriteLine("---- End Request ----");
+                Debug.WriteLine("");
+            }
         }
 
         private void Log(HttpListenerResponse response, string body)
         {
-            if (!EnableLogging)
+            if (!_loggingEnabled)
                 return;
 
-            Write("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
-            Write("  Headers:");
+            Debug.WriteLine("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
+            Debug.WriteLine("  Headers:");
             foreach (var name in response.Headers.AllKeys)
             {
-                Write("   {0}: {1}", name, response.Headers[name]);
+                Debug.WriteLine("   {0}: {1}", name, response.Headers[name]);
             }
 
             if (!string.IsNullOrEmpty(body))
             {
-                Write("   Body: {0}", body);
+                Debug.WriteLine("   Content: {0}", body);
             }
 
-            Write("---- End Response ----");
-            Write();
+            Debug.WriteLine("---- End Response ----");
+            Debug.WriteLine("");
         }
 
-        private LocalWebServerResponseInfo GetResponseInfo(LocalWebServerRequestInfo requestInfo)
+        private ILocalResponse GetResponseInfo(ILocalRequestContext context)
         {
-            return _responses.GetNext()(requestInfo);
+            KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse> response;
+
+            lock (_responses)
+            {
+                response = _responses.FirstOrDefault(kp => kp.Key(context));
+
+                if (response.Value?.IsTransient == true)
+                    _responses.Remove(response);
+            }
+
+            return response.Value ?? new LocalResponse();
         }
 
-        private void CreateResponse(HttpListenerContext context, LocalWebServerResponseInfo responseInfo)
+        private void CreateResponse(HttpListenerContext context, ILocalResponse responseInfo)
         {
             var response = context.Response;
             response.StatusCode = (int)responseInfo.StatusCode;
@@ -231,11 +254,11 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
 
             try
             {
-                var buffer = responseInfo.ContentEncoding.GetBytes(responseInfo.Body);
+                var buffer = responseInfo.ContentEncoding.GetBytes(responseInfo.Content);
                 response.ContentLength64 = buffer.Length;
                 response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                Log(response, responseInfo.Body);
+                Log(response, responseInfo.Content);
             }
             finally
             {
@@ -243,19 +266,17 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
             }
         }
 
-        public void Write(string output = "")
-        {
-            Console.WriteLine(output);
-        }
-
-        public void Write(string output, params object[] args)
-        {
-            Console.WriteLine(output, args);
-        }
-
         public void Dispose()
         {
-            Stop();
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Stop();
+            }
         }
     }
 }

@@ -1,12 +1,11 @@
 using System.Net.Http;
+using AonWeb.FluentHttp.Handlers.Caching;
 
 namespace AonWeb.FluentHttp.Caching
 {
-    public class CacheResult
+    public struct CacheResult
     {
-        private CacheResult() {  }
-
-        public CacheResult(object result, HttpResponseMessage response, CacheContext context)
+        public CacheResult(object result, HttpResponseMessage response, ICacheContext context)
             : this(result, new ResponseInfo(result, response, context)) { }
 
         public CacheResult(object result, ResponseInfo responseInfo)
@@ -22,7 +21,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public static CacheResult Empty = new CacheResult();
 
-        public void UpdateResponseInfo(HttpResponseMessage response, CacheContext context)
+        public void UpdateResponseInfo(HttpResponseMessage response, ICacheContext context)
         {
             if (ResponseInfo == null)
                 ResponseInfo = new ResponseInfo(Result, response, context);
