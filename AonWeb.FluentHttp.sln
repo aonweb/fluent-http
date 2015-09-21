@@ -13,14 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Mocks", "AonWeb.FluentHttp.Mocks\AonWeb.FluentHttp.Mocks.csproj", "{819F270C-4105-4380-8EA5-310832A54B7F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{00E49101-6115-4ECF-AD69-D2E250A44BC2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{3079726C-4ADF-4F95-884A-2BFA8D351551}"
 	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
-		.nuget\push-hal.cmd = .nuget\push-hal.cmd
-		.nuget\push-http.cmd = .nuget\push-http.cmd
-		.nuget\push-mocks.cmd = .nuget\push-mocks.cmd
+		NugetPushAll.cmd = NugetPushAll.cmd
 	EndProjectSection
 EndProject
 Global
