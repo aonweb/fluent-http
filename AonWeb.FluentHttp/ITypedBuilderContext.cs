@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp
         Func<Type, object> DefaultResultFactory { get; }
         MediaTypeFormatterCollection MediaTypeFormatters { get; }
         TypedHandlerRegister Handler { get; }
-        bool SuppressHandlerTypeExceptions { get; }
+        bool SuppressTypeMismatchExceptions { get; }
         Func<ErrorContext, Exception> ExceptionFactory { get; }
         bool DeserializeResult { get; }
         CancellationToken Token { get; }

@@ -26,6 +26,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         ISet<HttpMethod> CacheableHttpMethods { get; }
         ISet<HttpStatusCode> CacheableHttpStatusCodes { get; }
         ResponseValidationResult ValidationResult { get; set; }
+        bool SuppressTypeMismatchExceptions { get; }
         IHandlerContext GetHandlerContext();
     }
 
@@ -37,6 +38,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         ISet<HttpMethod> CacheableHttpMethods { get; }
         ISet<HttpStatusCode> CacheableHttpStatusCodes { get; }
         ISet<string> DefaultVaryByHeaders { get; }
+        bool SuppressTypeMismatchExceptions { get; }
         TimeSpan DefaultExpiration { get; set; }
         bool MustRevalidateByDefault { get; set; }
         Action<CacheResult> ResultInspector { get; set; }
@@ -62,6 +64,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             RevalidateValidator = Defaults.Caching.RevalidateValidator;
             ResponseValidator = Defaults.Caching.ResponseValidator;
             AllowStaleResultValidator = Defaults.Caching.AllowStaleResultValidator;
+            SuppressTypeMismatchExceptions = Defaults.TypedBuilder.SuppressTypeMismatchExceptions;
         }
 
         public ISet<HttpMethod> CacheableHttpMethods { get; }
@@ -70,7 +73,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public ISet<Uri> DependentUris { get; }
         public CacheHandlerRegister Handler { get; }
 
-
+        public bool SuppressTypeMismatchExceptions { get; }
 
         public bool Enabled { get; set; }
         public Action<CacheResult> ResultInspector { get; set; }

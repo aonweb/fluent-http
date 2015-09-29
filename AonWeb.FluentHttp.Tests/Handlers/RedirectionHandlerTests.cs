@@ -11,21 +11,19 @@ using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Handlers
 {
     public class RedirectionHandlerTests
     {
-        #region Declarations, Set up, & Tear Down
+        private readonly ITestOutputHelper _logger;
 
-        private const string TestUriString = LocalWebServer.DefaultListenerUri;
-
-        public RedirectionHandlerTests()
+        public RedirectionHandlerTests(ITestOutputHelper logger)
         {
+            _logger = logger;
             Defaults.Caching.Enabled = false;
         }
-
-        #endregion
 
         [Theory]
         [InlineData(HttpStatusCode.Found)]
@@ -33,18 +31,20 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [InlineData(HttpStatusCode.MovedPermanently)]
         public async Task AutoRedirect_WhenCallRedirects_ExpectRedirectOnByDefaultAndLocationFollowed(HttpStatusCode statusCode)
         {
-            var expected = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server
-                    .WithNextResponse(new LocalResponse { StatusCode = statusCode }.WithHeader("Location", expected))
-                    .WithNextResponse(new LocalResponse().WithContent("Success"));
+                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
 
-                string actual = null;
-                server.WithRequestInspector(r => actual = r.Url.ToString());
+                server
+                    .WithNextResponse(new MockHttpResponseMessage { StatusCode = statusCode }.WithHeader("Location", expected.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
+
+                Uri actual = null;
+                server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var response = await new HttpBuilderFactory().Create().WithUri(TestUriString).ResultAsync();
+                var response = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync();
                 var result = await response.ReadContentsAsync();
 
                 actual.ShouldBe(expected);
@@ -56,18 +56,24 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public async Task AutoRedirect_WhenCallRedirects_ExpectContentSent()
         {
-            var expected = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
+                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+
                 server
-                    .WithNextResponse(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", expected))
-                    .WithNextResponse(new LocalResponse().WithContent("Success"));
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", expected.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
                 var actual = new List<string>();
-                server.WithRequestInspector(r => actual.Add(r.Body));
+                server.WithRequestInspector(async r =>
+                {
+                    var content = await r.Content.ReadAsStringAsync();
+                    actual.Add(content);
+                });
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(TestUriString).AsPost().WithContent("Content").ResultAsync().Result.ReadContentsAsync();
+                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).AsPost().WithContent("Content").ResultAsync().Result.ReadContentsAsync();
 
                 actual.Count.ShouldBe(2);
                 actual[1].ShouldBe("Content");
@@ -75,19 +81,22 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         }
 
         [Theory]
-        [InlineData(TestUriString, "/redirect", TestUriString + "redirect")]
-        [InlineData(TestUriString + "post", "/redirect", TestUriString + "redirect")]
-        [InlineData(TestUriString + "post", "redirect", TestUriString + "post/redirect")]
-        public async Task<string> AutoRedirect_WhenCallRedirectsWithRelativePath_ExpectPathHandled(string uri, string path, string expected)
+        [InlineData("", "/redirect",  "redirect")]
+        [InlineData("post", "/redirect",  "redirect")]
+        [InlineData("post", "redirect",  "post/redirect")]
+        public async Task AutoRedirect_WhenCallRedirectsWithRelativePath_ExpectPathHandled(string uriData, string path, string expectedData)
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server
-                    .WithNextResponse(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", path))
-                    .WithNextResponse(new LocalResponse().WithContent("Success"));
+                var uri = UriHelpers.CombineVirtualPaths(server.ListeningUri, uriData);
+                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, expectedData);
 
-                string actual = null;
-                server.WithRequestInspector(r => actual = r.Url.ToString());
+                server
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", path))
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
+
+                Uri actual = null;
+                server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
                 var response = await new HttpBuilderFactory().Create().WithUri(uri).AsPost().WithContent("Content").ResultAsync();
@@ -95,23 +104,23 @@ namespace AonWeb.FluentHttp.Tests.Handlers
 
                 result.ShouldBe("Success");
 
-                return actual;
+                actual.ShouldBe(expected);
             }
         }
 
         [Fact]
         public async Task AutoRedirect_WhenNotEnabledCallRedirects_ExpectNotFollowed()
         {
-            var redirectUrl = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
+                var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
                 server
-                    .WithNextResponse(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl));
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()));
 
                 var calledBack = false;
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(TestUriString).Advanced
+                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
                     .WithRedirectConfiguration(h => h.WithAutoRedirect(false).WithCallback(ctx => calledBack = true))
                     .ResultAsync();
 
@@ -122,17 +131,18 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public async Task AutoRedirect_WhenEnabledAndCallRedirects_ExpectRedirect()
         {
-            var expected = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponse(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", expected))
-                    .WithNextResponse(new LocalResponse().WithContent("Success"));
+                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", expected.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
-                string actual = null;
-                server.WithRequestInspector(r => actual = r.Url.ToString());
+                Uri actual = null;
+                server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(TestUriString).Advanced.WithRedirectConfiguration(h => h.WithAutoRedirect()).ResultAsync().ReadContentsAsync();
+                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithRedirectConfiguration(h => h.WithAutoRedirect()).ResultAsync().ReadContentsAsync();
 
                 actual.ShouldBe(expected);
                 result.ShouldBe("Success");
@@ -142,21 +152,22 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public async Task WithCallback_WhenAction_ExpectConfigurationApplied()
         {
-            var redirectUrl = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
+                var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
                 server
-                    .WithNextResponse(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl))
-                    .WithNextResponse(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl))
-                    .WithNextResponse(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl))
-                    .WithNextResponse(new LocalResponse());
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage());
 
                 int expected = 2;
                 int actual = 0;
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(TestUriString).Advanced
+                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RedirectHandler>(h => h.WithCallback(ctx =>
                     {
                         if (ctx.CurrentRedirectionCount >= 1)
@@ -172,34 +183,33 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public async Task AutoRedirect_WithNoLocationHeader_ExpectNoRedirect()
         {
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new LocalResponse(HttpStatusCode.Created))
-                    .WithNextResponse(new LocalResponse());
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Created))
+                    .WithNextResponse(new MockHttpResponseMessage());
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(TestUriString).ResultAsync();
+                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync();
 
                 result.StatusCode.ShouldBe(HttpStatusCode.Created);
-
             }
         }
 
         [Fact]
         public async Task WithRedirectStatusCode_WithAddedStatusCode_ExpectAutoRetry()
         {
-            var expected = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponse(new LocalResponse(HttpStatusCode.MultipleChoices).WithHeader("Location", expected))
-                    .WithNextResponse(new LocalResponse().WithContent("Success"));
+                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.MultipleChoices).WithHeader("Location", expected.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
-                string actual = null;
-                server.WithRequestInspector(r => actual = r.Url.ToString());
+                Uri actual = null;
+                server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(TestUriString)
+                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
                     .Advanced.WithRedirectConfiguration(h => h.WithRedirectStatusCode(HttpStatusCode.MultipleChoices)).ResultAsync().ReadContentsAsync();
 
                 actual.ShouldBe(expected);
@@ -210,17 +220,17 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public async Task WithRedirectValidator_WithCustomValidator_ExpectValidatorUsed()
         {
-            var expected = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponse(new LocalResponse(HttpStatusCode.MultipleChoices).WithHeader("Location", expected))
-                    .WithNextResponse(new LocalResponse().WithContent("Success"));
+                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.MultipleChoices).WithHeader("Location", expected.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
-                string actual = null;
-                server.WithRequestInspector(r => actual = r.Url.ToString());
+                Uri actual = null;
+                server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(TestUriString)
+                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
                     .Advanced.WithRedirectConfiguration(h =>
                         h.WithRedirectValidator(r => r.Result.StatusCode == HttpStatusCode.MultipleChoices))
                     .ResultAsync().ReadContentsAsync();
@@ -233,7 +243,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public void WithRedirectValidator_WithValidatorIsNull_ExpectException()
         {
-            Should.Throw<ArgumentNullException>(() => new HttpBuilderFactory().Create().WithUri(TestUriString)
+            Should.Throw<ArgumentNullException>(() => new HttpBuilderFactory().Create().WithUri("http://somedomain.com")
                 .Advanced.WithRedirectConfiguration(h =>
                     h.WithRedirectValidator(null)));
         }
@@ -241,18 +251,17 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public async Task WithAutoRedirect_WithMaxRedirect_ExpectException()
         {
-            var redirectUrl = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-
             await Should.ThrowAsync<MaximumAutoRedirectsException>(async () =>
             {
-                using (var server = LocalWebServer.ListenInBackground(TestUriString))
+                using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
                 {
-                    server.WithAllResponses(new LocalResponse(HttpStatusCode.Redirect)
-                            .WithHeader("Location", redirectUrl));
+                    var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                    server.WithAllResponses(new MockHttpResponseMessage(HttpStatusCode.Redirect)
+                            .WithHeader("Location", redirectUrl.ToString()));
 
                     //act
                     await new HttpBuilderFactory().Create()
-                            .WithUri(TestUriString)
+                            .WithUri(server.ListeningUri)
                             .Advanced.WithRedirectConfiguration(h => h.WithAutoRedirect(1))
                             .ResultAsync();
 
@@ -267,43 +276,44 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [InlineData(HttpStatusCode.MovedPermanently)]
         public async Task AutoRedirectOnTypedCallBuilder_WhenCallRedirects_ExpectRedirectOnByDefaultAndLocationFollowed(HttpStatusCode statusCode)
         {
-            var expected = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+           
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
+                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
                 server
-                    .WithNextResponse(new LocalResponse { StatusCode = statusCode }.WithHeader("Location", expected))
-                    .WithNextResponse(new LocalResponse
+                    .WithNextResponse(new MockHttpResponseMessage { StatusCode = statusCode }.WithHeader("Location", expected.ToString()))
+                    .WithNextResponse(new MockHttpResponseMessage
                     {
                         ContentEncoding = Encoding.UTF8,
                         ContentType = "application/json",
                         StatusCode = HttpStatusCode.OK,
-                        Content = TestResult.SerializedDefault
+                        ContentString = TestResult.SerializedDefault1
                     });
 
-                string actual = null;
-                server.WithRequestInspector(r => actual = r.Url.ToString());
+                Uri actual = null;
+                server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var result = await new TypedBuilderFactory().Create().WithUri(TestUriString).ResultAsync<TestResult>();
+                var result = await new TypedBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync<TestResult>();
 
                 actual.ShouldBe(expected);
-                result.ShouldBe(TestResult.Default());
+                result.ShouldBe(TestResult.Default1());
             }
         }
 
         [Fact]
         public async Task AutoRedirectOnTypedCallBuilder_WhenNotEnabledCallRedirects_ExpectNotFollowedAndExceptionThrown()
         {
-            var redirectUrl = UriHelpers.CombineVirtualPaths(TestUriString, "redirect");
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithAllResponses(new LocalResponse(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl));
+                var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                server.WithAllResponses(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()));
 
                 var calledBack = false;
 
                 //act
                 await Should.ThrowAsync<HttpErrorException<string>>(
-                      new TypedBuilderFactory().Create().WithUri(TestUriString).Advanced
+                      new TypedBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
                          .WithRedirectConfiguration(h => h.WithAutoRedirect(false).WithCallback(ctx => calledBack = true))
                          .SendAsync());
 

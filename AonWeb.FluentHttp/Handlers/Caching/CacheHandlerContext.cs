@@ -29,6 +29,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public HttpRequestMessage Request => _cacheContext.Request;
         //public string Key => _cacheContext.Key;
         public Uri Uri => _cacheContext.Uri;
+        public bool SuppressTypeMismatchExceptions => _cacheContext.SuppressTypeMismatchExceptions;
 
         public virtual Modifiable GetHandlerResult()
         {

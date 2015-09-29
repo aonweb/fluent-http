@@ -173,7 +173,11 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 
         private static IEnumerable<MemberInfo> GetMembers(Type type)
         {
-            return type.GetRuntimeProperties().Cast<MemberInfo>().Concat(type.GetRuntimeFields());
+            return type.GetRuntimeProperties()
+                .Where(p => p.CanRead)
+                .Cast<MemberInfo>()
+                .Concat(type.GetRuntimeFields().Where(f => f.IsPublic))
+                .Where(m => m.GetCustomAttribute<JsonIgnoreAttribute>(true) == null);
         }
 
         private static string GetPropertyName(MemberInfo memberInfo, DefaultContractResolver resolver)
@@ -254,15 +258,20 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             if (!typeof(IList<HyperMediaLink>).IsAssignableFrom(linkListType))
                 throw SerializationErrorHelper.CreateError(reader, $"Could not create HyperMediaLinks object. Links property type '{linkListType.Name}' on type '{objectType.Name}' is not assignable to IList<HyperMediaLink>");
 
-            IList<HyperMediaLink> list;
+            var list = linkProperty.GetValue(resource) as IList<HyperMediaLink>;
 
-            try
+            if (list == null)
             {
-                list = (IList<HyperMediaLink>)Activator.CreateInstance(linkListType);
-            }
-            catch (Exception ex)
-            {
-                throw SerializationErrorHelper.CreateError(reader, $"Could not create HyperMediaLinks object. Type: {linkListType.Name}", ex);
+                try
+                {
+                    list = (IList<HyperMediaLink>)Activator.CreateInstance(linkListType);
+
+                    linkProperty.SetValue(resource, list);
+                }
+                catch (Exception ex)
+                {
+                    throw SerializationErrorHelper.CreateError(reader, $"Could not create HyperMediaLinks object. Type: {linkListType.Name}", ex);
+                }
             }
 
             var enumerator = ((JObject)links).GetEnumerator();
@@ -273,8 +282,6 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 serializer.Populate(enumerator.Current.Value.CreateReader(), link);
                 list.Add(link);
             }
-
-            linkProperty.SetValue(resource, list);
         }
 
         private static void TryPopulateEmbedded(JToken embedded, Type objectType, JsonSerializer serializer, object resource)

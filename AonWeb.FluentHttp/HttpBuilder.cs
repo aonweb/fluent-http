@@ -108,7 +108,7 @@ namespace AonWeb.FluentHttp
             var request = new HttpRequestMessage(context.Method, context.Uri);
 
             if (context.ContentFactory != null)
-                request.Content = context.ContentFactory();
+                request.Content = context.ContentFactory?.Invoke(context);
 
 
             _clientBuilder.ApplyRequestHeaders(request);
@@ -170,7 +170,7 @@ namespace AonWeb.FluentHttp
                             throw ex;
                     }
 
-                    var sentContext = new SentContext(context, response);
+                    var sentContext = new SentContext(context, request, response);
 
                     token.ThrowIfCancellationRequested();
 
@@ -199,7 +199,18 @@ namespace AonWeb.FluentHttp
 
         public void CancelRequest()
         {
-            _tokenSource?.Cancel();
+            if (_tokenSource != null && !_tokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    _tokenSource?.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    // if were done, this is disposed and I don't care.
+                }
+            }
+            
         }
     }
 }

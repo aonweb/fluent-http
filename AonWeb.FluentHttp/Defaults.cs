@@ -66,6 +66,7 @@ namespace AonWeb.FluentHttp
             public Func<IReadOnlyCollection<ITypedHandler>> HandlerFactory { get; set; }
             public Func<IReadOnlyCollection<ITypedHandler>> ChildHandlerFactory { get; set; }
             public Func<ErrorContext, Exception> ExceptionFactory { get; set; }
+            public bool SuppressTypeMismatchExceptions { get; set; }
 
             public Exception DefaultExceptionFactory(ErrorContext context)
             {
@@ -259,7 +260,7 @@ namespace AonWeb.FluentHttp
             //Builder Defaults
             Builder.HttpMethod = HttpMethod.Get;
             Builder.CompletionOption = HttpCompletionOption.ResponseContentRead;
-            Builder.SuppressCancellationErrors = true;
+            Builder.SuppressCancellationErrors = false;
             Builder.MediaType = "application/json";
             Builder.ContentEncoding = Encoding.UTF8;
             Builder.AutoDecompressionEnabled = true;
@@ -269,7 +270,8 @@ namespace AonWeb.FluentHttp
             //Typed Builder Defaults
             TypedBuilder.HttpMethod = HttpMethod.Get;
             TypedBuilder.CompletionOption = HttpCompletionOption.ResponseContentRead;
-            TypedBuilder.SuppressCancellationErrors = true;
+            TypedBuilder.SuppressCancellationErrors = false;
+            TypedBuilder.SuppressTypeMismatchExceptions = false;
             TypedBuilder.SuccessfulResponseValidator = TypedBuilder.DefaultSuccessfulResponseValidator;
             TypedBuilder.MediaType = "application/json";
             TypedBuilder.ContentEncoding = Encoding.UTF8;

@@ -1,24 +1,37 @@
 ﻿using System;
+using System.Collections.Generic;
+using AonWeb.FluentHttp.Caching;
 
 namespace AonWeb.FluentHttp.Tests.Helpers
 {
-    
+
     public class TestResult : IEquatable<TestResult>
     {
-        public const string SerializedDefault = @"{""StringProperty"":""TestString"",""IntProperty"":2,""BoolProperty"":true,""DateOffsetProperty"":""2000-01-01T00:00:00-05:00"",""DateProperty"":""2000-01-01T00:00:00""}";
+        public static string SerializedDefault1 = @"{""StringProperty"":""TestString1"",""IntProperty"":1,""BoolProperty"":true,""DateOffsetProperty"":""2000-01-01T00:00:00-05:00"",""DateProperty"":""2000-01-01T00:00:00""}";
+        public static string SerializedDefault2 = @"{""StringProperty"":""TestString2"",""IntProperty"":2,""BoolProperty"":false,""DateOffsetProperty"":""2000-01-02T00:00:00-05:00"",""DateProperty"":""2000-01-02T00:00:00""}";
 
-        public static TestResult Default()
+        public static TestResult Default1()
         {
-            return new TestResult();
+            return new TestResult
+            {
+                StringProperty = "TestString1",
+                IntProperty = 1,
+                BoolProperty = true,
+                DateOffsetProperty = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.FromHours(-5)),
+                DateProperty = new DateTime(2000, 1, 1, 0, 0, 0),
+            };
         }
 
-        public TestResult()
+        public static TestResult Default2()
         {
-            StringProperty = "TestString";
-            IntProperty = 2;
-            BoolProperty = true;
-            DateOffsetProperty = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.FromHours(-5));
-            DateProperty = new DateTime(2000, 1, 1, 0, 0, 0);
+            return new TestResult
+            {
+                StringProperty = "TestString2",
+                IntProperty = 2,
+                BoolProperty = false,
+                DateOffsetProperty = new DateTimeOffset(2000, 1, 2, 0, 0, 0, TimeSpan.FromHours(-5)),
+                DateProperty = new DateTime(2000, 1, 2, 0, 0, 0),
+            };
         }
 
         public string StringProperty { get; set; }
@@ -89,4 +102,30 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
         #endregion
     }
+
+    public class SubTestResult : TestResult
+    {
+        public bool SubBoolProperty { get; set; }
+    }
+
+    public class AlternateTestResult : TestResult
+    {
+        public string Result { get; set; }
+    }
+
+    public class CacheableTestResult : TestResult, ICacheableHttpResult
+    {
+        public TimeSpan? Duration => TimeSpan.FromMinutes(5);
+
+        public IEnumerable<Uri> DependentUris { get { yield break; } }
+    }
+
+    public class ExpiredTestResult : TestResult, ICacheableHttpResult
+    {
+        public TimeSpan? Duration => TimeSpan.FromMinutes(-1);
+
+        public IEnumerable<Uri> DependentUris { get { yield break; } }
+    }
+
+    public class TestException : Exception { }
 }

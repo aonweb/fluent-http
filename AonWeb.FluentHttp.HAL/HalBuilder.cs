@@ -8,125 +8,20 @@ namespace AonWeb.FluentHttp.HAL
 {
     public class HalBuilder : IAdvancedHalBuilder
     {
-        private readonly IChildTypedBuilder _innerBuilder;
+        private readonly IChildTypedBuilder _innerInnerBuilder;
 
-        public HalBuilder(IChildTypedBuilder builder)
+        public HalBuilder(IChildTypedBuilder innerBuilder)
         {
-            _innerBuilder = builder;
+            _innerInnerBuilder = innerBuilder;
         }
 
         public IAdvancedHalBuilder Advanced => this;
 
-        //public IHalBuilder WithLink(string link)
-        //{
-        //    _innerBuilder.WithUri(link);
+        
 
-        //    return this;
-        //}
+        
 
-        //public IHalBuilder WithLink(Uri link)
-        //{
-        //    _innerBuilder.WithUri(link);
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithLink(Func<string> linkFactory)
-        //{
-        //    if (linkFactory == null)
-        //        throw new ArgumentNullException("linkFactory");
-
-        //    return WithLink(linkFactory());
-        //}
-
-        //public IHalBuilder WithLink(Func<Uri> linkFactory)
-        //{
-        //    if (linkFactory == null)
-        //        throw new ArgumentNullException("linkFactory");
-
-        //    return WithLink(linkFactory());
-        //}
-
-        //public IHalBuilder WithLink(IHalResource resource, string key, string tokenKey, object tokenValue)
-        //{
-        //    return WithLink(resource.GetLink(key, tokenKey, tokenValue));
-        //}
-
-        //public IHalBuilder WithLink(IHalResource resource, string key, IDictionary<string, object> tokens)
-        //{
-        //    return WithLink(resource.GetLink(key, tokens));
-        //}
-
-        //public IHalBuilder WithContent<TContent>(TContent content)
-        //    where TContent : IHalRequest
-        //{
-        //    _innerBuilder.WithContent(CreateContentFactoryWrapper(content));
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithContent<TContent>(TContent content, Encoding encoding)
-        //    where TContent : IHalRequest
-        //{
-        //    _innerBuilder.WithContent(CreateContentFactoryWrapper(content), encoding);
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithContent<TContent>(TContent content, Encoding encoding, string mediaType)
-        //    where TContent : IHalRequest
-        //{
-        //    _innerBuilder.WithContent(CreateContentFactoryWrapper(content), encoding, mediaType);
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithContent<TContent>(Func<TContent> contentFactory)
-        //    where TContent : IHalRequest
-        //{
-        //    _innerBuilder.WithContent(CreateContentFactoryWrapper(contentFactory));
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithContent<TContent>(Func<TContent> contentFactory, Encoding encoding)
-        //    where TContent : IHalRequest
-        //{
-        //    _innerBuilder.WithContent(CreateContentFactoryWrapper(contentFactory), encoding);
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithContent<TContent>(Func<TContent> contentFactory, Encoding encoding, string mediaType)
-        //    where TContent : IHalRequest
-        //{
-        //    _innerBuilder.WithContent(CreateContentFactoryWrapper(contentFactory), encoding, mediaType);
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithDefaultResult<TResult>(TResult result)
-        //    where TResult : IHalResource
-        //{
-        //    _innerBuilder.WithDefaultResult(result);
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithDefaultResult<TResult>(Func<TResult> resultFactory)
-        //    where TResult : IHalResource
-        //{
-        //    _innerBuilder.WithDefaultResult(resultFactory);
-
-        //    return this;
-        //}
-
-        //public IHalBuilder WithErrorType<TError>()
-        //{
-        //    _innerBuilder.WithErrorType<TError>();
-
-        //    return this;
-        //}
+        
 
         //public IAdvancedHalBuilder WithDependentResources(params IHalResource[] resources)
         //{
@@ -160,81 +55,48 @@ namespace AonWeb.FluentHttp.HAL
 
         public IAdvancedHalBuilder WithClientConfiguration(Action<IHttpClientBuilder> configuration)
         {
-            _innerBuilder.WithClientConfiguration(configuration);
+            _innerInnerBuilder.WithClientConfiguration(configuration);
 
             return this;
         }
 
-        
-
-        
         public void CancelRequest()
         {
-            _innerBuilder.CancelRequest();
+            _innerInnerBuilder.CancelRequest();
         }
 
         public async Task<TResult> ResultAsync<TResult>()
             where TResult : IHalResource
         {
-            return await _innerBuilder.ResultAsync<TResult>().ConfigureAwait(false);
+            return await _innerInnerBuilder.ResultAsync<TResult>().ConfigureAwait(false);
         }
 
         public async Task<TResult> ResultAsync<TResult>(CancellationToken token)
             where TResult : IHalResource
         {
-            return await _innerBuilder.ResultAsync<TResult>(token).ConfigureAwait(false);
+            return await _innerInnerBuilder.ResultAsync<TResult>(token).ConfigureAwait(false);
         }
 
         public async Task SendAsync()
         {
-            await _innerBuilder.SendAsync().ConfigureAwait(false);
+            await _innerInnerBuilder.SendAsync().ConfigureAwait(false);
         }
 
         public async Task SendAsync(CancellationToken token)
         {
-            await _innerBuilder.SendAsync(token).ConfigureAwait(false);
+            await _innerInnerBuilder.SendAsync(token).ConfigureAwait(false);
         }
-
-        private Func<TContent> CreateContentFactoryWrapper<TContent>(TContent content)
-            where TContent : IHalRequest
-        {
-            return () =>
-            {
-                if (!ReferenceEquals(content, null))
-                    _innerBuilder.WithDependentUris(content.DependentUris);
-
-                return content;
-            };
-        }
-
-        private Func<TContent> CreateContentFactoryWrapper<TContent>(Func<TContent> contentFactory)
-            where TContent : IHalRequest
-        {
-            if (contentFactory == null)
-                throw new ArgumentNullException(nameof(contentFactory));
-
-            return () =>
-            {
-                var content = contentFactory();
-
-                _innerBuilder.WithDependentUris(content.DependentUris);
-
-                return content;
-            };
-        }
-
-
 
         public IHalBuilder WithConfiguration(Action<ITypedBuilderSettings> configuration)
         {
-            _innerBuilder.WithConfiguration(configuration);
+            _innerInnerBuilder.WithConfiguration(configuration);
 
             return this;
         }
 
         public IAdvancedHalBuilder WithConfiguration(Action<IAdvancedTypedBuilder> configuration)
         {
-            configuration?.Invoke(_innerBuilder);
+            configuration?.Invoke(_innerInnerBuilder);
 
             return this;
         }
@@ -243,7 +105,6 @@ namespace AonWeb.FluentHttp.HAL
         {
             WithConfiguration(configuration);
         }
-
 
         void IConfigurable<IAdvancedTypedBuilder>.WithConfiguration(Action<IAdvancedTypedBuilder> configuration)
         {

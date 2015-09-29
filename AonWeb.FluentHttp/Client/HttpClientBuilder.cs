@@ -1,6 +1,5 @@
 using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 
 namespace AonWeb.FluentHttp.Client
 {
@@ -16,7 +15,7 @@ namespace AonWeb.FluentHttp.Client
 
         private HttpClientSettings Settings { get; }
 
-        public IHttpClientBuilder WithConfiguration(Action<HttpClientSettings> configuration)
+        public IHttpClientBuilder WithConfiguration(Action<IHttpClientSettings> configuration)
         {
             configuration?.Invoke(Settings);
 
@@ -35,7 +34,12 @@ namespace AonWeb.FluentHttp.Client
             // TODO: should we pool these client or handler
             var handler = CreateHandler(Settings);
 
-            var client = GetClientInstance(handler);
+            return GetClientInstance(handler, Settings);
+        }
+
+        protected virtual IHttpClient GetClientInstance(HttpMessageHandler handler, IHttpClientSettings settings)
+        {
+            var client = new HttpClientWrapper(new HttpClient(handler));
 
             if (Settings.Timeout.HasValue)
                 client.Timeout = Settings.Timeout.Value;
@@ -46,13 +50,8 @@ namespace AonWeb.FluentHttp.Client
 
             return client;
         }
-
-        protected virtual IHttpClient GetClientInstance(HttpMessageHandler handler)
-        {
-            return new HttpClientWrapper(new HttpClient(handler));
-        }
         
-        protected virtual HttpMessageHandler CreateHandler(HttpClientSettings settings)
+        protected virtual HttpMessageHandler CreateHandler(IHttpClientSettings settings)
         {
             var handler = new HttpClientHandler
             {
@@ -90,7 +89,7 @@ namespace AonWeb.FluentHttp.Client
             return handler;
         }
 
-        void IConfigurable<HttpClientSettings>.WithConfiguration(Action<HttpClientSettings> configuration)
+        void IConfigurable<IHttpClientSettings>.WithConfiguration(Action<IHttpClientSettings> configuration)
         {
             WithConfiguration(configuration);
         }

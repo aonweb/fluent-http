@@ -7,9 +7,17 @@ namespace AonWeb.FluentHttp.Helpers
 {
     internal static class ObjectHelpers
     {
-        public static void DisposeResponse(HttpResponseMessage response)
+        public static void Dispose(IDisposable disposable)
         {
-            response?.Dispose();
+            try
+            {
+                disposable?.Dispose();
+
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            
         }
 
         public static CancellationTokenSource GetCancellationTokenSource(CancellationToken token)

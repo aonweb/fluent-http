@@ -113,7 +113,7 @@ namespace AonWeb.FluentHttp.Handlers
             context.Items["RedirectCount"] = redirectCount + 1;
 
             // dispose of previous response
-            ObjectHelpers.DisposeResponse(context.Result);
+            ObjectHelpers.Dispose(context.Result);
 
             context.Result = await context.Builder.RecursiveResultAsync(context.Token);
             

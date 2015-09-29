@@ -52,7 +52,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         public async Task OnSending(SendingContext context)
         {
-            Settings.ResultInspector = cacheResult => ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Request;
+            Settings.ResultInspector = cacheResult =>
+            {
+                ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Request;
+            };
 
             await TryGetFromCache(context);
         }

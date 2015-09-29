@@ -41,6 +41,9 @@ namespace AonWeb.FluentHttp
             };
             ExceptionFactory = Defaults.TypedBuilder.ExceptionFactory;
             DefaultResultFactory = Defaults.TypedBuilder.DefaultResultFactory;
+            SuppressCancellationErrors = Defaults.TypedBuilder.SuppressCancellationErrors;
+            MediaType = Defaults.TypedBuilder.MediaType;
+            SuppressTypeMismatchExceptions = Defaults.TypedBuilder.SuppressTypeMismatchExceptions;
         }
 
         public IDictionary Items { get; }
@@ -67,7 +70,7 @@ namespace AonWeb.FluentHttp
         public string MediaType { get; set; }
         public Func<Type, object> DefaultResultFactory { get; set; }
         public bool DeserializeResult { get; set; }
-        public bool SuppressHandlerTypeExceptions { get; set; }
+        public bool SuppressTypeMismatchExceptions { get; set; }
         public bool SuppressCancellationErrors { get; set; }
         public CancellationToken Token { get; set; }
 

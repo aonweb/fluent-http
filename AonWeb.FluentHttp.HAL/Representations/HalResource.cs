@@ -5,6 +5,11 @@ namespace AonWeb.FluentHttp.HAL.Representations
 {
     public abstract class HalResource : IHalResource
     {
+        protected HalResource()
+        {
+            Links = new HyperMediaLinks();
+        }
+
         public const string LinkKeySelf = "self";
         public HyperMediaLinks Links { get; set; }
     }
@@ -12,6 +17,11 @@ namespace AonWeb.FluentHttp.HAL.Representations
     public abstract class HalResource<TLinks> : IHalResource<TLinks>
         where TLinks : HyperMediaLinks, new()
     {
+        protected HalResource()
+        {
+            Links = new TLinks();
+        }
+
         HyperMediaLinks IHalResource.Links
         {
             get

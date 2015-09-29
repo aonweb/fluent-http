@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
@@ -12,6 +14,71 @@ namespace AonWeb.FluentHttp.HAL
 {
     public static class AdvancedHalBuilderExtensions
     {
+        public static IAdvancedHalBuilder WithContentEncoding(this IAdvancedHalBuilder builder, Encoding encoding)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithContentEncoding(encoding));
+        }
+
+        public static IAdvancedHalBuilder WithHeadersConfiguration(this IAdvancedHalBuilder builder, Action<HttpRequestHeaders> configuration)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithHeadersConfiguration(configuration));
+        }
+
+        public static IAdvancedHalBuilder WithHeader(this IAdvancedHalBuilder builder, string name, string value)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithHeader(name, value));
+        }
+
+        public static IAdvancedHalBuilder WithHeader(this IAdvancedHalBuilder builder, string name, IEnumerable<string> values)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithHeader(name, values));
+        }
+
+        public static IAdvancedHalBuilder WithAppendHeader(this IAdvancedHalBuilder builder, string name, string value)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAppendHeader(name, value));
+        }
+
+        public static IAdvancedHalBuilder WithAppendHeader(this IAdvancedHalBuilder builder, string name, IEnumerable<string> values)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAppendHeader(name, values));
+        }
+
+        public static IAdvancedHalBuilder WithAcceptHeaderValue(this IAdvancedHalBuilder builder, string mediaType)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAcceptHeaderValue(mediaType));
+        }
+
+        public static IAdvancedHalBuilder WithAcceptCharSet(this IAdvancedHalBuilder builder, Encoding encoding)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAcceptCharSet(encoding));
+        }
+
+        public static IAdvancedHalBuilder WithAcceptCharSet(this IAdvancedHalBuilder builder, string charSet)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAcceptCharSet(charSet));
+        }
+
+        public static IAdvancedHalBuilder WithAutoDecompression(this IAdvancedHalBuilder builder, bool enabled = true)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAutoDecompression(enabled));
+        }
+
+        public static IAdvancedHalBuilder WithSuppressCancellationExceptions(this IAdvancedHalBuilder builder, bool suppress = true)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithSuppressCancellationExceptions(suppress));
+        }
+
         public static IAdvancedHalBuilder WithMethod(this IAdvancedHalBuilder builder, string method)
         {
             builder.WithConfiguration(b => b.WithMethod(method));
@@ -145,6 +212,7 @@ namespace AonWeb.FluentHttp.HAL
 
             return builder;
         }
+
         public static IAdvancedHalBuilder WithDependentResources(this IAdvancedHalBuilder builder, params IHalResource[] resources)
         {
             if (resources == null)
@@ -167,7 +235,7 @@ namespace AonWeb.FluentHttp.HAL
 
         public static IAdvancedHalBuilder WithSuppressTypeMismatchExceptions(this IAdvancedHalBuilder builder, bool suppress = true)
         {
-            builder.WithConfiguration(s => s.SuppressHandlerTypeExceptions = suppress);
+            builder.WithConfiguration(s => s.SuppressTypeMismatchExceptions = suppress);
 
             return builder;
         }
@@ -184,7 +252,7 @@ namespace AonWeb.FluentHttp.HAL
 
         public static IAdvancedHalBuilder WithTimeout(this IAdvancedHalBuilder builder, TimeSpan? timeout)
         {
-            return builder.WithClientConfiguration(c => c.WithTimeout(timeout));
+            return builder.WithConfiguration(b => b.WithTimeout(timeout));
         }
 
         public static IAdvancedHalBuilder OnSending<TResult, TContent>(this IAdvancedHalBuilder builder, Action<TypedSendingContext<TResult, TContent>> handler)

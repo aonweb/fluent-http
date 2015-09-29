@@ -35,6 +35,11 @@ namespace AonWeb.FluentHttp.Helpers
             return $"{scheme}://{authority}{path}";
         }
 
+        public static Uri CombineVirtualPaths(Uri uri, string path)
+        {
+            return new Uri(CombineVirtualPaths(uri.ToString(), path));
+        }
+
         /// <summary>
         /// Converts a list string uris into a list of distinct canonical uri strings
         /// </summary>
@@ -67,6 +72,11 @@ namespace AonWeb.FluentHttp.Helpers
             builder.Query = qsCollection.ToEncodedString();
 
             return builder;
+        }
+
+        internal static string NormalizeHeader(string input)
+        {
+            return (input ?? string.Empty).ToLowerInvariant().Trim();
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -65,12 +64,16 @@
       <HintPath>..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.assert, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll</HintPath>
+    <Reference Include="xunit.assert, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.assert.2.1.0\lib\dotnet\xunit.assert.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.core, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\packages\xunit.extensibility.core.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.dll</HintPath>
+    <Reference Include="xunit.core, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.extensibility.core.2.1.0\lib\dotnet\xunit.core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="xunit.execution.desktop, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.extensibility.execution.2.1.0\lib\net45\xunit.execution.desktop.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -80,11 +83,7 @@
         <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
-      </ItemGroup>
-    </Otherwise>
+    <Otherwise />
   </Choose>
   <ItemGroup>
     <Compile Include="AdvancedHttpBuilderCoreExtensionsTests.cs" />
@@ -92,15 +91,40 @@
     <Compile Include="AdvancedTypedBuilderExtensionsTests.cs" />
     <Compile Include="BuilderExtensionsTests.cs" />
     <Compile Include="AdvancedHttpBuilderExtensionsTests.cs" />
+    <Compile Include="Caching\HalCachingTests.cs" />
+    <Compile Include="Defaults\ClientDefaultsTests.cs" />
+    <Compile Include="Hal\HalSerializationTests.cs" />
+    <Compile Include="Hal\HalDeserializationTests.cs" />
     <Compile Include="Handlers\FollowLocationHandlerTests.cs" />
+    <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\HalMother.cs" />
+    <Compile Include="Helpers\TestError.cs" />
+    <Compile Include="Helpers\TestLinks.cs" />
+    <Compile Include="Helpers\TestListEmbeddedArrayParentResource.cs" />
+    <Compile Include="Helpers\TestListEmbeddedPropertyChildrenResource.cs" />
+    <Compile Include="Helpers\TestListEmbeddedPropertyParentResource.cs" />
+    <Compile Include="Helpers\TestListEmbeddedPropertyParentsResource.cs" />
+    <Compile Include="Helpers\TestListResource.cs" />
+    <Compile Include="Helpers\TestListResourceWithLinks.cs" />
+    <Compile Include="Helpers\TestPoco.cs" />
+    <Compile Include="Helpers\TestRequest.cs" />
+    <Compile Include="Helpers\TestResource.cs" />
+    <Compile Include="Helpers\TestResourceWithLinks.cs" />
     <Compile Include="Helpers\TestResult.cs" />
+    <Compile Include="Helpers\xUnitMockLogger.cs" />
     <Compile Include="HttpBuilderExtensionsTests.cs" />
+    <Compile Include="Caching\TypedCachingTests.cs" />
+    <Compile Include="Caching\HttpCachingTests.cs" />
+    <Compile Include="HttpClientBuilderTests.cs" />
+    <Compile Include="Performance\SpeedTest.cs" />
+    <Compile Include="Performance\StressTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AdvancedHalBuilderExtensionsTests.cs" />
+    <Compile Include="Hal\AdvancedHalBuilderExtensionsTests.cs" />
     <Compile Include="Handlers\RedirectionHandlerTests.cs" />
     <Compile Include="Handlers\RetryHandlerTests.cs" />
     <Compile Include="TypedBuilderExtensionsTests.cs" />
-    <Compile Include="HalBuilderExtensionsTests.cs" />
+    <Compile Include="Hal\HalBuilderExtensionsTests.cs" />
+    <Compile Include="TypedBuilderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj">
@@ -144,13 +168,9 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
-  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
-    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
-  </Target>
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

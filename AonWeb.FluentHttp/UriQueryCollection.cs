@@ -28,22 +28,56 @@ namespace AonWeb.FluentHttp
             FillFromString(queryString);
         }
 
+        public IEnumerable<string> this[string name]
+        {
+            get
+            {
+                if (_inner.ContainsKey(name))
+                    return _inner[name];
+
+                return Enumerable.Empty<string>();
+            }
+            set { Set(name, value); }
+        }
+
+        public IUriQueryCollection Set(string name, string value)
+        {
+            return Set(name, new[] {value});
+        }
+
+        public IUriQueryCollection Set(string name, IEnumerable<string> values)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return this;
+
+            lock (_inner)
+            {
+                _inner[name] = new SortedSet<string>(values, StringComparer.Ordinal);
+                _isCacheValid = false;
+            }
+
+            return this;
+        }
+
+        public IUriQueryCollection Set(IEnumerable<KeyValuePair<string, string>> values)
+        {
+            if (values == null)
+                return this;
+
+            var lookup = values.ToLookup(p => p.Key, p => p.Value);
+
+            foreach (var group in lookup)
+                Set(group.Key, group.ToList());
+
+            return this;
+        }
+
         public IUriQueryCollection Add(string name, string value)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return this;
 
-            if (!_inner.ContainsKey(name))
-            {
-                lock (_inner)
-                {
-                    if (!_inner.ContainsKey(name))
-                    {
-                        _inner[name] = new SortedSet<string>(StringComparer.Ordinal);
-                        _isCacheValid = false;
-                    }
-                }
-            }
+            AddIfNeeded(name);
 
             if (!_inner[name].Contains(value))
             {
@@ -60,6 +94,19 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public IUriQueryCollection Add(string name, IEnumerable<string> values)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return this;
+
+            AddIfNeeded(name);
+
+            foreach (var value in values)
+                Add(name, value);
+
+            return this;
+        }
+
         public IUriQueryCollection Add(IEnumerable<KeyValuePair<string, string>> values)
         {
             if (values == null)
@@ -69,6 +116,21 @@ namespace AonWeb.FluentHttp
                 Add(pair.Key, pair.Value);
 
             return this;
+        }
+
+        private void AddIfNeeded(string name)
+        {
+            if (!_inner.ContainsKey(name))
+            {
+                lock (_inner)
+                {
+                    if (!_inner.ContainsKey(name))
+                    {
+                        _inner[name] = new SortedSet<string>(StringComparer.Ordinal);
+                        _isCacheValid = false;
+                    }
+                }
+            }
         }
 
         public string ToEncodedString()
@@ -128,7 +190,7 @@ namespace AonWeb.FluentHttp
                 return;
 
             var length = queryString.Length;
-            var currentIndex = 0;
+            var currentIndex = queryString.IndexOf('?') + 1;
 
             while (currentIndex < length)
             {

@@ -1,4 +1,6 @@
-﻿namespace AonWeb.FluentHttp.Handlers.Caching
+﻿using AonWeb.FluentHttp.Helpers;
+
+namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public class CacheLookupContext<TResult> : CacheLookupContext
     {
@@ -12,7 +14,7 @@
 
         public TResult Result
         {
-            get { return (TResult)ResultInternal; }
+            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
             set { ResultInternal = value; }
         }
     }

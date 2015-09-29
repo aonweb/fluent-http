@@ -38,7 +38,7 @@ namespace AonWeb.FluentHttp
         public static TBuilder WithMethod<TBuilder>(this TBuilder builder, string method)
             where TBuilder : IAdvancedFluentConfigurable<TBuilder>, IConfigurable<IHttpBuilderSettings>
         {
-            if (string.IsNullOrEmpty(method))
+            if (string.IsNullOrWhiteSpace(method))
                 throw new ArgumentException(SR.ArgumentMethodNullOrEmptyError, nameof(method));
 
             return builder.WithMethod(new HttpMethod(method.ToUpper()));

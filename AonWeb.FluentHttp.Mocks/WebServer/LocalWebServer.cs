@@ -4,67 +4,88 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Mocks.WebServer
 {
-    public class LocalWebServer : IDisposable
+    public class LocalWebServer : IDisposable, IResponseMocker<LocalWebServer>
     {
-        public const string DefaultListenerUri = "http://localhost:8889/";
+        private static readonly ISet<int> _portsInUse = new HashSet<int>();
+        private static int _minPort = 9000;
+        private static int _maxPort = 10000;
 
-        private readonly List<KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse>> _responses;
-        private readonly AutoResetEvent _handle;
+        public const string DefaultListenerHost = "localhost";
+
+        private readonly MockResponses<IMockRequestContext, IMockResponse> _responses;
         private readonly IList<string> _prefixes;
 
         private HttpListener _listener = new HttpListener();
-        private Action<ILocalRequestContext> _requestInspector;
+        private readonly IList<Func<IMockRequestContext, Task>> _requestInspectors;
         private long _totalCount;
         private readonly ConcurrentDictionary<string, long> _urlCount;
         private bool _loggingEnabled;
+        private IMockLogger _logger;
 
-        public LocalWebServer()
-            : this(DefaultListenerUri)
+        public int Port { get; private set; }
+        private UriBuilder ListeningUriBuilder { get; }
+        public Uri ListeningUri => ListeningUriBuilder.Uri;
+
+        public LocalWebServer(IMockLogger logger = null)
+            : this(logger, DefaultListenerHost)
         { }
 
+        public LocalWebServer(string listenerHost)
+            : this(null, listenerHost)
+        { }
 
-        public LocalWebServer(string listenerUri)
+        public LocalWebServer(IMockLogger logger, string listenerHost)
         {
+            GenerateUniquePort();
             _loggingEnabled = true;
-            _prefixes = new List<string> { listenerUri };
-            _handle = new AutoResetEvent(false);
-            _responses = new List<KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse>>();
+            _logger = logger ?? new NullMockLogger();
+
+            ListeningUriBuilder = new UriBuilder
+            {
+                Scheme = "http",
+                Host = listenerHost,
+                Port = Port
+            };
+
+            _prefixes = new List<string> { ListeningUri.ToString() };
+            _responses = new MockResponses<IMockRequestContext, IMockResponse>();
+            _requestInspectors = new List<Func<IMockRequestContext, Task>>();
 
             _totalCount = 0;
 
             _urlCount = new ConcurrentDictionary<string, long>();
         }
 
-        public static LocalWebServer ListenInBackground()
+        private void GenerateUniquePort()
         {
-            return ListenInBackground(DefaultListenerUri);
-        }
-
-        public static LocalWebServer ListenInBackground(Uri listenerUri, params string[] additionalUris)
-        {
-            return ListenInBackground(listenerUri.OriginalString, additionalUris);
-        }
-
-        public static LocalWebServer ListenInBackground(string listenerUri, params string[] additionalUris)
-        {
-            var listener = new LocalWebServer(listenerUri);
-
-            Task.Run(
-                () =>
+            lock (_portsInUse)
+            {
+                for (var port = _minPort; port <= _maxPort; port++)
+                {
+                    if (!_portsInUse.Contains(port))
                     {
-                        listener.Start(additionalUris);
-                        listener.WaitHandle.WaitOne();
-                    });
+                        Port = port;
+                        _portsInUse.Add(port);
+                        break;
+                    }  
+                }
+            }
+        }
+
+        public static LocalWebServer ListenInBackground(IMockLogger logger = null, string listenerHost = null, params string[] additionalUris)
+        {
+            var listener = new LocalWebServer(logger ?? new NullMockLogger(), listenerHost ?? DefaultListenerHost);
+
+            Task.Run(() => listener.Start(additionalUris));
 
             return listener;
         }
-
-        public WaitHandle WaitHandle => _handle;
 
         public LocalWebServer WithLogging(bool logging)
         {
@@ -73,7 +94,7 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
             return this;
         }
 
-        public LocalWebServer Start(params string[] additionalUris)
+        public async Task Start(params string[] additionalUris)
         {
             _listener = new HttpListener();
 
@@ -84,11 +105,20 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
 
             while (_listener.IsListening)
             {
-                var result = _listener.BeginGetContext(ListenerCallback, _listener);
-                result.AsyncWaitHandle.WaitOne();
-            }
+                var context = await _listener.GetContextAsync();
 
-            return this;
+                try
+                {
+                    await FulfillRequest(context);
+                }
+                catch (Exception ex)
+                {
+                    _listener.Stop();
+                    if(!(ex is OperationCanceledException))
+                        throw;
+                }
+                
+            }
         }
 
         public LocalWebServer Stop()
@@ -99,7 +129,10 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
                 _listener.Close();
             }
 
-            _handle.Set();
+            lock (_portsInUse)
+            {
+                _portsInUse.Remove(Port);
+            }
 
             return this;
         }
@@ -119,150 +152,151 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
             return this;
         }
 
-        public LocalWebServer WithResponse(KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse> response)
+        public LocalWebServer WithResponse(Predicate<IMockRequestContext> predicate, Func<IMockRequestContext, IMockResponse> responseFactory)
         {
-            _responses.Add(response);
+            _responses.Add(predicate, responseFactory);
 
             return this;
         }
 
-        public LocalWebServer WithRequestInspector(Action<ILocalRequestContext> visitor)
+        public LocalWebServer WithRequestInspector(Action<IMockRequestContext> visitor)
         {
-            _requestInspector = (Action<ILocalRequestContext>)Delegate.Combine(_requestInspector, visitor);
+            return WithRequestInspector(ctx =>
+            {
+                visitor?.Invoke(ctx);
+
+                return Task.FromResult<object>(null);
+            });
+        }
+
+        public LocalWebServer WithRequestInspector(Func<IMockRequestContext, Task> visitor)
+        {
+            if (visitor != null)
+                _requestInspectors.Add(visitor);
 
             return this;
         }
 
-        private void ListenerCallback(IAsyncResult result)
+        private async Task FulfillRequest(HttpListenerContext context)
         {
-            HttpListenerContext context;
             try
             {
-                var listener = (HttpListener)result.AsyncState;
-                context = listener.EndGetContext(result);
+                var listenerRequest = context.Request;
+                var url = listenerRequest.Url.ToString();
+
+                Interlocked.Increment(ref _totalCount);
+                _urlCount.AddOrUpdate(url, 1, (u, c) =>
+                {
+                    return c + 1;
+                });
+
+                long urlCount;
+
+                _urlCount.TryGetValue(url, out urlCount);
+
+                var request = new MockHttpRequestMessage(listenerRequest)
+                {
+                    RequestCount = _totalCount,
+                    RequestCountForThisUrl = urlCount
+                };
+
+                //get response before we await anything to make sure it matches request.
+                var response = _responses.GetResponse(request);
+
+                await Log(request);
+
+                var visitTasks = _requestInspectors.Select(visitor => visitor(request)).ToList();
+
+                await Task.WhenAll(visitTasks);
+
+                await CreateResponse(context, response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return;
+                _logger.WriteLine("Error: " + ex.Message);
             }
-
-            var request = context.Request;
-            var url = request.Url.ToString();
-            long urlCount;
-
-            _urlCount.TryGetValue(url, out urlCount);
-
-            var requestInfo = new LocalRequestSettings
-            {
-                ContentEncoding = request.ContentEncoding,
-                ContentLength = request.ContentLength64,
-                ContentType = request.ContentType,
-                HasEntityBody = request.HasEntityBody,
-                Headers = request.Headers,
-                HttpMethod = request.HttpMethod,
-                Url = request.Url,
-                UrlReferrer = request.UrlReferrer,
-                RawUrl = request.RawUrl,
-                AcceptTypes = request.AcceptTypes,
-                UserAgent = request.UserAgent,
-                Body = request.ReadContents(),
-                RequestCount = _totalCount,
-                RequestCountForThisUrl = urlCount
-            };
-
-            Log(requestInfo);
-
-            _requestInspector?.Invoke(requestInfo);
-
-            var responseInfo = GetResponseInfo(requestInfo);
-
-            CreateResponse(context, responseInfo);
-
-            Interlocked.Increment(ref _totalCount);
-            _urlCount.AddOrUpdate(url, 0, (u, c) => c + 1);
+            
         }
 
-        private void Log(ILocalRequestContext request)
+        private async Task Log(IMockRequestContext request)
         {
             if (!_loggingEnabled)
                 return;
 
-            Debug.WriteLine("Request: {0} - {1}", request.HttpMethod, request.Url);
+            _logger.WriteLine("Request: {0} - {1}", request.Method, request.RequestUri);
 
-            if (request.HasEntityBody)
+            if (request.Content != null)
             {
                 if (request.ContentType != null)
-                    Debug.WriteLine("   ContentType: {0}", request.ContentType);
+                    _logger.WriteLine("   ContentType: {0}", request.Content.Headers.ContentType);
 
-                Debug.WriteLine("   ContentLength: {0}", request.ContentLength);
-                Debug.WriteLine("   Content:");
-                Debug.WriteLine(request.Body);
-                Debug.WriteLine("---- End Request ----");
-                Debug.WriteLine("");
+                _logger.WriteLine("   ContentLength: {0}", request.Content.Headers.ContentLength);
+                _logger.WriteLine("   Content:");
+                var content = await request.Content.ReadAsStringAsync();
+                _logger.WriteLine(content);
+                _logger.WriteLine("---- End Request ----");
+                _logger.WriteLine("");
             }
         }
 
-        private void Log(HttpListenerResponse response, string body)
+        private void Log(HttpListenerResponse response, byte[] content)
         {
             if (!_loggingEnabled)
                 return;
 
-            Debug.WriteLine("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
-            Debug.WriteLine("  Headers:");
+            _logger.WriteLine("Response: {0} - {1}", response.StatusCode, response.StatusDescription);
+            _logger.WriteLine("  Headers:");
             foreach (var name in response.Headers.AllKeys)
             {
-                Debug.WriteLine("   {0}: {1}", name, response.Headers[name]);
+                _logger.WriteLine("   {0}: {1}", name, response.Headers[name]);
             }
 
-            if (!string.IsNullOrEmpty(body))
+            if (content?.Length > 0)
             {
-                Debug.WriteLine("   Content: {0}", body);
+                _logger.WriteLine("   Content: {0}", Encoding.UTF8.GetString(content));
             }
 
-            Debug.WriteLine("---- End Response ----");
-            Debug.WriteLine("");
+            _logger.WriteLine("---- End Response ----");
+            _logger.WriteLine("");
         }
 
-        private ILocalResponse GetResponseInfo(ILocalRequestContext context)
+        private async Task CreateResponse(HttpListenerContext context, IMockResponse response)
         {
-            KeyValuePair<Predicate<ILocalRequestContext>, ILocalResponse> response;
+            response = response ?? new MockHttpResponseMessage();
+            var listenerResponse = context.Response;
+            listenerResponse.StatusCode = (int)response.StatusCode;
+            listenerResponse.StatusDescription = response.ReasonPhrase ?? response.StatusCode.ToString();
 
-            lock (_responses)
-            {
-                response = _responses.FirstOrDefault(kp => kp.Key(context));
+            foreach (var header in response.Headers)
+                foreach (var value in header.Value)
+                {
+                    listenerResponse.AddHeader(header.Key, value);
+                }
 
-                if (response.Value?.IsTransient == true)
-                    _responses.Remove(response);
-            }
+            listenerResponse.AddHeader("Date", DateTime.UtcNow.ToString("R"));
 
-            return response.Value ?? new LocalResponse();
-        }
-
-        private void CreateResponse(HttpListenerContext context, ILocalResponse responseInfo)
-        {
-            var response = context.Response;
-            response.StatusCode = (int)responseInfo.StatusCode;
-            response.StatusDescription = responseInfo.StatusDescription ?? responseInfo.StatusCode.ToString();
-
-            foreach (var header in responseInfo.Headers)
-                response.AddHeader(header.Key, header.Value);
-
-            response.AddHeader("Date", DateTime.UtcNow.ToString("R"));
-
-            if (!string.IsNullOrWhiteSpace(responseInfo.ContentType) && string.IsNullOrWhiteSpace(response.Headers["Content-Type"]))
-                response.AddHeader("Content-Type", responseInfo.ContentType);
+            if (!string.IsNullOrWhiteSpace(response.ContentType) && string.IsNullOrWhiteSpace(listenerResponse.Headers["Content-Type"]))
+                listenerResponse.AddHeader("Content-Type", response.ContentType);
 
             try
             {
-                var buffer = responseInfo.ContentEncoding.GetBytes(responseInfo.Content);
-                response.ContentLength64 = buffer.Length;
-                response.OutputStream.Write(buffer, 0, buffer.Length);
+                byte[] buffer = null;
 
-                Log(response, responseInfo.Content);
+                if (response.Content != null)
+                {
+                    buffer = await response.Content.ReadAsByteArrayAsync();
+
+                    buffer = buffer ?? new byte[0];
+
+                    listenerResponse.ContentLength64 = buffer.Length;
+                    listenerResponse.OutputStream.Write(buffer, 0, buffer.Length);
+                } 
+
+                Log(listenerResponse, buffer);
             }
             finally
             {
-                response.OutputStream.Close();
+                listenerResponse.OutputStream.Close();
             }
         }
 

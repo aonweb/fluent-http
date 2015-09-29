@@ -1,11 +1,12 @@
 ﻿using System.Net.Http;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
     public class TypedResultContext<TResult> : TypedResultContext, IHandlerContextWithResult<TResult>
     {
-        public TypedResultContext(ITypedBuilderContext context, HttpResponseMessage response, TResult result)
-            : base(context, response, result)
+        public TypedResultContext(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, TResult result)
+            : base(context, request, response, result)
         { }
 
         internal TypedResultContext(TypedResultContext context)
@@ -14,7 +15,7 @@ namespace AonWeb.FluentHttp.Handlers
 
         public TResult Result
         {
-            get { return (TResult)ResultInternal; }
+            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
             set { ResultInternal = value; }
         }
     }
@@ -23,8 +24,8 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private readonly Modifiable _result;
 
-        protected TypedResultContext(ITypedBuilderContext context, HttpResponseMessage response, object result)
-            : base(context, response.RequestMessage)
+        protected TypedResultContext(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, object result)
+            : base(context, request)
         {
             Response = response;
             _result = new Modifiable(result);

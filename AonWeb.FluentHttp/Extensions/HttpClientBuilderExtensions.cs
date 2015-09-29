@@ -80,9 +80,14 @@ namespace AonWeb.FluentHttp
             return builder.WithConfiguration(s => s.Credentials = credentials);
         }
 
-        public static IHttpClientBuilder WithMaxBufferSize(this IHttpClientBuilder builder,long bufferSize)
+        public static IHttpClientBuilder WithMaxRequestBufferSize(this IHttpClientBuilder builder,long bufferSize)
         {
             return builder.WithConfiguration(s => s.MaxRequestContentBufferSize = bufferSize);
+        }
+
+        public static IHttpClientBuilder WithMaxResponseBufferSize(this IHttpClientBuilder builder, long bufferSize)
+        {
+            return builder.WithConfiguration(s => s.MaxResponseContentBufferSize = bufferSize);
         }
 
         public static IHttpClientBuilder WithProxy(this IHttpClientBuilder builder,IWebProxy proxy)

@@ -4,7 +4,7 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public class ErrorContext : TypedErrorContext<object>
     {
-        public ErrorContext(ITypedBuilderContext context, HttpResponseMessage response, object error)
-            : base(context, response, error) { }
+        public ErrorContext(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, object error)
+            : base(context, request, response, error) { }
     }
 }

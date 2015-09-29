@@ -7,21 +7,21 @@ namespace AonWeb.FluentHttp.Mocks
 {
     public class MockHttpClientBuilder : HttpClientBuilder, IMockHttpClientBuilder
     {
-        private Func<HttpRequestMessage, HttpResponseMessage> _responseFactory;
+        private readonly MockHttpClient _client;
 
-        protected override IHttpClient GetClientInstance(HttpMessageHandler handler)
+        public MockHttpClientBuilder()
         {
-            var client = new MockHttpClient();
-
-            if (_responseFactory != null)
-                client.WithResponse(_responseFactory);
-
-            return client;
+            _client = new MockHttpClient();
         }
 
-        public IMockHttpClientBuilder WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        protected override IHttpClient GetClientInstance(HttpMessageHandler handler, IHttpClientSettings settings)
         {
-            _responseFactory = responseFactory;
+            return _client;
+        }
+
+        public IMockHttpClientBuilder WithResponse(Predicate<IMockRequestContext> predicate, Func<IMockRequestContext, IMockResponse> responseFactory)
+        {
+            _client.WithResponse(predicate, responseFactory);
 
             return this;
         }

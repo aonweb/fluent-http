@@ -31,7 +31,7 @@ namespace AonWeb.FluentHttp
         public Func<Type, object> DefaultResultFactory => _settings.DefaultResultFactory;
         public MediaTypeFormatterCollection MediaTypeFormatters => _settings.MediaTypeFormatters;
         public TypedHandlerRegister Handler => _settings.Handler;
-        public bool SuppressHandlerTypeExceptions => _settings.SuppressCancellationErrors;
+        public bool SuppressTypeMismatchExceptions => _settings.SuppressTypeMismatchExceptions;
         public Func<ErrorContext, Exception> ExceptionFactory => _settings.ExceptionFactory;
         public bool DeserializeResult => _settings.DeserializeResult;
 

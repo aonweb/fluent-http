@@ -38,10 +38,7 @@ namespace AonWeb.FluentHttp.Client
             _client.CancelPendingRequests();
         }
 
-        public HttpRequestHeaders DefaultRequestHeaders
-        {
-            get { return _client.DefaultRequestHeaders; }
-        }
+        public HttpRequestHeaders DefaultRequestHeaders => _client.DefaultRequestHeaders;
 
         public long MaxResponseContentBufferSize
         {

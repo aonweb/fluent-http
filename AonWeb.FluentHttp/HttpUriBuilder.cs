@@ -124,12 +124,26 @@ namespace AonWeb.FluentHttp
 
         public HttpUriBuilder WithQueryString(string name, string value)
         {
-            _query.Add(name, value);
+            _query.Set(name, value);
             IsSet = true;
             return this;
         }
 
         public HttpUriBuilder WithQueryString(IEnumerable<KeyValuePair<string, string>> values)
+        {
+            _query.Set(values);
+            IsSet = true;
+            return this;
+        }
+
+        public HttpUriBuilder WithAppendQueryString(string name, string value)
+        {
+            _query.Add(name, value);
+            IsSet = true;
+            return this;
+        }
+
+        public HttpUriBuilder WithAppendQueryString(IEnumerable<KeyValuePair<string, string>> values)
         {
             _query.Add(values);
             IsSet = true;

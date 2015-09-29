@@ -33,7 +33,7 @@ namespace AonWeb.FluentHttp.Caching
                 headers = new HashSet<string>();
 
             lock (Lock)
-                headers = CollectionHelpers.MergeSet(headers, newHeaders.Select(FluentHttp.Cache.NormalizeHeader));
+                headers = CollectionHelpers.MergeSet(headers, newHeaders.Select(UriHelpers.NormalizeHeader));
 
             Cache[key] = headers;
         }

@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 
 namespace AonWeb.FluentHttp.Client
 {
-    public class HttpClientSettings
+    public class HttpClientSettings : IHttpClientSettings
     {
         public HttpClientSettings()
             : this(true) { }

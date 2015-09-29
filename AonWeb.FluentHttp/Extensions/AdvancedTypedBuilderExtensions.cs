@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
@@ -11,6 +14,86 @@ namespace AonWeb.FluentHttp
 {
     public static class AdvancedTypedBuilderExtensions
     {
+        public static IAdvancedTypedBuilder WithContentEncoding(this IAdvancedTypedBuilder builder, Encoding encoding)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithContentEncoding(encoding));
+        }
+
+        public static IAdvancedTypedBuilder WithHeadersConfiguration(this IAdvancedTypedBuilder builder, Action<HttpRequestHeaders> configuration)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithHeadersConfiguration(configuration));
+        }
+
+        public static IAdvancedTypedBuilder WithHeader(this IAdvancedTypedBuilder builder, string name, string value)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithHeader(name, value));
+        }
+
+        public static IAdvancedTypedBuilder WithHeader(this IAdvancedTypedBuilder builder, string name, IEnumerable<string> values)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithHeader(name, values));
+        }
+
+        public static IAdvancedTypedBuilder WithAppendHeader(this IAdvancedTypedBuilder builder, string name, string value)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAppendHeader(name, value));
+        }
+
+        public static IAdvancedTypedBuilder WithAppendHeader(this IAdvancedTypedBuilder builder, string name, IEnumerable<string> values)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAppendHeader(name, values));
+        }
+
+        public static IAdvancedTypedBuilder WithAcceptHeaderValue(this IAdvancedTypedBuilder builder, string mediaType)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAcceptHeaderValue(mediaType));
+        }
+
+        public static IAdvancedTypedBuilder WithAcceptCharSet(this IAdvancedTypedBuilder builder, Encoding encoding)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAcceptCharSet(encoding));
+        }
+
+        public static IAdvancedTypedBuilder WithAcceptCharSet(this IAdvancedTypedBuilder builder, string charSet)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAcceptCharSet(charSet));
+        }
+
+        public static IAdvancedTypedBuilder WithAutoDecompression(this IAdvancedTypedBuilder builder, bool enabled = true)
+
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAutoDecompression(enabled));
+        }
+
+        public static IAdvancedTypedBuilder WithSuppressCancellationExceptions(this IAdvancedTypedBuilder builder, bool suppress = true)
+
+        {
+            ((IFluentConfigurable<ITypedBuilder, ITypedBuilderSettings>)builder).WithConfiguration(s => s.SuppressCancellationErrors = suppress);
+
+            return builder.Advanced.WithConfiguration(b => b.WithSuppressCancellationExceptions(suppress));
+        }
+
+        public static IAdvancedTypedBuilder WithTimeout(this IAdvancedTypedBuilder builder, TimeSpan? timeout)
+        {
+            return builder.WithClientConfiguration(c => c.WithTimeout(timeout));
+        }
+
+        public static IAdvancedTypedBuilder WithNoCache(this IAdvancedTypedBuilder builder, bool nocache = true)
+        {
+
+            builder.Advanced.WithConfiguration(b => b.WithNoCache(nocache));
+
+            return builder;
+        }
+
         public static IAdvancedTypedBuilder WithMediaType(this IAdvancedTypedBuilder builder, string mediaType)
         {
             if (mediaType == null)
@@ -151,7 +234,7 @@ namespace AonWeb.FluentHttp
 
         public static IAdvancedTypedBuilder WithSuppressTypeMismatchExceptions(this IAdvancedTypedBuilder builder, bool suppress = true)
         {
-            builder.WithConfiguration(s => s.SuppressHandlerTypeExceptions = suppress);
+            builder.WithConfiguration(s => s.SuppressTypeMismatchExceptions = suppress);
 
             return builder;
         }

@@ -7,8 +7,8 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private readonly Modifiable<HttpResponseMessage> _result;
 
-        public SentContext(IHttpBuilderContext context, HttpResponseMessage result)
-            : base(context, result.RequestMessage)
+        public SentContext(IHttpBuilderContext context, HttpRequestMessage request, HttpResponseMessage result)
+            : base(context, request)
         {
             _result = new Modifiable<HttpResponseMessage>(result);
         }

@@ -91,7 +91,7 @@ namespace AonWeb.FluentHttp.Handlers
             context.Builder.WithUri(ctx.LocationUri).AsGet().WithContent(string.Empty);
 
             // dispose of previous response
-            ObjectHelpers.DisposeResponse(context.Result);
+            ObjectHelpers.Dispose(context.Result);
 
             context.Result = await context.Builder.RecursiveResultAsync(context.Token);
         }

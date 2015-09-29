@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 namespace AonWeb.FluentHttp.Client
 {
     public interface IHttpClientBuilder : 
-        IFluentConfigurable<IHttpClientBuilder, HttpClientSettings>,
+        IFluentConfigurable<IHttpClientBuilder, IHttpClientSettings>,
         IFluentConfigurable<IHttpClientBuilder, IHttpClient>
     {
         /// <summary>

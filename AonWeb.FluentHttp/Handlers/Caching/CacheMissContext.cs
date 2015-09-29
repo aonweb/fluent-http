@@ -1,3 +1,5 @@
+using AonWeb.FluentHttp.Helpers;
+
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public class CacheMissContext<TResult> : CacheMissContext
@@ -10,7 +12,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         public TResult Result
         {
-            get { return (TResult)ResultInternal; }
+            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
             set { ResultInternal = value; }
         }
     }

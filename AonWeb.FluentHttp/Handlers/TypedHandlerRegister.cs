@@ -43,14 +43,14 @@ namespace AonWeb.FluentHttp.Handlers
             return handlerContext?.GetHandlerResult();
         }
 
-        public async Task<Modifiable> OnSent(ITypedBuilderContext context, HttpResponseMessage response)
+        public async Task<Modifiable> OnSent(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response)
         {
             TypedSentContext handlerContext = null;
 
             foreach (var handlerInfo in GetHandlerInfo(HandlerType.Sent))
             {
                 if (handlerContext == null)
-                    handlerContext = ((Func<ITypedBuilderContext, HttpResponseMessage, TypedSentContext>)handlerInfo.InitialConstructor)(context, response);
+                    handlerContext = ((Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, TypedSentContext>)handlerInfo.InitialConstructor)(context, request, response);
                 else
                     handlerContext = ((Func<TypedSentContext, TypedSentContext>)handlerInfo.ContinuationConstructor)(handlerContext);
 
@@ -60,14 +60,14 @@ namespace AonWeb.FluentHttp.Handlers
             return handlerContext?.GetHandlerResult();
         }
 
-        public async Task<Modifiable> OnResult(ITypedBuilderContext context, HttpResponseMessage response, object result)
+        public async Task<Modifiable> OnResult(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, object result)
         {
             TypedResultContext handlerContext = null;
 
             foreach (var handlerInfo in GetHandlerInfo(HandlerType.Result))
             {
                 if (handlerContext == null)
-                    handlerContext = ((Func<ITypedBuilderContext, HttpResponseMessage, object, TypedResultContext>)handlerInfo.InitialConstructor)(context, response, result);
+                    handlerContext = ((Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, object, TypedResultContext>)handlerInfo.InitialConstructor)(context, request, response, result);
                 else
                     handlerContext = ((Func<TypedResultContext, TypedResultContext>)handlerInfo.ContinuationConstructor)(handlerContext);
 
@@ -77,14 +77,14 @@ namespace AonWeb.FluentHttp.Handlers
             return handlerContext?.GetHandlerResult();
         }
 
-        public async Task<Modifiable> OnError(ITypedBuilderContext context, HttpResponseMessage response, object error)
+        public async Task<Modifiable> OnError(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, object error)
         {
             TypedErrorContext handlerContext = null;
 
             foreach (var handlerInfo in GetHandlerInfo(HandlerType.Error))
             {
                 if (handlerContext == null)
-                    handlerContext = ((Func<ITypedBuilderContext, HttpResponseMessage, object, TypedErrorContext>)handlerInfo.InitialConstructor)(context, response, error);
+                    handlerContext = ((Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, object, TypedErrorContext>)handlerInfo.InitialConstructor)(context, request, response, error);
                 else
                     handlerContext = ((Func<TypedErrorContext, TypedErrorContext>)handlerInfo.ContinuationConstructor)(handlerContext);
 
@@ -94,14 +94,14 @@ namespace AonWeb.FluentHttp.Handlers
             return handlerContext?.GetHandlerResult();
         }
 
-        public async Task<Modifiable> OnException(ITypedBuilderContext context, HttpResponseMessage response, Exception exception)
+        public async Task<Modifiable> OnException(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, Exception exception)
         {
             TypedExceptionContext handlerContext = null;
 
             foreach (var handlerInfo in GetHandlerInfo(HandlerType.Exception))
             {
                 if (handlerContext == null)
-                    handlerContext = ((Func<ITypedBuilderContext, HttpResponseMessage, Exception, TypedExceptionContext>)handlerInfo.InitialConstructor)(context, response, exception);
+                    handlerContext = ((Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, TypedExceptionContext>)handlerInfo.InitialConstructor)(context, request, response, exception);
                 else
                     handlerContext = ((Func<TypedExceptionContext, TypedExceptionContext>)handlerInfo.ContinuationConstructor)(handlerContext);
 
@@ -203,10 +203,10 @@ namespace AonWeb.FluentHttp.Handlers
             var handlerInfo = new TypedHandlerInfo
             {
                 Handler = context => handler((TypedSendingContext<TResult, TContent>)context),
-                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Sending, (Func<ITypedBuilderContext, HttpRequestMessage, object, bool, TypedSendingContext>)(
+                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Sending, handler.GetType(), false, (Func<ITypedBuilderContext, HttpRequestMessage, object, bool, TypedSendingContext>)(
                     (ctx, request, content, hasContent) => 
-                        new TypedSendingContext<TResult, TContent>(ctx, request, ObjectHelpers.CheckType<TContent>(content, ctx.SuppressHandlerTypeExceptions), hasContent))),
-                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Sending, (Func<TypedSendingContext, TypedSendingContext>)(
+                        new TypedSendingContext<TResult, TContent>(ctx, request, ObjectHelpers.CheckType<TContent>(content, ctx.SuppressTypeMismatchExceptions), hasContent))),
+                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Sending, handler.GetType(), true, (Func<TypedSendingContext, TypedSendingContext>)(
                     ctx => 
                         new TypedSendingContext<TResult, TContent>(ctx))),
             };
@@ -248,8 +248,8 @@ namespace AonWeb.FluentHttp.Handlers
             var handlerInfo = new TypedHandlerInfo
             {
                 Handler = context => handler((TypedSentContext<TResult>)context),
-                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Sent, (Func<ITypedBuilderContext, HttpResponseMessage, TypedSentContext>)((ctx, r) => new TypedSentContext<TResult>(ctx, r))),
-                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Sent, (Func<TypedSentContext, TypedSentContext>)(ctx => new TypedSentContext<TResult>(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Sent, handler.GetType(), false, (Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, TypedSentContext>)((ctx, request, response) => new TypedSentContext<TResult>(ctx, request, response))),
+                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Sent, handler.GetType(), true, (Func<TypedSentContext, TypedSentContext>)(ctx => new TypedSentContext<TResult>(ctx))),
             };
 
             WithHandler(HandlerType.Sent, priority, handlerInfo);
@@ -287,8 +287,8 @@ namespace AonWeb.FluentHttp.Handlers
             var handlerInfo = new TypedHandlerInfo
             {
                 Handler = context => handler((TypedResultContext<TResult>)context),
-                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Result, (Func<ITypedBuilderContext, HttpResponseMessage, object, TypedResultContext>)((ctx, response, result) => new TypedResultContext<TResult>(ctx, response, ObjectHelpers.CheckType<TResult>( result, ctx.SuppressHandlerTypeExceptions)))),
-                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Result, (Func<TypedResultContext, TypedResultContext>)(ctx => new TypedResultContext<TResult>(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Result, handler.GetType(), false, (Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, object, TypedResultContext>)((ctx, request, response, result) => new TypedResultContext<TResult>(ctx, request, response, ObjectHelpers.CheckType<TResult>( result, ctx.SuppressTypeMismatchExceptions)))),
+                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Result, handler.GetType(), true, (Func<TypedResultContext, TypedResultContext>)(ctx => new TypedResultContext<TResult>(ctx))),
             };
 
             WithHandler(HandlerType.Result, priority, handlerInfo);
@@ -326,8 +326,8 @@ namespace AonWeb.FluentHttp.Handlers
             var handlerInfo = new TypedHandlerInfo
             {
                 Handler = context => handler((TypedErrorContext<TError>)context),
-                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Error, (Func<ITypedBuilderContext, HttpResponseMessage, object, TypedErrorContext>)((ctx, response, error) => new TypedErrorContext<TError>(ctx, response, ObjectHelpers.CheckType<TError>(error, ctx.SuppressHandlerTypeExceptions)))),
-                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Error, (Func<TypedErrorContext, TypedErrorContext>)(ctx => new TypedErrorContext<TError>(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Error, handler.GetType(), false, (Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, object, TypedErrorContext>)((ctx, request, response, error) => new TypedErrorContext<TError>(ctx, request, response, ObjectHelpers.CheckType<TError>(error, ctx.SuppressTypeMismatchExceptions)))),
+                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Error, handler.GetType(), true, (Func<TypedErrorContext, TypedErrorContext>)(ctx => new TypedErrorContext<TError>(ctx))),
             };
 
             WithHandler(HandlerType.Error, priority, handlerInfo);
@@ -365,8 +365,8 @@ namespace AonWeb.FluentHttp.Handlers
             var handlerInfo = new TypedHandlerInfo
             {
                 Handler = context => handler((TypedExceptionContext)context),
-                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Exception,(Func<ITypedBuilderContext, HttpResponseMessage, Exception, TypedExceptionContext>)((ctx, response, exception) => new TypedExceptionContext(ctx, response, exception))),
-                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Exception,(Func<TypedExceptionContext, TypedExceptionContext>)(ctx => new TypedExceptionContext(ctx)))
+                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Exception, handler.GetType(), false, (Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, TypedExceptionContext>)((ctx, request, response, exception) => new TypedExceptionContext(ctx, request, response, exception))),
+                ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Exception, handler.GetType(), true, (Func<TypedExceptionContext, TypedExceptionContext>)(ctx => new TypedExceptionContext(ctx)))
             };
 
             WithHandler(HandlerType.Exception, priority, handlerInfo);
@@ -423,9 +423,10 @@ namespace AonWeb.FluentHttp.Handlers
             });
         }
 
-        private object GetOrAddFromCtorCache(HandlerType type, object ctor)
+        private object GetOrAddFromCtorCache(HandlerType type, Type handlerType, bool isContinuation, object ctor)
         {
-            var key = $"{type}:{ctor.GetType().FormattedTypeName()}";
+            var ctorType = isContinuation ? "C" : "I";
+            var key = $"{(int)type}:{handlerType.FormattedTypeName()}:{ctorType}";
 
             return _contextConstructorCache.GetOrAdd(key, k => ctor);
         }

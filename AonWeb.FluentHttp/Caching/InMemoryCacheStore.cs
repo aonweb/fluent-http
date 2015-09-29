@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
@@ -12,19 +14,35 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class InMemoryCacheStore : IHttpCacheStore
     {
-        //private const string CacheName = "HttpCallCacheInMemoryStore";
-
-        private static readonly ConcurrentDictionary<string, CachedItem> Cache = new ConcurrentDictionary<string, CachedItem>();
-        private static readonly ConcurrentDictionary<Uri, UriCacheInfo> UriCache = new ConcurrentDictionary<Uri, UriCacheInfo>();
+        private static readonly ConcurrentDictionary<string, CachedItem> _cache = new ConcurrentDictionary<string, CachedItem>();
+        private static readonly ConcurrentDictionary<Uri, UriCacheInfo> _uriCache = new ConcurrentDictionary<Uri, UriCacheInfo>();
         private static readonly ResponseSerializer Serializer = new ResponseSerializer();
+
+        internal static string BuildKey(Type resultType, Uri uri, HttpRequestHeaders headers)
+        {
+            var varyBy = Cache.CurrentVaryByStore.Get(uri);
+            var parts = new List<string> { uri.ToString() };
+
+            if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))
+                parts.Add("HttpResponseMessage");
+
+            parts.AddRange(headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase)))
+                .SelectMany(h => h.Value.Select(v => $"{UriHelpers.NormalizeHeader(h.Key)}:{UriHelpers.NormalizeHeader(v)}"))
+                .Distinct());
+
+            var body = string.Join("-", parts);
+            var hash = DigestHelpers.Sha256Hash(Encoding.UTF8.GetBytes(body));
+
+            return Convert.ToBase64String(hash);
+        }
 
         public async Task<CacheResult> GetCachedResult(ICacheContext context)
         {
-            var key = FluentHttp.Cache.BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+            var key = BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
 
             CachedItem cachedItem = null;
             CachedItem temp;
-            if (Cache.TryGetValue(key, out temp))
+            if (_cache.TryGetValue(key, out temp))
             {
                 if (context.ResponseValidator(context, temp.ResponseInfo) == ResponseValidationResult.OK)
                     cachedItem = temp;
@@ -53,11 +71,11 @@ namespace AonWeb.FluentHttp.Caching
         {
             var isResponseMessage = false;
 
-            var key = FluentHttp.Cache.BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+            var key = BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
 
             CachedItem cachedItem = null;
             CachedItem temp;
-            if (Cache.TryGetValue(key, out temp))
+            if (_cache.TryGetValue(key, out temp))
             {
                 if (context.ResponseValidator(context, temp.ResponseInfo) == ResponseValidationResult.OK)
                     cachedItem = temp;
@@ -88,16 +106,17 @@ namespace AonWeb.FluentHttp.Caching
                 cachedItem.ResponseInfo.Merge(context.Result.ResponseInfo);
             }
 
-            Cache.TryAdd(key, cachedItem);
+            _cache.TryAdd(key, cachedItem);
 
             AddCacheKey(context.Uri, key);
         }
 
         public IEnumerable<Uri> TryRemove(ICacheContext context, IEnumerable<Uri> additionalRelatedUris)
         {
-            var key = FluentHttp.Cache.BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+            var key = BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+
             CachedItem cachedItem;
-            if (string.IsNullOrWhiteSpace(key) || !Cache.TryRemove(key, out cachedItem))
+            if (string.IsNullOrWhiteSpace(key) || !_cache.TryRemove(key, out cachedItem))
                 yield break;
 
             if (context.Uri != null)
@@ -113,7 +132,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public void Clear()
         {
-            Cache.Clear();
+            _cache.Clear();
         }
 
         public IEnumerable<Uri> RemoveItem(Uri uri)
@@ -153,7 +172,7 @@ namespace AonWeb.FluentHttp.Caching
 
                         CachedItem cachedItem;
 
-                        if (!Cache.TryRemove(key, out cachedItem) || cachedItem == null)
+                        if (!_cache.TryRemove(key, out cachedItem) || cachedItem == null)
                             continue;
 
                         yield return cachedItem.ResponseInfo.Uri;
@@ -172,7 +191,7 @@ namespace AonWeb.FluentHttp.Caching
 
             UriCacheInfo cacheInfo;
 
-            if (UriCache.TryGetValue(normalizedUri, out cacheInfo))
+            if (_uriCache.TryGetValue(normalizedUri, out cacheInfo))
                 return cacheInfo;
 
             return null;
@@ -184,7 +203,7 @@ namespace AonWeb.FluentHttp.Caching
 
             UriCacheInfo cacheInfo;
 
-            if (!UriCache.TryGetValue(normalizedUri, out cacheInfo))
+            if (!_uriCache.TryGetValue(normalizedUri, out cacheInfo))
                 cacheInfo = new UriCacheInfo();
 
             lock (cacheInfo)
@@ -193,7 +212,7 @@ namespace AonWeb.FluentHttp.Caching
                     cacheInfo.CacheKeys.Add(cacheKey);
             }
 
-            UriCache[normalizedUri] = cacheInfo;
+            _uriCache[normalizedUri] = cacheInfo;
         }
 
         private static void RemoveCacheKey(Uri uri, string cacheKey)
@@ -202,7 +221,7 @@ namespace AonWeb.FluentHttp.Caching
 
             UriCacheInfo cacheInfo;
 
-            if (!UriCache.TryGetValue(normalizedUri, out cacheInfo))
+            if (!_uriCache.TryGetValue(normalizedUri, out cacheInfo))
                 return;
 
             lock (cacheInfo)
@@ -219,7 +238,7 @@ namespace AonWeb.FluentHttp.Caching
                 CacheKeys = new HashSet<string>();
             }
 
-            public ISet<string> CacheKeys { get; private set; }
+            public ISet<string> CacheKeys { get; }
         }
     }
 }

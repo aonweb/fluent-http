@@ -18,7 +18,7 @@ namespace AonWeb.FluentHttp
         new string MediaType { get; set; }
         new Func<Type, object> DefaultResultFactory { get; set; }
         new bool DeserializeResult { get; set; }
-        new bool SuppressHandlerTypeExceptions { get; set; }
+        new bool SuppressTypeMismatchExceptions { get; set; }
         new bool SuppressCancellationErrors { get; set; }
         IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; }
         new Func<ErrorContext, Exception> ExceptionFactory { get; set; }

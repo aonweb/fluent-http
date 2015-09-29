@@ -1,4 +1,6 @@
-﻿namespace AonWeb.FluentHttp.Handlers.Caching
+﻿using AonWeb.FluentHttp.Helpers;
+
+namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public abstract class CacheStoreContext : CacheHandlerContext
     {
@@ -30,6 +32,7 @@
         internal CacheStoreContext(CacheStoreContext context)
             : base(context) { }
 
-        public TResult Result => (TResult)ResultInternal;
+        public TResult Result => ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions);
+        
     }
 }

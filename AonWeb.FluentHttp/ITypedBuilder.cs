@@ -5,7 +5,7 @@ namespace AonWeb.FluentHttp
 {
     public interface ITypedBuilder :
         IFluentConfigurableWithAdvanced<ITypedBuilder, IAdvancedTypedBuilder>,
-        IFluentConfigurable<ITypedBuilder, IHttpBuilderSettings>,
+        IHttpBuilderCore<ITypedBuilder>,
         IFluentConfigurable<ITypedBuilder, ITypedBuilderSettings>
     {
         Task<TResult> ResultAsync<TResult>();

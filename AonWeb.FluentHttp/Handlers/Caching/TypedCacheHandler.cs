@@ -88,21 +88,21 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         Task ITypedHandler.OnSent<TResult>(TypedSentContext<TResult> context)
         {
-            var boxedContext = context as TypedSentContext<object> ?? new TypedSentContext<object>(context, context.Response);
+            var boxedContext = context as TypedSentContext<object> ?? new TypedSentContext<object>(context, context.Request, context.Response);
 
             return OnSent(boxedContext);
         }
 
         Task ITypedHandler.OnResult<TResult>(TypedResultContext<TResult> context)
         {
-            var boxedContext = context as TypedResultContext<object> ?? new TypedResultContext<object>(context, context.Response, context.Result);
+            var boxedContext = context as TypedResultContext<object> ?? new TypedResultContext<object>(context, context.Request, context.Response, context.Result);
 
             return OnResult(boxedContext);
         }
 
         Task ITypedHandler.OnError<TError>(TypedErrorContext<TError> context)
         {
-            var boxedContext = context as TypedErrorContext<object> ?? new TypedErrorContext<object>(context, context.Response, context.Error);
+            var boxedContext = context as TypedErrorContext<object> ?? new TypedErrorContext<object>(context, context.Request, context.Response, context.Error);
 
             return OnError(boxedContext);
         }

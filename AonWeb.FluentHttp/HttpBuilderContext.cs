@@ -27,7 +27,7 @@ namespace AonWeb.FluentHttp
         public HttpCompletionOption CompletionOption => _settings.CompletionOption;
         public bool SuppressCancellationErrors => _settings.SuppressCancellationErrors;
         public bool AutoDecompression => _settings.AutoDecompression;
-        public Func<HttpContent> ContentFactory => _settings.ContentFactory;
+        public Func<IHttpBuilderContext, HttpContent> ContentFactory => _settings.ContentFactory;
         public Func<HttpResponseMessage, Exception> ExceptionFactory => _settings.ExceptionFactory;
         public IRecursiveHttpBuilder Builder => _settings.Builder;
         public Type ResultType => _settings.ResultType;

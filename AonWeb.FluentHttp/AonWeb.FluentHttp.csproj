@@ -50,12 +50,13 @@
     <Compile Include="Client\HttpClientWrapper.cs" />
     <Compile Include="Client\IHttpClient.cs" />
     <Compile Include="Client\IHttpClientBuilder.cs" />
+    <Compile Include="Client\IHttpClientSettings.cs" />
     <Compile Include="Extensions\AdvancedBuilderExtensions.cs" />
-    <Compile Include="Extensions\AdvancedHttpBuilderCoreExtensions.cs" />
     <Compile Include="Extensions\AdvancedHttpBuilderExtensions.cs" />
     <Compile Include="Extensions\AdvancedTypedBuilderExtensions.cs" />
-    <Compile Include="Extensions\BuilderExtensions.cs" />
+    <Compile Include="Extensions\HttpBuilderCoreExtensions.cs" />
     <Compile Include="Extensions\TypedBuilderExtensions.cs" />
+    <Compile Include="Helpers\DigestHelpers.cs" />
     <Compile Include="HttpBuilderFactory.cs" />
     <Compile Include="Exceptions\HttpCallException.cs" />
     <Compile Include="Exceptions\HttpErrorException.cs" />
@@ -165,10 +166,6 @@
     <Compile Include="TypedBuilderSettings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="bouncy_castle_hmac_sha_pcl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\BouncyCastle-PCL.1.0.0.6\lib\bouncy_castle_hmac_sha_pcl.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>

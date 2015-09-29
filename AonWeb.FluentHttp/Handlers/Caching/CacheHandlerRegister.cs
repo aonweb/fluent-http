@@ -101,7 +101,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext?.GetHandlerResult();
+            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
         public async Task<Modifiable> OnHit(ICacheContext context, object result)
@@ -118,7 +118,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext?.GetHandlerResult();
+            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
         public async Task<Modifiable> OnMiss(ICacheContext context)
@@ -135,7 +135,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext?.GetHandlerResult();
+            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
         public async Task<Modifiable> OnStore(ICacheContext context, object result)
@@ -152,7 +152,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext?.GetHandlerResult();
+            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
         public async Task<Modifiable> OnExpiring(ICacheContext context)
@@ -169,7 +169,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext?.GetHandlerResult();
+            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
         public async Task<Modifiable> OnExpired(ICacheContext context, IReadOnlyCollection<Uri> expiredUris)
@@ -186,7 +186,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext?.GetHandlerResult();
+            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
         #region Lookup
@@ -256,8 +256,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheHitContext<TResult>)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Hit, (Func<ICacheContext, object, CacheHitContext>)((ctx, result) => new CacheHitContext<TResult>(ctx, ObjectHelpers.CheckType<TResult>(result)))),
-                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Hit, (Func<CacheHitContext, CacheHitContext>)(ctx => new CacheHitContext<TResult>(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Hit, handler.GetType(), false, (Func<ICacheContext, object, CacheHitContext>)((ctx, result) => new CacheHitContext<TResult>(ctx, ObjectHelpers.CheckType<TResult>(result, ctx.SuppressTypeMismatchExceptions)))),
+                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Hit, handler.GetType(), true, (Func<CacheHitContext, CacheHitContext>)(ctx => new CacheHitContext<TResult>(ctx))),
             };
 
             WithHandler(CacheHandlerType.Hit, priority, handlerInfo);
@@ -295,8 +295,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheMissContext<TResult>)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Miss, (Func<ICacheContext, CacheMissContext>)(ctx => new CacheMissContext<TResult>(ctx))),
-                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Miss, (Func<CacheMissContext, CacheMissContext>)(ctx => new CacheMissContext<TResult>(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Miss, handler.GetType(), false, (Func<ICacheContext, CacheMissContext>)(ctx => new CacheMissContext<TResult>(ctx))),
+                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Miss, handler.GetType(), true, (Func<CacheMissContext, CacheMissContext>)(ctx => new CacheMissContext<TResult>(ctx))),
             };
 
             WithHandler(CacheHandlerType.Miss, priority, handlerInfo);
@@ -334,8 +334,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheStoreContext<TResult>)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Store, (Func<ICacheContext, object, CacheStoreContext>)((ctx, result) => new CacheStoreContext<TResult>(ctx, ObjectHelpers.CheckType<TResult>(result)))),
-                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Store, (Func<CacheStoreContext, CacheStoreContext>)(ctx => new CacheStoreContext<TResult>(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Store, handler.GetType(), false, (Func<ICacheContext, object, CacheStoreContext>)((ctx, result) => new CacheStoreContext<TResult>(ctx, ObjectHelpers.CheckType<TResult>(result, ctx.SuppressTypeMismatchExceptions)))),
+                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Store, handler.GetType(), true, (Func<CacheStoreContext, CacheStoreContext>)(ctx => new CacheStoreContext<TResult>(ctx))),
             };
 
             WithHandler(CacheHandlerType.Store, priority, handlerInfo);
@@ -373,8 +373,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheExpiringContext)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expiring, (Func<ICacheContext, CacheExpiringContext>)(ctx => new CacheExpiringContext(ctx))),
-                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expiring, (Func<CacheExpiringContext, CacheExpiringContext>)(ctx => new CacheExpiringContext(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expiring, handler.GetType(), false, (Func<ICacheContext, CacheExpiringContext>)(ctx => new CacheExpiringContext(ctx))),
+                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expiring, handler.GetType(), true, (Func<CacheExpiringContext, CacheExpiringContext>)(ctx => new CacheExpiringContext(ctx))),
             };
 
             WithHandler(CacheHandlerType.Expiring, priority, handlerInfo);
@@ -412,8 +412,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheExpiredContext)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expired, (Func<ICacheContext, IReadOnlyCollection<Uri>,  CacheExpiredContext>)((ctx, expiredUris) => new CacheExpiredContext(ctx, expiredUris))),
-                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expired, (Func<CacheExpiredContext, CacheExpiredContext>)(ctx => new CacheExpiredContext(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expired, handler.GetType(), false, (Func<ICacheContext, IReadOnlyCollection<Uri>,  CacheExpiredContext>)((ctx, expiredUris) => new CacheExpiredContext(ctx, expiredUris))),
+                ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expired, handler.GetType(), true, (Func<CacheExpiredContext, CacheExpiredContext>)(ctx => new CacheExpiredContext(ctx))),
             };
 
             WithHandler(CacheHandlerType.Expired, priority, handlerInfo);
@@ -470,9 +470,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             });
         }
 
-        private object GetOrAddFromCtorCache(CacheHandlerType type, object ctor)
+        private object GetOrAddFromCtorCache(CacheHandlerType type, Type handlerType, bool isContinuation, object ctor)
         {
-            var key = $"{type}:{ctor.GetType().FormattedTypeName()}";
+            var ctorType = isContinuation ? "C" : "I";
+            var key = $"{(int)type}:{handlerType.FormattedTypeName()}:{ctorType}";
 
             return _contextConstructorCache.GetOrAdd(key, k => ctor);
         }

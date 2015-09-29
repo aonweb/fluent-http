@@ -54,6 +54,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public ISet<string> DefaultVaryByHeaders => _settings.DefaultVaryByHeaders;
         public bool MustRevalidateByDefault => _settings.MustRevalidateByDefault;
         public ISet<Uri> DependentUris => _settings.DependentUris;
+        public bool SuppressTypeMismatchExceptions => _settings.SuppressTypeMismatchExceptions;
 
         public HttpRequestMessage Request { get; }
 

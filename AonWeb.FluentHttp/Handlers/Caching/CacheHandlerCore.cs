@@ -112,7 +112,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
                 if (context.Result.Found)
                 {
-                    var hitResult = await context.Handler.OnHit(context, context.Result);
+                    var hitResult = await context.Handler.OnHit(context, context.Result.Result);
 
                     if (!hitResult.IsDirty || !(bool)hitResult.Value)
                         handlerContext.Result = context.Result.Result;
@@ -135,7 +135,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
                 context.ResultInspector?.Invoke(context.Result);
 
-                ObjectHelpers.DisposeResponse(response);
+                ObjectHelpers.Dispose(response);
             }
             else
             {
@@ -155,7 +155,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             if (context.Result.Found)
             {
-                var hitResult = await context.Handler.OnHit(context, context.Result);
+                var hitResult = await context.Handler.OnHit(context, context.Result.Result);
 
                 if (hitResult.IsDirty && !(bool)hitResult.Value)
                     handlerContext.Result = context.Result.Result;
@@ -180,7 +180,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                     Cache.CurrentVaryByStore.AddOrUpdate(context.Uri, response.Headers.Vary);
                 }
 
-                await context.Handler.OnStore(context, context.Result);
+                await context.Handler.OnStore(context, context.Result.Result);
             }
             else
             {

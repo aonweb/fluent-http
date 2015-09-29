@@ -1,8 +1,8 @@
 ﻿namespace AonWeb.FluentHttp
 {
     public interface IAdvancedTypedBuilder :  ITypedBuilder,
-        IAdvancedFluentConfigurable<IAdvancedTypedBuilder>,
-        IAdvancedHttpBuilderCore<IAdvancedTypedBuilder>
+        IAdvancedHttpBuilderCore<IAdvancedTypedBuilder>,
+        IFluentConfigurable<IAdvancedTypedBuilder, IAdvancedHttpBuilder>
     {
 
     }

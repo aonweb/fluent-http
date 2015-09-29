@@ -74,8 +74,6 @@ namespace AonWeb.FluentHttp
                     s.ContentFactory = () => contentFactory();
             });
 
-            
-
             builder.Advanced.WithContentEncoding(encoding);
             builder.Advanced.WithMediaType(mediaType);
 

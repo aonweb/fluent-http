@@ -1,5 +1,5 @@
 using System;
-using System.Net;
+using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -13,14 +13,15 @@ namespace AonWeb.FluentHttp.Mocks
     {
         private readonly HttpClient _client = new HttpClient();
 
-        private Func<HttpRequestMessage, HttpResponseMessage> _responseFactory;
+        private readonly MockResponses<IMockRequestContext, IMockResponse> _responses;
+        private static readonly ConcurrentDictionary<string, long> UrlCount = new ConcurrentDictionary<string, long>();
 
         public MockHttpClient()
-            : this(r => new HttpResponseMessage(HttpStatusCode.OK)) { }
+            : this(new MockResponses<IMockRequestContext, IMockResponse>(() => new MockHttpResponseMessage())) { }
 
-        public MockHttpClient(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public MockHttpClient(MockResponses<IMockRequestContext, IMockResponse> responses)
         {
-            WithResponse(responseFactory);
+            _responses = responses;
         }
 
         public long MaxResponseContentBufferSize { get; set; }
@@ -44,7 +45,27 @@ namespace AonWeb.FluentHttp.Mocks
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
-            return Task.FromResult<HttpResponseMessage>(_responseFactory(request));
+            var url = request.RequestUri.ToString();
+            
+            UrlCount.AddOrUpdate(url, 1, (u, c) =>
+            {
+                return c + 1;
+            });
+
+            long urlCount;
+
+            UrlCount.TryGetValue(url, out urlCount);
+
+            var context = new MockHttpRequestMessage(request)
+            {
+                RequestCount = 1,
+                RequestCountForThisUrl = urlCount
+            };
+
+            var response = _responses.GetResponse(context);
+
+
+            return Task.FromResult<HttpResponseMessage>(response.ToHttpResponseMessage());
         }
 
         public void Dispose()
@@ -55,10 +76,9 @@ namespace AonWeb.FluentHttp.Mocks
         public HttpRequestHeaders DefaultRequestHeaders => _client.DefaultRequestHeaders;
 
         public void CancelPendingRequests() { }
-
-        public MockHttpClient WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public MockHttpClient WithResponse(Predicate<IMockRequestContext> predicate, Func<IMockRequestContext, IMockResponse> responseFactory)
         {
-            _responseFactory = responseFactory;
+            _responses.Add(predicate, responseFactory);
 
             return this;
         }

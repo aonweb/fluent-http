@@ -1,4 +1,5 @@
 using System.Net.Http;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
@@ -14,11 +15,11 @@ namespace AonWeb.FluentHttp.Handlers
 
         public TResult Result
         {
-            get { return (TResult)ResultInternal; }
+            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
             set { ResultInternal = value; }
         }
 
-        public TContent Content => (TContent)ContentInternal;
+        public TContent Content => ObjectHelpers.CheckType<TContent>(ContentInternal, SuppressTypeMismatchExceptions);
     }
 
     public abstract class TypedSendingContext : TypedHandlerContext, IHandlerContextWithResult

@@ -1,11 +1,12 @@
 using System.Net.Http;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
     public class TypedSentContext<TResult> : TypedSentContext, IHandlerContextWithResult<TResult>
     {
-        public TypedSentContext(ITypedBuilderContext context, HttpResponseMessage response)
-            : base(context, response)
+        public TypedSentContext(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response)
+            : base(context, request, response)
         { }
 
         internal TypedSentContext(TypedSentContext context)
@@ -14,7 +15,7 @@ namespace AonWeb.FluentHttp.Handlers
 
         public TResult Result
         {
-            get { return (TResult)ResultInternal; }
+            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
             set { ResultInternal = value; }
         }
     }
@@ -23,7 +24,7 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private readonly Modifiable _result;
 
-        protected TypedSentContext(ITypedBuilderContext context, HttpResponseMessage response)
+        protected TypedSentContext(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response)
             : base(context, response.RequestMessage)
         {
             Response = response;

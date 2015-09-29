@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp
         Encoding ContentEncoding { get;  }
         HttpCompletionOption CompletionOption { get;  }
         bool AutoDecompression { get; }
-        Func<HttpContent> ContentFactory { get; }
+        Func<IHttpBuilderContext, HttpContent> ContentFactory { get; }
         Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
         HandlerRegister Handler { get; }
         CancellationToken Token { get; }

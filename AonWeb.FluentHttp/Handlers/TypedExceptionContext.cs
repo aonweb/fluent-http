@@ -7,11 +7,12 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private readonly Modifiable<bool> _exceptionHandled;
 
-        public TypedExceptionContext(ITypedBuilderContext context, HttpResponseMessage response, Exception exception)
-            : base(context, response?.RequestMessage)
+        public TypedExceptionContext(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, Exception exception)
+            : base(context, request)
         {
             Exception = exception;
             Response = response;
+            
             _exceptionHandled = new Modifiable<bool>(false);
         }
 

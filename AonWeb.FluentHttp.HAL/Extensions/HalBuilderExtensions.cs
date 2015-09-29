@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using AonWeb.FluentHttp.HAL.Representations;
@@ -9,6 +10,16 @@ namespace AonWeb.FluentHttp.HAL
 {
     public static class HalBuilderExtensions
     {
+        public static IHalBuilder WithLink(this IHalBuilder builder, string link)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithUri(link));
+        }
+
+        public static IHalBuilder WithLink(this IHalBuilder builder, Uri link)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithUri(link));
+        }
+
         public static IHalBuilder AsGet(this IHalBuilder builder)
         {
             return builder.Advanced.WithMethod(HttpMethod.Get);
@@ -34,9 +45,34 @@ namespace AonWeb.FluentHttp.HAL
             return builder.Advanced.WithMethod(new HttpMethod("PATCH"));
         }
 
+        public static IHalBuilder WithQueryString(this IHalBuilder builder, string name, string value)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithQueryString(name, value));
+        }
+
+        public static IHalBuilder WithQueryString(this IHalBuilder builder, IEnumerable<KeyValuePair<string, string>> values)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithQueryString(values));
+        }
+
+        public static IHalBuilder WithAppendQueryString(this IHalBuilder builder, string name, string value)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAppendQueryString(name, value));
+        }
+
+        public static IHalBuilder WithAppendQueryString(this IHalBuilder builder, IEnumerable<KeyValuePair<string, string>> values)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAppendQueryString(values));
+        }
+
         public static IHalBuilder WithOptionalQueryString<TValue>(this IHalBuilder builder, string name, TValue value, Func<TValue, bool> nullCheck = null, Func<TValue, string> toString = null)
         {
             return builder.Advanced.WithConfiguration(b => b.WithOptionalQueryString(name, value, nullCheck, toString));
+        }
+
+        public static IHalBuilder WithAppendOptionalQueryString<TValue>(this IHalBuilder builder, string name, TValue value, Func<TValue, bool> nullCheck = null, Func<TValue, string> toString = null)
+        {
+            return builder.Advanced.WithConfiguration(b => b.WithAppendOptionalQueryString(name, value, nullCheck, toString));
         }
 
         public static IHalBuilder WithContent<TContent>(this IHalBuilder builder, TContent content)
@@ -72,9 +108,21 @@ namespace AonWeb.FluentHttp.HAL
         public static IHalBuilder WithContent<TContent>(this IHalBuilder builder, Func<TContent> contentFactory, Encoding encoding, string mediaType)
             where TContent : IHalRequest
         {
-            builder.Advanced.WithConfiguration(b => b.WithContent(contentFactory, encoding, mediaType));
+            return builder.Advanced.WithConfiguration(b => 
+            {
+                Func<TContent> wrapper = () =>
+                {
+                    var content = contentFactory();
 
-            return builder;
+                    if (!ReferenceEquals(content, null))
+                        b.WithDependentUris(content.DependentUris);
+
+                    return content;
+                };
+
+
+                b.WithContent(wrapper, encoding, mediaType);
+            });
         }
 
         public static IHalBuilder WithDefaultResult<TResult>(this IHalBuilder builder, TResult result)

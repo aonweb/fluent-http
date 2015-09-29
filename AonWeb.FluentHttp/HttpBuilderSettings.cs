@@ -36,8 +36,8 @@ namespace AonWeb.FluentHttp
         public string MediaType { get; set; }
         public Encoding ContentEncoding { get; set; }
         public HttpCompletionOption CompletionOption { get; set; }
-        public IRecursiveHttpBuilder Builder { get; internal set; }
-        public Func<HttpContent> ContentFactory { get; set; }
+        public IRecursiveHttpBuilder Builder { get; protected internal set; }
+        public Func<IHttpBuilderContext, HttpContent> ContentFactory { get; set; }
         public HandlerRegister Handler { get; }
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; }
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }

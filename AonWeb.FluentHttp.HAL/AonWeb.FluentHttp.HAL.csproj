@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Defaults.cs" />
+    <Compile Include="HalDefaults.cs" />
     <Compile Include="Extensions\AdvancedHalBuilderExtensions.cs" />
     <Compile Include="Extensions\HalBuilderExtensions.cs" />
     <Compile Include="HalBuilderFactory.cs" />

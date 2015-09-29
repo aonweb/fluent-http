@@ -64,8 +64,7 @@ namespace AonWeb.FluentHttp
             return builder.WithContent(contentFactory, encoding, null);
         }
 
-        public static IHttpBuilder WithContent(this IHttpBuilder builder, Func<string> contentFactory, Encoding encoding,
-            string mediaType)
+        public static IHttpBuilder WithContent(this IHttpBuilder builder, Func<string> contentFactory, Encoding encoding, string mediaType)
 
         {
             if (contentFactory == null)
@@ -77,18 +76,18 @@ namespace AonWeb.FluentHttp
             if (string.IsNullOrWhiteSpace(mediaType))
                 builder.Advanced.WithMediaType(mediaType);
 
-            return builder.WithContent(() =>
+            return builder.WithContent(ctx =>
             {
                 var content = contentFactory() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(content))
-                    return new StringContent(content, encoding, mediaType);
+                    return new StringContent(content, ctx.ContentEncoding ?? Encoding.UTF8, !string.IsNullOrWhiteSpace( mediaType) ? mediaType : "application/json");
 
                 return null;
             });
         }
 
-        public static IHttpBuilder WithContent(this IHttpBuilder builder, Func<HttpContent> contentFactory)
+        public static IHttpBuilder WithContent(this IHttpBuilder builder, Func<IHttpBuilderContext, HttpContent> contentFactory)
         {
             if (contentFactory == null)
                 throw new ArgumentNullException(nameof(contentFactory));

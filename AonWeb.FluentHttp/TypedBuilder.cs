@@ -46,6 +46,18 @@ namespace AonWeb.FluentHttp
             WithConfiguration(configuration);
         }
 
+        public IAdvancedTypedBuilder WithConfiguration(Action<IAdvancedHttpBuilder> configuration)
+        {
+            configuration?.Invoke(_innerBuilder);
+
+            return this;
+        }
+
+        void IConfigurable<IAdvancedHttpBuilder>.WithConfiguration(Action<IAdvancedHttpBuilder> configuration)
+        {
+            configuration?.Invoke(_innerBuilder);
+        }
+
         public ITypedBuilder WithConfiguration(Action<ITypedBuilderSettings> configuration)
         {
             configuration?.Invoke(Settings);
@@ -65,7 +77,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public Task<TResult> ResultAsync<TResult>()
+        public virtual Task<TResult> ResultAsync<TResult>()
         {
             return ResultAsync<TResult>(CancellationToken.None);
         }
@@ -120,11 +132,12 @@ namespace AonWeb.FluentHttp
 
             var result = await ResultAsync(context, token).ConfigureAwait(false);
 
-            return (TResult)result;
+            return ObjectHelpers.CheckType<TResult>(result, context.SuppressTypeMismatchExceptions);
         }
 
         private async Task<object> ResultAsync(ITypedBuilderContext context, CancellationToken token)
         {
+            HttpRequestMessage request = null;
             HttpResponseMessage response = null;
             ExceptionDispatchInfo capturedException = null;
             try
@@ -141,24 +154,23 @@ namespace AonWeb.FluentHttp
 
                     var httpContent = await _formatter.CreateContent(content, context);
 
-                    _innerBuilder.WithContent(() => httpContent);
+                    _innerBuilder.WithContent(ctx => httpContent);
 
                     hasContent = true;
                 }
 
-                using (var request = _innerBuilder.CreateRequest())
-                {
-                    token.ThrowIfCancellationRequested();
+                request = _innerBuilder.CreateRequest();
 
-                    var sendingResult = await context.Handler.OnSending(context, request, content, hasContent);
+                token.ThrowIfCancellationRequested();
 
-                    if (sendingResult.IsDirty)
-                        return sendingResult.Value;
+                var sendingResult = await context.Handler.OnSending(context, request, content, hasContent);
 
-                    token.ThrowIfCancellationRequested();
+                if (sendingResult.IsDirty)
+                    return sendingResult.Value;
 
-                    response = await _innerBuilder.ResultFromRequestAsync(request, token);
-                }
+                token.ThrowIfCancellationRequested();
+
+                response = await GetResponse(context, request, token);
 
                 if (!context.IsSuccessfulResponse(response))
                 {
@@ -177,19 +189,19 @@ namespace AonWeb.FluentHttp
 
                     if (error != null && !context.ErrorType.IsInstanceOfType(error))
                     {
-                        if (!context.SuppressHandlerTypeExceptions)
+                        if (!context.SuppressTypeMismatchExceptions)
                             throw new TypeMismatchException(context.ErrorType, error.GetType(), response.DetailsForException());
 
                         return TypeHelpers.GetDefaultValueForType(context.ResultType);
                     }
 
-                    var errorResult = await context.Handler.OnError(context, response, error);
+                    var errorResult = await context.Handler.OnError(context, request, response, error);
 
                     var errorHandled = (bool)errorResult.Value;
 
                     if (!errorHandled && context.ExceptionFactory != null)
                     {
-                        var ex = context.ExceptionFactory(new ErrorContext(context, response, error));
+                        var ex = context.ExceptionFactory(new ErrorContext(context, request, response, error));
 
                         if (ex != null)
                             throw ex;
@@ -198,7 +210,7 @@ namespace AonWeb.FluentHttp
                 }
                 else
                 {
-                    var sentResult = await context.Handler.OnSent(context, response);
+                    var sentResult = await context.Handler.OnSent(context, request, response);
 
                     object result = null;
 
@@ -218,13 +230,13 @@ namespace AonWeb.FluentHttp
 
                     token.ThrowIfCancellationRequested();
 
-                    var resultResult = await context.Handler.OnResult(context, response, result);
+                    var resultResult = await context.Handler.OnResult(context, request, response, result);
 
                     result = resultResult.Value;
 
                     if (result != null && !context.ResultType.IsInstanceOfType(result))
                     {
-                        if (!context.SuppressHandlerTypeExceptions)
+                        if (!context.SuppressTypeMismatchExceptions)
                             throw new TypeMismatchException(context.ResultType, result.GetType(), response.DetailsForException());
 
                         return TypeHelpers.GetDefaultValueForType(context.ResultType);
@@ -239,12 +251,13 @@ namespace AonWeb.FluentHttp
             }
             finally
             {
-                ObjectHelpers.DisposeResponse(response);
+                ObjectHelpers.Dispose(request);
+                ObjectHelpers.Dispose(response);
             }
 
             if (capturedException != null)
             {
-                var exceptionResult = await context.Handler.OnException(context, response, capturedException.SourceException);
+                var exceptionResult = await context.Handler.OnException(context, request, response, capturedException.SourceException);
 
                 if (!(bool)exceptionResult.Value)
                 {
@@ -258,13 +271,18 @@ namespace AonWeb.FluentHttp
 
             if (defaultResult != null && !context.ResultType.IsInstanceOfType(defaultResult))
             {
-                if (!context.SuppressHandlerTypeExceptions)
+                if (!context.SuppressTypeMismatchExceptions)
                     throw new TypeMismatchException(context.ResultType, defaultResult.GetType(), response.DetailsForException());
 
                 return TypeHelpers.GetDefaultValueForType(context.ResultType);
             }
 
             return defaultResult;
+        }
+
+        protected virtual Task<HttpResponseMessage> GetResponse(ITypedBuilderContext context, HttpRequestMessage request, CancellationToken token)
+        {
+            return _innerBuilder.ResultFromRequestAsync(request, token);
         }
 
         private void ConfigureResponseDeserialization(bool willDeserialize)
