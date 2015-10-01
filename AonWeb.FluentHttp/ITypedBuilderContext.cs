@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp
         string MediaType { get; }
         Func<Type, object> DefaultResultFactory { get; }
         MediaTypeFormatterCollection MediaTypeFormatters { get; }
-        TypedHandlerRegister Handler { get; }
+        TypedHandlerRegister HandlerRegister { get; }
         bool SuppressTypeMismatchExceptions { get; }
         Func<ErrorContext, Exception> ExceptionFactory { get; }
         bool DeserializeResult { get; }

@@ -15,6 +15,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests
 {
+    [Collection("LocalWebServer Tests")]
     public class AdvancedTypedBuilderExtensionsTests
     {
         private static readonly Uri MockUri = new Uri("http://testsite.com");

@@ -13,6 +13,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Caching
 {
+    [Collection("LocalWebServer Tests")]
     public class HalCachingTests
     {
         private readonly ITestOutputHelper _logger;
@@ -94,14 +95,14 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var hit = false;
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnMiss<TestListResource>(ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnMiss<TestListResource>(ctx =>
                     {
                         miss = true;
                     }))
                     .ResultAsync<TestListResource>();
 
                 var result2 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnHit<TestListResource>(ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnHit<TestListResource>(ctx =>
                     {
                         hit = true;
                     }))
@@ -128,14 +129,14 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var hit = false;
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnMiss<object>(ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnMiss<object>(ctx =>
                     {
                         miss = true;
                     }))
                     .ResultAsync<TestListResource>();
 
                 var result2 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnHit<object>(ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnHit<object>(ctx =>
                     {
                         hit = true;
                     }))
@@ -163,14 +164,14 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var hit = false;
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnMiss<TestListResource>(HandlerPriority.First, ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnMiss<TestListResource>(HandlerPriority.First, ctx =>
                     {
                         miss = true;
                     }))
                     .ResultAsync<TestListResource>();
 
                 var result2 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnHit<TestListResource>(HandlerPriority.First, ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnHit<TestListResource>(HandlerPriority.First, ctx =>
                     {
                         hit = true;
                     }))
@@ -198,14 +199,14 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var hit = false;
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnMiss<TestListResource>(HandlerPriority.First, ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnMiss<TestListResource>(HandlerPriority.First, ctx =>
                     {
                         miss = true;
                     }))
                     .ResultAsync<TestListResource>();
 
                 var result2 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c.OnHit<TestListResource>(ctx =>
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.OnHit<TestListResource>(ctx =>
                     {
                         hit = true;
                     }))
@@ -234,7 +235,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var hit2 = false;
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c
                         .OnMiss<object>(HandlerPriority.First, ctx =>
                         {
                             miss1 = true;
@@ -246,7 +247,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .ResultAsync<TestListResource>();
 
                 var result2 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c
                         .OnHit<object>(HandlerPriority.First, ctx =>
                         {
                             hit1 = true;
@@ -285,7 +286,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 string hit2 = null;
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c
                         .OnMiss<object>(HandlerPriority.First, ctx =>
                         {
                             miss1 = ctx.Items[key] as string;
@@ -298,7 +299,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .ResultAsync<TestListResource>();
 
                 var result2 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c
                         .OnHit<object>(HandlerPriority.First, ctx =>
                         {
                             hit1 = ctx.Items[key] as string;
@@ -340,7 +341,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c
                         .OnMiss<object>(HandlerPriority.Last, ctx =>
                         {
                             current++;
@@ -359,7 +360,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .ResultAsync<TestListResource>();
 
                 var result2 = await new HalBuilderFactory().Create().WithLink(listUri)
-                    .Advanced.WithHandlerConfiguration<TypedCacheHandler>(c => c
+                    .Advanced.WithHandlerConfiguration<TypedCacheConfigurationHandler>(c => c
                         .OnHit<object>(HandlerPriority.Low, ctx =>
                         {
                             current++;

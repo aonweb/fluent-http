@@ -115,16 +115,25 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 
     public class CacheableTestResult : TestResult, ICacheableHttpResult
     {
-        public TimeSpan? Duration => TimeSpan.FromMinutes(5);
+        public TimeSpan? Duration { get; set; } = TimeSpan.FromMinutes(5);
 
         public IEnumerable<Uri> DependentUris { get { yield break; } }
     }
 
-    public class ExpiredTestResult : TestResult, ICacheableHttpResult
+    public class CacheableTestResultWithDurationNull : CacheableTestResult
     {
-        public TimeSpan? Duration => TimeSpan.FromMinutes(-1);
+        public CacheableTestResultWithDurationNull()
+        {
+            Duration = null;
+        }
+    }
 
-        public IEnumerable<Uri> DependentUris { get { yield break; } }
+    public class CacheableTestResultWithDurationZero : CacheableTestResult
+    {
+        public CacheableTestResultWithDurationZero()
+        {
+            Duration = TimeSpan.Zero;
+        }
     }
 
     public class TestException : Exception { }

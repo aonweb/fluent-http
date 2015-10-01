@@ -87,7 +87,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AdvancedHttpBuilderCoreExtensionsTests.cs" />
-    <Compile Include="AdvancedBuilderExtensionsTests.cs" />
+    <Compile Include="HttpBuilderCoreExtensionsTests.cs" />
     <Compile Include="AdvancedTypedBuilderExtensionsTests.cs" />
     <Compile Include="BuilderExtensionsTests.cs" />
     <Compile Include="AdvancedHttpBuilderExtensionsTests.cs" />

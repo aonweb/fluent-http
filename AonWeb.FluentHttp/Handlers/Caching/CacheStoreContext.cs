@@ -7,16 +7,16 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         protected CacheStoreContext(ICacheContext context, object result)
             : base(context)
         {
-            ResultInternal = result;
+            Result = result;
         }
 
         protected CacheStoreContext(CacheStoreContext context)
             : base(context)
         {
-            ResultInternal = context.ResultInternal;
+            Result = context.Result;
         }
 
-        protected object ResultInternal { get; }
+        public object Result { get; }
 
         public override Modifiable GetHandlerResult()
         {
@@ -32,7 +32,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         internal CacheStoreContext(CacheStoreContext context)
             : base(context) { }
 
-        public TResult Result => ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions);
+        public new TResult Result => ObjectHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions);
         
     }
 }

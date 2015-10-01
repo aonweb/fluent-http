@@ -142,9 +142,9 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
-        public static IAdvancedHalBuilder WithHttpHandler(this IAdvancedHalBuilder builder, IHandler handler)
+        public static IAdvancedHalBuilder WithHttpHandler(this IAdvancedHalBuilder builder, IHttpHandler httpHandler)
         {
-            builder.WithConfiguration(b => b.WithHttpHandler(handler));
+            builder.WithConfiguration(b => b.WithHttpHandler(httpHandler));
 
             return builder;
         }
@@ -200,7 +200,7 @@ namespace AonWeb.FluentHttp.HAL
         public static IAdvancedHalBuilder WithCaching(this IAdvancedHalBuilder builder, bool enabled = true)
         {
 
-            builder.WithHandlerConfiguration<TypedCacheHandler>(handler => handler.WithCaching(enabled));
+            builder.WithHandlerConfiguration<TypedCacheConfigurationHandler>(handler => handler.WithCaching(enabled));
 
             return builder;
         }
@@ -225,12 +225,12 @@ namespace AonWeb.FluentHttp.HAL
 
         public static IAdvancedHalBuilder WithDependentLink(this IAdvancedHalBuilder builder, Uri uri)
         {
-            return builder.WithOptionalHandlerConfiguration<TypedCacheHandler>(h => h.WithDependentUri(uri));
+            return builder.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(h => h.WithDependentUri(uri));
         }
 
         public static IAdvancedHalBuilder WithDependentLinks(this IAdvancedHalBuilder builder, IEnumerable<Uri> uris)
         {
-            return builder.WithOptionalHandlerConfiguration<TypedCacheHandler>(h => h.WithDependentUris(uris));
+            return builder.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(h => h.WithDependentUris(uris));
         }
 
         public static IAdvancedHalBuilder WithSuppressTypeMismatchExceptions(this IAdvancedHalBuilder builder, bool suppress = true)
@@ -245,9 +245,7 @@ namespace AonWeb.FluentHttp.HAL
             if (validator == null)
                 throw new ArgumentNullException(nameof(validator));
 
-            builder.WithConfiguration(s => s.SuccessfulResponseValidators.Add(validator));
-
-            return builder;
+            return builder.WithConfiguration(b => b.WithSuccessfulResponseValidator(validator));
         }
 
         public static IAdvancedHalBuilder WithTimeout(this IAdvancedHalBuilder builder, TimeSpan? timeout)

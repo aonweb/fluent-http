@@ -5,8 +5,8 @@ namespace AonWeb.FluentHttp.Caching
 {
     public struct CacheResult
     {
-        public CacheResult(object result, HttpResponseMessage response, ICacheContext context)
-            : this(result, new ResponseInfo(result, response, context)) { }
+        public CacheResult(object result, HttpRequestMessage request, HttpResponseMessage response, ICacheContext context)
+            : this(result, new ResponseInfo(result, request, response, context)) { }
 
         public CacheResult(object result, ResponseInfo responseInfo)
         {
@@ -21,12 +21,12 @@ namespace AonWeb.FluentHttp.Caching
 
         public static CacheResult Empty = new CacheResult();
 
-        public void UpdateResponseInfo(HttpResponseMessage response, ICacheContext context)
+        public void UpdateResponseInfo(HttpRequestMessage request, HttpResponseMessage response, ICacheContext context)
         {
             if (ResponseInfo == null)
-                ResponseInfo = new ResponseInfo(Result, response, context);
+                ResponseInfo = new ResponseInfo(Result, request, response, context);
             else
-                ResponseInfo.UpdateExpiration(Result, response, context.DefaultExpiration);
+                ResponseInfo.UpdateExpiration(Result, response, context);
         }
     }
 }

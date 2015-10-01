@@ -1,327 +1,54 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AonWeb.FluentHttp.Caching;
-using AonWeb.FluentHttp.Helpers;
+﻿using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
-    public class TypedCacheHandler : CacheHandlerCore, IBoxedHandler
+    public abstract class TypedCacheHandler : ITypedCacheHandler
     {
-        public TypedCacheHandler() { }
+        public virtual bool Enabled { get; protected set; } = true;
 
-        protected TypedCacheHandler(CacheSettings settings)
-            : base(settings) { }
-
-        #region Configuration Methods
-
-        public TypedCacheHandler WithCaching(bool enabled = true)
+        public virtual HandlerPriority GetPriority(CacheHandlerType type)
         {
-            Settings.Enabled = enabled;
-
-            return this;
+           return HandlerPriority.Default;
         }
 
-        public TypedCacheHandler WithDependentUris(IEnumerable<Uri> uris)
+        public virtual Task OnHit<TResult>(CacheHitContext<TResult> context)
         {
-            if (uris == null)
-                return this;
-
-            foreach (var uri in uris)
-                WithDependentUri(uri);
-
-            return this;
+            return OnHit((CacheHitContext)context);
         }
 
-        public TypedCacheHandler WithDependentUri(Uri uri)
+        public virtual Task OnHit(CacheHitContext context)
         {
-            if (uri == null) 
-                return this;
-
-            uri = uri.NormalizeUri();
-
-            if (uri != null && !Settings.DependentUris.Contains(uri))
-                Settings.DependentUris.Add(uri);
-
-            return this;
+            return Task.FromResult(true);
         }
 
-        #endregion
-
-        #region IHttpCallHandler Implementation
-
-        public Task OnSending(TypedSendingContext<object, object> context)
+        public virtual Task OnMiss<TResult>(CacheMissContext<TResult> context)
         {
-            return TryGetFromCache(context);
+            return OnMiss((CacheMissContext)context);
         }
 
-        public Task OnSent(TypedSentContext<object> context)
+        public virtual Task OnMiss(CacheMissContext context)
         {
-            return TryGetRevalidatedResult(context, context.Response);
+            return Task.FromResult(true);
         }
 
-        public Task OnResult(TypedResultContext<object> context)
+        public virtual Task OnStore<TResult>(CacheStoreContext<TResult> context)
         {
-            return TryCacheResult(context, context.Result, context.Response);
+            return OnStore((CacheStoreContext)context);
         }
 
-        public Task OnError(TypedErrorContext<object> context)
+        public virtual Task OnStore(CacheStoreContext context)
         {
-            return ExpireResult(context);
+            return Task.FromResult(true);
         }
 
-        public Task OnException(TypedExceptionContext context)
+        public virtual Task OnExpiring(CacheExpiringContext context)
         {
-            return ExpireResult(context);
+            return Task.FromResult(true);
         }
 
-        #endregion
-
-        #region Handlers and Events
-
-        Task ITypedHandler.OnSending<TResult, TContent>(TypedSendingContext<TResult, TContent> context)
+        public virtual Task OnExpired(CacheExpiredContext context)
         {
-            var boxedContext = context as TypedSendingContext<object, object> ?? new TypedSendingContext<object, object>(context, context.Request, context.Content, context.HasContent);
-
-            return OnSending(boxedContext);
+            return Task.FromResult(true);
         }
-
-        Task ITypedHandler.OnSent<TResult>(TypedSentContext<TResult> context)
-        {
-            var boxedContext = context as TypedSentContext<object> ?? new TypedSentContext<object>(context, context.Request, context.Response);
-
-            return OnSent(boxedContext);
-        }
-
-        Task ITypedHandler.OnResult<TResult>(TypedResultContext<TResult> context)
-        {
-            var boxedContext = context as TypedResultContext<object> ?? new TypedResultContext<object>(context, context.Request, context.Response, context.Result);
-
-            return OnResult(boxedContext);
-        }
-
-        Task ITypedHandler.OnError<TError>(TypedErrorContext<TError> context)
-        {
-            var boxedContext = context as TypedErrorContext<object> ?? new TypedErrorContext<object>(context, context.Request, context.Response, context.Error);
-
-            return OnError(boxedContext);
-        }
-
-        public TypedCacheHandler WithHandler<TResult>(ICacheHandler handler)
-        {
-            Settings.Handler.WithHandler<TResult>(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler WithHandlerConfiguration<THandler>(Action<THandler> configure)
-            where THandler : class, ICacheHandler
-        {
-            Settings.Handler.WithHandlerConfiguration(configure);
-
-            return this;
-        }
-
-        public TypedCacheHandler WithOptionalHandlerConfiguration<THandler>(Action<THandler> configure)
-            where THandler : class, ICacheHandler
-        {
-            Settings.Handler.WithHandlerConfiguration(configure, false);
-
-            return this;
-        }
-
-        #region Hit
-
-        public TypedCacheHandler OnLookup<TResult>(Action<CacheLookupContext<TResult>> handler)
-        {
-            Settings.Handler.WithLookupHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnLookup<TResult>(HandlerPriority priority, Action<CacheLookupContext<TResult>> handler)
-        {
-            Settings.Handler.WithLookupHandler(priority, handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnLookupAsync<TResult>(Func<CacheLookupContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncLookupHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnLookupAsync<TResult>(HandlerPriority priority, Func<CacheLookupContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncLookupHandler(priority, handler);
-
-            return this;
-        }
-
-        #endregion
-
-        #region Hit
-
-        public TypedCacheHandler OnHit<TResult>(Action<CacheHitContext<TResult>> handler)
-        {
-            Settings.Handler.WithHitHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnHit<TResult>(HandlerPriority priority, Action<CacheHitContext<TResult>> handler)
-        {
-            Settings.Handler.WithHitHandler(priority, handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnHitAsync<TResult>(Func<CacheHitContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncHitHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnHitAsync<TResult>(HandlerPriority priority, Func<CacheHitContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncHitHandler(priority, handler);
-
-            return this;
-        }
-
-        #endregion
-
-        #region Miss
-
-        public TypedCacheHandler OnMiss<TResult>(Action<CacheMissContext<TResult>> handler)
-        {
-            Settings.Handler.WithMissHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnMiss<TResult>(HandlerPriority priority, Action<CacheMissContext<TResult>> handler)
-        {
-            Settings.Handler.WithMissHandler(priority, handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnMissAsync<TResult>(Func<CacheMissContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncMissHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnMissAsync<TResult>(HandlerPriority priority, Func<CacheMissContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncMissHandler(priority, handler);
-
-            return this;
-        }
-
-        #endregion
-
-        #region Store
-
-        public TypedCacheHandler OnStore<TResult>(Action<CacheStoreContext<TResult>> handler)
-        {
-            Settings.Handler.WithStoreHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnStore<TResult>(HandlerPriority priority, Action<CacheStoreContext<TResult>> handler)
-        {
-            Settings.Handler.WithStoreHandler(priority, handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnStoreAsync<TResult>(Func<CacheStoreContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncStoreHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnStoreAsync<TResult>(HandlerPriority priority, Func<CacheStoreContext<TResult>, Task> handler)
-        {
-            Settings.Handler.WithAsyncStoreHandler(priority, handler);
-
-            return this;
-        }
-
-        #endregion
-
-        #region Expiring
-
-        public TypedCacheHandler OnExpiring(Action<CacheExpiringContext> handler)
-        {
-            Settings.Handler.WithExpiringHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnExpiring(HandlerPriority priority, Action<CacheExpiringContext> handler)
-        {
-            Settings.Handler.WithExpiringHandler(priority, handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnExpiringAsync(Func<CacheExpiringContext, Task> handler)
-        {
-            Settings.Handler.WithAsyncExpiringHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnExpiringAsync(HandlerPriority priority, Func<CacheExpiringContext, Task> handler)
-        {
-            Settings.Handler.WithAsyncExpiringHandler(priority, handler);
-
-            return this;
-        }
-
-        #endregion
-
-        #region Expired
-
-        public TypedCacheHandler OnExpired(Action<CacheExpiredContext> handler)
-        {
-            Settings.Handler.WithExpiredHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnExpired(HandlerPriority priority, Action<CacheExpiredContext> handler)
-        {
-            Settings.Handler.WithExpiredHandler(priority, handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnExpiredAsync(Func<CacheExpiredContext, Task> handler)
-        {
-            Settings.Handler.WithAsyncExpiredHandler(handler);
-
-            return this;
-        }
-
-        public TypedCacheHandler OnExpiredAsync(HandlerPriority priority, Func<CacheExpiredContext, Task> handler)
-        {
-            Settings.Handler.WithAsyncExpiredHandler(priority, handler);
-
-            return this;
-        }
-
-        #endregion
-
-        #endregion
     }
 }

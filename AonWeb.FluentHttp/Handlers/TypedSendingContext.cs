@@ -13,13 +13,13 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context)
         { }
 
-        public TResult Result
+        public new TResult Result
         {
-            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
-            set { ResultInternal = value; }
+            get { return ObjectHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
+            set { base.Result = value; }
         }
 
-        public TContent Content => ObjectHelpers.CheckType<TContent>(ContentInternal, SuppressTypeMismatchExceptions);
+        public new TContent Content => ObjectHelpers.CheckType<TContent>(base.Content, SuppressTypeMismatchExceptions);
     }
 
     public abstract class TypedSendingContext : TypedHandlerContext, IHandlerContextWithResult
@@ -30,7 +30,7 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context, request)
         {
             _result = new Modifiable();
-            ContentInternal = content;
+            Content = content;
             HasContent = hasContent;
         }
 
@@ -38,24 +38,24 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context)
         {
             _result = context._result;
-            ContentInternal = context.ContentInternal;
+            Content = context.Content;
             HasContent = context.HasContent;
         }
 
-        protected object ResultInternal
+        public object Result
         {
             get { return _result.Value; }
             set { _result.Value = value; }
         }
 
-        public object ContentInternal { get; private set; }
-        public bool HasContent { get; private set; }
+        public object Content { get; }
+        public bool HasContent { get; }
 
         public override Modifiable GetHandlerResult()
         {
             return _result.ToResult();
         }
 
-        object IHandlerContextWithResult.Result { set { ResultInternal = value; } }
+        object IHandlerContextWithResult.Result { set { Result = value; } }
     }
 }

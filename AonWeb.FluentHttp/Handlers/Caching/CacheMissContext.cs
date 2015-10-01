@@ -10,10 +10,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         internal CacheMissContext(CacheMissContext context)
             : base(context) { }
 
-        public TResult Result
+        public new TResult Result
         {
-            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
-            set { ResultInternal = value; }
+            get { return ObjectHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
+            set { base.Result = value; }
         }
     }
 
@@ -33,10 +33,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             _result = context._result;
         }
 
-        protected object ResultInternal
+        public object Result
         {
             get { return _result.Value; }
-            set { _result.Value = value; }
+            protected set { _result.Value = value; }
         }
 
         public override Modifiable GetHandlerResult()

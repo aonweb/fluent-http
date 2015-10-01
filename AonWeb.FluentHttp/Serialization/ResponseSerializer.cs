@@ -20,9 +20,8 @@ namespace AonWeb.FluentHttp.Serialization
             }
         }
 
-        public async Task<byte[]> Serialize(HttpResponseMessage response)
+        public async Task<byte[]> Serialize(HttpRequestMessage request, HttpResponseMessage response)
         {
-            var request = response.RequestMessage;
             response.RequestMessage = null;
 
             if (response.Content != null)

@@ -1,27 +1,25 @@
+﻿using System;
 using System.Net.Http;
 using AonWeb.FluentHttp.Exceptions;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class SentContext : HandlerContext, IHandlerContextWithResult<HttpResponseMessage>, IHandlerContextWithResult
+    public class HttpSendingContext : HttpHandlerContext, IHandlerContextWithResult<HttpResponseMessage>, IHandlerContextWithResult
     {
         private readonly Modifiable<HttpResponseMessage> _result;
 
-        public SentContext(IHttpBuilderContext context, HttpRequestMessage request, HttpResponseMessage result)
+        public HttpSendingContext(IHttpBuilderContext context, HttpRequestMessage request) 
             : base(context, request)
         {
-            _result = new Modifiable<HttpResponseMessage>(result);
+            _result = new Modifiable<HttpResponseMessage>();
         }
 
-        public HttpResponseMessage Result 
+        public HttpContent Content => Request.Content;
+
+        public HttpResponseMessage Result
         {
             get { return _result.Value; }
             set { _result.Value = value; }
-        }
-
-        public bool IsSuccessfulResponse()
-        {
-            return IsSuccessfulResponse(Result);
         }
 
         public override Modifiable GetHandlerResult()

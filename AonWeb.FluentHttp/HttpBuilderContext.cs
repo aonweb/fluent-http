@@ -31,7 +31,7 @@ namespace AonWeb.FluentHttp
         public Func<HttpResponseMessage, Exception> ExceptionFactory => _settings.ExceptionFactory;
         public IRecursiveHttpBuilder Builder => _settings.Builder;
         public Type ResultType => _settings.ResultType;
-        public HandlerRegister Handler => _settings.Handler;
+        public HttpHandlerRegister HandlerRegister => _settings.HandlerRegister;
         public CancellationToken Token => _settings.Token;
 
         public bool IsSuccessfulResponse(HttpResponseMessage response)

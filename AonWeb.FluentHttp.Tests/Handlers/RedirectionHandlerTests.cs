@@ -15,6 +15,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Handlers
 {
+    [Collection("LocalWebServer Tests")]
     public class RedirectionHandlerTests
     {
         private readonly ITestOutputHelper _logger;

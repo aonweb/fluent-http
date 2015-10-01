@@ -11,6 +11,7 @@ using Xunit;
 
 namespace AonWeb.FluentHttp.Tests
 {
+    [Collection("LocalWebServer Tests")]
     public class HttpClientBuilderTests
     {
         [Fact]

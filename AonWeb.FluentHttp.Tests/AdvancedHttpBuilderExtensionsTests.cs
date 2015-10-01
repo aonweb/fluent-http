@@ -13,6 +13,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests
 {
+    [Collection("LocalWebServer Tests")]
     public class AdvancedHttpBuilderExtensionsTests
     {
         private readonly ITestOutputHelper _logger;
@@ -24,100 +25,6 @@ namespace AonWeb.FluentHttp.Tests
             Cache.Clear();
         }
 
-        #region WithMethod
-
-        [Fact]
-        public async Task WithMethod_WhenValidString_ExpectResultUsesMethod()
-        {
-            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
-            {
-                //arrange
-                var method = HttpMethod.Get;
-                var builder = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method);
-
-                HttpMethod actual = null;
-                server.WithRequestInspector(r => actual = r.Method);
-
-                //act
-                await builder.ResultAsync();
-
-                method.ShouldBe(actual);
-            }
-        }
-
-        [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
-        public void WithMethod_WhenNullString_ExpectException()
-        {
-            //arrange
-            string method = null;
-
-            //act
-            Should.Throw<ArgumentException>(() => new HttpBuilderFactory().Create().Advanced.WithMethod(method));
-        }
-
-        [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
-        public void WithMethod_WhenEmptyString_ExpectException()
-        {
-            //arrange
-            var method = string.Empty;
-            var builder = new HttpBuilderFactory().Create();
-
-            //act
-            Should.Throw<ArgumentException>(() => builder.Advanced.WithMethod(method));
-        }
-
-        [Fact]
-        public async Task WithMethod_WhenValidMethod_ExpectResultUsesMethod()
-        {
-            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
-            {
-                //arrange
-                var method = HttpMethod.Get;
-                var builder = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method);
-
-                HttpMethod actual = null;
-                server.WithRequestInspector(r => actual = r.Method);
-
-                //act
-                await builder.ResultAsync();
-
-                method.ShouldBe(actual);
-            }
-        }
-
-        [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
-        public void WithMethod_WhenNullMethod_ExpectException()
-        {
-            //arrange
-            HttpMethod method = null;
-
-            Should.Throw<ArgumentNullException>(() => new HttpBuilderFactory().Create().Advanced.WithMethod(method));
-        }
-
-        [Fact]
-        public async Task WithMethod_WhenCalledMultipleTimes_ExpectLastWins()
-        {
-            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
-            {
-                //arrange
-                var method1 = HttpMethod.Post;
-                var method2 = HttpMethod.Get;
-                var builder = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method1).Advanced.WithMethod(method2);
-
-                HttpMethod actual = null;
-                server.WithRequestInspector(r => actual = r.Method);
-
-                //act
-                await builder.ResultAsync();
-
-                method2.ShouldBe(actual);
-            }
-        }
-
-        #endregion
 
         #region Client Configuration
 
@@ -324,10 +231,8 @@ namespace AonWeb.FluentHttp.Tests
         #endregion
 
         /*
-         IHttpCallBuilder WithScheme(string scheme);
-        IHttpCallBuilder WithHost(string host);
-        IHttpCallBuilder WithPort(int port);
-        IHttpCallBuilder WithPath(string absolutePathAndQuery);
+         
+        
         IHttpCallBuilder WithEncoding(Encoding encoding);
         IHttpCallBuilder WithMediaType(string mediaType);
 

@@ -45,8 +45,8 @@ namespace AonWeb.FluentHttp
             public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
             public bool SuppressCancellationErrors { get; set; }
             public bool AutoDecompressionEnabled { get; set; }
-            public Func<IReadOnlyCollection<IHandler>> HandlerFactory { get; set; }
-            public Func<IReadOnlyCollection<IHandler>> ChildHandlerFactory { get; set; }
+            public Func<IReadOnlyCollection<IHttpHandler>> HandlerFactory { get; set; }
+            public Func<IReadOnlyCollection<IHttpHandler>> ChildHandlerFactory { get; set; }
         }
 
         public class TypedBuilderDefaults
@@ -93,7 +93,7 @@ namespace AonWeb.FluentHttp
         public class CachingDefaults
         {
             public bool Enabled { get; set; }
-            public TimeSpan DefaultCacheExpiration { get; set; }
+            public TimeSpan? DefaultDurationForCacheableResults { get; set; }
             public ISet<string> VaryByHeaders { get; set; }
             public ISet<HttpStatusCode> CacheableHttpStatusCodes { get; set; }
             public ISet<HttpMethod> CacheableHttpMethods { get; set; }
@@ -104,12 +104,15 @@ namespace AonWeb.FluentHttp
             public Func<ICacheContext, ResponseInfo, bool> RevalidateValidator { get; set; }
             public Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator { get; set; }
 
+            public Func<IReadOnlyCollection<ITypedCacheHandler>> TypedHandlerFactory { get; set; }
+            public Func<IReadOnlyCollection<IHttpCacheHandler>> HttpHandlerFactory { get; set; }
+
             public bool DefaultCacheValidator(ICacheContext context)
             {
                 if (!context.Enabled)
                     return false;
 
-                if (context.Request?.RequestUri == null)
+                if (context.Uri == null)
                     return false;
 
                 var request = context.Request;
@@ -176,7 +179,7 @@ namespace AonWeb.FluentHttp
                 if (!responseInfo.HasContent)
                     return ResponseValidationResult.NotCacheable;
 
-                if (!responseInfo.HasExpiration)
+                if (!responseInfo.Expiration.HasValue)
                     return ResponseValidationResult.NotCacheable;
 
                 if (responseInfo.NoCache)
@@ -202,13 +205,11 @@ namespace AonWeb.FluentHttp
 
                 if (responseInfo.HasContent)
                     return false;
+                
+                if (responseInfo.Expiration < DateTimeOffset.UtcNow)
+                    return false;
 
                 var responseDate = responseInfo.LastModified ?? responseInfo.Date;
-
-                if (responseInfo.HasExpiration)
-                    if (responseInfo.Expiration < DateTimeOffset.UtcNow)
-                        return false;
-
                 var staleness = DateTimeOffset.UtcNow - responseDate;
 
                 if (request.Headers.CacheControl == null)
@@ -264,8 +265,8 @@ namespace AonWeb.FluentHttp
             Builder.MediaType = "application/json";
             Builder.ContentEncoding = Encoding.UTF8;
             Builder.AutoDecompressionEnabled = true;
-            Builder.HandlerFactory = () => new IHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCacheHandler() };
-            Builder.ChildHandlerFactory = () => new IHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCacheHandler() };
+            Builder.HandlerFactory = () => new IHttpHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCacheConfigurationHandler() };
+            Builder.ChildHandlerFactory = () => new IHttpHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCacheConfigurationHandler() };
 
             //Typed Builder Defaults
             TypedBuilder.HttpMethod = HttpMethod.Get;
@@ -282,8 +283,8 @@ namespace AonWeb.FluentHttp
             TypedBuilder.ContentType = typeof(EmptyRequest);
             TypedBuilder.DefaultResultFactory = TypedBuilder.DefaultDefaultResultFactory;
             TypedBuilder.ExceptionFactory = TypedBuilder.DefaultExceptionFactory;
-            TypedBuilder.HandlerFactory = () => new ITypedHandler[] { new TypedCacheHandler() };
-            TypedBuilder.ChildHandlerFactory = () => new ITypedHandler[] { new TypedCacheHandler() };
+            TypedBuilder.HandlerFactory = () => new ITypedHandler[] { new TypedCacheConfigurationHandler() };
+            TypedBuilder.ChildHandlerFactory = () => new ITypedHandler[] { new TypedCacheConfigurationHandler() };
             TypedBuilder.ValidStatusCodes = new HashSet<HttpStatusCode>
             {
                 HttpStatusCode.OK,
@@ -300,7 +301,7 @@ namespace AonWeb.FluentHttp
             Caching.CacheableHttpMethods = new HashSet<HttpMethod> { HttpMethod.Get };
             Caching.CacheableHttpStatusCodes = new HashSet<HttpStatusCode> { HttpStatusCode.OK };
             Caching.VaryByHeaders = new HashSet<string> { "Accept" };
-            Caching.DefaultCacheExpiration = TimeSpan.FromMinutes(15);
+            Caching.DefaultDurationForCacheableResults = TimeSpan.FromMinutes(15);
             Caching.CacheStoreFactory = () => new InMemoryCacheStore();
             Caching.VaryByStoreFactory = () => new InMemoryVaryByStore();
             Caching.ResponseValidator = Caching.DefaultResponseValidator;

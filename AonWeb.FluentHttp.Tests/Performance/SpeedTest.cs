@@ -4,13 +4,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
-using NUnit.Framework;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Performance
 {
+    [Collection("LocalWebServer Tests")]
     public class SpeedTest
     {
         private readonly ITestOutputHelper _logger;

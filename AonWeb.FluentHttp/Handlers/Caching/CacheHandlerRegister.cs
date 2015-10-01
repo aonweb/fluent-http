@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
@@ -23,7 +22,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             _contextConstructorCache = new ConcurrentDictionary<string, object>();
         }
 
-        public CacheHandlerRegister WithHandler<TResult>(ICacheHandler handler)
+        public CacheHandlerRegister WithHandler(ICacheHandler handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
@@ -33,19 +32,19 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             _cacheHandlers.Add(handler);
 
-            WithAsyncHitHandler<TResult>(handler.GetPriority(CacheHandlerType.Hit), async ctx =>
+            WithAsyncHitHandler<object>(handler.GetPriority(CacheHandlerType.Hit), async ctx =>
             {
                 if (handler.Enabled)
                     await handler.OnHit(ctx);
             });
 
-            WithAsyncMissHandler<TResult>(handler.GetPriority(CacheHandlerType.Miss), async ctx =>
+            WithAsyncMissHandler<object>(handler.GetPriority(CacheHandlerType.Miss), async ctx =>
             {
                 if (handler.Enabled)
                     await handler.OnMiss(ctx);
             });
 
-            WithAsyncStoreHandler<TResult>(handler.GetPriority(CacheHandlerType.Store), async ctx =>
+            WithAsyncStoreHandler<object>(handler.GetPriority(CacheHandlerType.Store), async ctx =>
             {
                 if (handler.Enabled)
                     await handler.OnStore(ctx);
@@ -85,23 +84,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             }
 
             return this;
-        }
-
-        public async Task<Modifiable> OnLookup(ICacheContext context)
-        {
-            CacheLookupContext handlerContext = null;
-
-            foreach (var handlerInfo in GetHandlerInfo(CacheHandlerType.Lookup))
-            {
-                if (handlerContext == null)
-                    handlerContext = ((Func<ICacheContext, CacheLookupContext>)handlerInfo.InitialConstructor)(context);
-                else
-                    handlerContext = ((Func<CacheLookupContext, CacheLookupContext>)handlerInfo.ContinuationConstructor)(handlerContext);
-
-                await handlerInfo.Handler(handlerContext);
-            }
-
-            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
         public async Task<Modifiable> OnHit(ICacheContext context, object result)
@@ -188,45 +170,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
-
-        #region Lookup
-
-        public CacheHandlerRegister WithLookupHandler<TResult>(Action<CacheLookupContext<TResult>> handler)
-        {
-            return WithLookupHandler(HandlerPriority.Default, handler);
-        }
-
-        public CacheHandlerRegister WithLookupHandler<TResult>(HandlerPriority priority, Action<CacheLookupContext<TResult>> handler)
-        {
-            if (handler == null)
-                throw new ArgumentNullException(nameof(handler));
-
-            return WithAsyncLookupHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
-        }
-
-        public CacheHandlerRegister WithAsyncLookupHandler<TResult>(Func<CacheLookupContext<TResult>, Task> handler)
-        {
-            return WithAsyncLookupHandler(HandlerPriority.Default, handler);
-        }
-
-        public CacheHandlerRegister WithAsyncLookupHandler<TResult>(HandlerPriority priority, Func<CacheLookupContext<TResult>, Task> handler)
-        {
-            if (handler == null)
-                throw new ArgumentNullException(nameof(handler));
-
-            var handlerInfo = new CacheHandlerInfo
-            {
-                Handler = context => handler((CacheLookupContext<TResult>)context),
-                InitialConstructor = (Func<ICacheContext, CacheLookupContext>)(ctx => new CacheLookupContext<TResult>(ctx)),
-                ContinuationConstructor = (Func<CacheLookupContext, CacheLookupContext>)(ctx => new CacheLookupContext<TResult>(ctx)),
-            };
-
-            WithHandler(CacheHandlerType.Lookup, priority, handlerInfo);
-
-            return this;
-        }
-
-        #endregion
 
         #region Hit
 

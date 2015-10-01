@@ -3,11 +3,11 @@ using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class ExceptionContext : HandlerContext
+    public class HttpExceptionContext : HttpHandlerContext
     {
         private readonly Modifiable<bool> _exceptionHandled;
 
-        public ExceptionContext(IHttpBuilderContext context, HttpResponseMessage response, Exception exception)
+        public HttpExceptionContext(IHttpBuilderContext context, HttpResponseMessage response, Exception exception)
             : base(context, response?.RequestMessage)
         {
             Exception = exception;
@@ -15,7 +15,7 @@ namespace AonWeb.FluentHttp.Handlers
             _exceptionHandled = new Modifiable<bool>(false);
         }
 
-        protected ExceptionContext(ExceptionContext context)
+        protected HttpExceptionContext(HttpExceptionContext context)
             : base(context)
         {
             Exception = context.Exception;

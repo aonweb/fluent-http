@@ -16,13 +16,13 @@ namespace AonWeb.FluentHttp
         private readonly IHttpClientBuilder _clientBuilder;
         private CancellationTokenSource _tokenSource;
 
-        public HttpBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder, IReadOnlyCollection<IHandler> defaultHandlers)
+        public HttpBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder, IReadOnlyCollection<IHttpHandler> defaultHandlers)
         {
             Settings = settings;
             _clientBuilder = clientBuilder;
 
             foreach (var handler in defaultHandlers)
-                Settings.Handler.WithHandler(handler);
+                Settings.HandlerRegister.WithHandler(handler);
         }
 
         public IAdvancedHttpBuilder Advanced => this;
@@ -145,11 +145,11 @@ namespace AonWeb.FluentHttp
             {
                 using (var client = _clientBuilder.Build())
                 {
-                    var sendingContext = new SendingContext(context, request);
+                    var sendingContext = new HttpSendingContext(context, request);
 
                     token.ThrowIfCancellationRequested();
 
-                    await context.Handler.OnSending(sendingContext);
+                    await context.HandlerRegister.OnSending(sendingContext);
 
                     if (sendingContext.Result != null)
                     {
@@ -170,11 +170,11 @@ namespace AonWeb.FluentHttp
                             throw ex;
                     }
 
-                    var sentContext = new SentContext(context, request, response);
+                    var sentContext = new HttpSentContext(context, request, response);
 
                     token.ThrowIfCancellationRequested();
 
-                    await context.Handler.OnSent(sentContext);
+                    await context.HandlerRegister.OnSent(sentContext);
 
                     response = sentContext.Result;
                 }
@@ -186,9 +186,9 @@ namespace AonWeb.FluentHttp
 
             if (capturedException != null)
             {
-                var exContext = new ExceptionContext(context, response, capturedException.SourceException);
+                var exContext = new HttpExceptionContext(context, response, capturedException.SourceException);
 
-                await context.Handler.OnException(exContext);
+                await context.HandlerRegister.OnException(exContext);
 
                 if (!exContext.ExceptionHandled)
                     capturedException.Throw();

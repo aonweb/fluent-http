@@ -2,7 +2,6 @@
 {
     public enum CacheHandlerType
     {
-        Lookup,
         Hit,
         Miss,
         Store,

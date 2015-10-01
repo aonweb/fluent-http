@@ -6,47 +6,45 @@ using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    
-
-    public class HandlerRegister
+    public class HttpHandlerRegister
     {
-        private delegate Task HandlerDelegate(HandlerContext context);
-        private readonly ISet<IHandler> _callHandlers;
+        private delegate Task HandlerDelegate(HttpHandlerContext context);
+        private readonly ISet<IHttpHandler> _handlerInstances;
         private readonly ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<HandlerDelegate>>> _handlers;
 
-        public HandlerRegister()
+        public HttpHandlerRegister()
         {
-            _callHandlers = new HashSet<IHandler>();
+            _handlerInstances = new HashSet<IHttpHandler>();
             _handlers = new ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<HandlerDelegate>>>();
         }
 
-        public async Task OnSending(SendingContext context)
+        public async Task OnSending(HttpSendingContext context)
         {
             foreach (var handler in GetHandlers(HandlerType.Sending))
                 await handler(context);
         }
 
-        public async Task OnSent(SentContext context)
+        public async Task OnSent(HttpSentContext context)
         {
             foreach (var handler in GetHandlers(HandlerType.Sent))
                 await handler(context);
         }
 
-        public async Task OnException(ExceptionContext context)
+        public async Task OnException(HttpExceptionContext context)
         {
             foreach (var handler in GetHandlers(HandlerType.Exception))
                 await handler(context);
         }
 
-        public HandlerRegister WithHandler(IHandler handler)
+        public HttpHandlerRegister WithHandler(IHttpHandler handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            if (_callHandlers.Contains(handler))
+            if (_handlerInstances.Contains(handler))
                 throw new InvalidOperationException(SR.HanderAlreadyExistsError);
 
-            _callHandlers.Add(handler);
+            _handlerInstances.Add(handler);
 
             WithAsyncSendingHandler(
                 handler.GetPriority(HandlerType.Sending), async ctx =>
@@ -70,13 +68,13 @@ namespace AonWeb.FluentHttp.Handlers
             return this;
         }
 
-        public HandlerRegister WithConfiguration<THandler>(Action<THandler> configure, bool throwOnNotFound = true)
-            where THandler : class, IHandler
+        public HttpHandlerRegister WithConfiguration<THandler>(Action<THandler> configure, bool throwOnNotFound = true)
+            where THandler : class, IHttpHandler
         {
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
-            var handler = _callHandlers.OfType<THandler>().FirstOrDefault();
+            var handler = _handlerInstances.OfType<THandler>().FirstOrDefault();
 
             if (handler == null)
             {
@@ -93,12 +91,12 @@ namespace AonWeb.FluentHttp.Handlers
 
         #region Sending
 
-        public HandlerRegister WithSendingHandler(Action<SendingContext> handler)
+        public HttpHandlerRegister WithSendingHandler(Action<HttpSendingContext> handler)
         {
             return WithSendingHandler(HandlerPriority.Default, handler);
         }
 
-        public HandlerRegister WithSendingHandler(HandlerPriority priority, Action<SendingContext> handler)
+        public HttpHandlerRegister WithSendingHandler(HandlerPriority priority, Action<HttpSendingContext> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
@@ -106,17 +104,17 @@ namespace AonWeb.FluentHttp.Handlers
             return WithAsyncSendingHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public HandlerRegister WithAsyncSendingHandler(Func<SendingContext, Task> handler)
+        public HttpHandlerRegister WithAsyncSendingHandler(Func<HttpSendingContext, Task> handler)
         {
             return WithAsyncSendingHandler(HandlerPriority.Default, handler);
         }
 
-        public HandlerRegister WithAsyncSendingHandler(HandlerPriority priority, Func<SendingContext, Task> handler)
+        public HttpHandlerRegister WithAsyncSendingHandler(HandlerPriority priority, Func<HttpSendingContext, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            WithHandler(HandlerType.Sending, priority, context => handler((SendingContext)context));
+            WithHandler(HandlerType.Sending, priority, context => handler((HttpSendingContext)context));
 
             return this;
         }
@@ -125,12 +123,12 @@ namespace AonWeb.FluentHttp.Handlers
 
         #region Sent
 
-        public HandlerRegister WithSentHandler(Action<SentContext> handler)
+        public HttpHandlerRegister WithSentHandler(Action<HttpSentContext> handler)
         {
             return WithSentHandler(HandlerPriority.Default, handler);
         }
 
-        public HandlerRegister WithSentHandler(HandlerPriority priority, Action<SentContext> handler)
+        public HttpHandlerRegister WithSentHandler(HandlerPriority priority, Action<HttpSentContext> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
@@ -138,17 +136,17 @@ namespace AonWeb.FluentHttp.Handlers
             return WithAsyncSentHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public HandlerRegister WithAsyncSentHandler(Func<SentContext, Task> handler)
+        public HttpHandlerRegister WithAsyncSentHandler(Func<HttpSentContext, Task> handler)
         {
             return WithAsyncSentHandler(HandlerPriority.Default, handler);
         }
 
-        public HandlerRegister WithAsyncSentHandler(HandlerPriority priority, Func<SentContext, Task> handler)
+        public HttpHandlerRegister WithAsyncSentHandler(HandlerPriority priority, Func<HttpSentContext, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            WithHandler(HandlerType.Sent, priority, context => handler((SentContext)context));
+            WithHandler(HandlerType.Sent, priority, context => handler((HttpSentContext)context));
 
             return this;
         }
@@ -157,12 +155,12 @@ namespace AonWeb.FluentHttp.Handlers
 
         #region Exception
 
-        public HandlerRegister WithExceptionHandler(Action<ExceptionContext> handler)
+        public HttpHandlerRegister WithExceptionHandler(Action<HttpExceptionContext> handler)
         {
             return WithExceptionHandler(HandlerPriority.Default, handler);
         }
 
-        public HandlerRegister WithExceptionHandler(HandlerPriority priority, Action<ExceptionContext> handler)
+        public HttpHandlerRegister WithExceptionHandler(HandlerPriority priority, Action<HttpExceptionContext> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
@@ -170,17 +168,17 @@ namespace AonWeb.FluentHttp.Handlers
             return WithAsyncExceptionHandler(priority, ctx => Task.Run(() => handler(ctx)));
         }
 
-        public HandlerRegister WithAsyncExceptionHandler(Func<ExceptionContext, Task> handler)
+        public HttpHandlerRegister WithAsyncExceptionHandler(Func<HttpExceptionContext, Task> handler)
         {
             return WithAsyncExceptionHandler(HandlerPriority.Default, handler);
         }
 
-        public HandlerRegister WithAsyncExceptionHandler(HandlerPriority priority, Func<ExceptionContext, Task> handler)
+        public HttpHandlerRegister WithAsyncExceptionHandler(HandlerPriority priority, Func<HttpExceptionContext, Task> handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            WithHandler(HandlerType.Exception, priority, context => handler((ExceptionContext)context));
+            WithHandler(HandlerType.Exception, priority, context => handler((HttpExceptionContext)context));
 
             return this;
         }

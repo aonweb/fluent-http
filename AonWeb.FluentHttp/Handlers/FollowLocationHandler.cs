@@ -7,7 +7,7 @@ using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class FollowLocationHandler : Handler
+    public class FollowLocationHandler : HttpHandler
     {
         public FollowLocationHandler()
         {
@@ -16,7 +16,7 @@ namespace AonWeb.FluentHttp.Handlers
             FollowValidtor = ShouldFollow;
         }
 
-        private Func<SentContext, bool> FollowValidtor { get; set; }
+        private Func<HttpSentContext, bool> FollowValidtor { get; set; }
         private Action<HttpFollowLocationContext> OnFollow { get; set; }
         private static ISet<HttpStatusCode> FollowedStatusCodes { get; set; }
 
@@ -38,7 +38,7 @@ namespace AonWeb.FluentHttp.Handlers
         }
         
 
-        public FollowLocationHandler WithFollowValidator(Func<SentContext, bool> validator)
+        public FollowLocationHandler WithFollowValidator(Func<HttpSentContext, bool> validator)
         {
             if (validator == null)
                 throw new ArgumentNullException(nameof(validator));
@@ -63,7 +63,7 @@ namespace AonWeb.FluentHttp.Handlers
             return base.GetPriority(type);
         }
 
-        public override async Task OnSent(SentContext context)
+        public override async Task OnSent(HttpSentContext context)
         {
             if (!FollowValidtor(context)) 
                 return;
@@ -96,7 +96,7 @@ namespace AonWeb.FluentHttp.Handlers
             context.Result = await context.Builder.RecursiveResultAsync(context.Token);
         }
 
-        private static bool ShouldFollow(SentContext context)
+        private static bool ShouldFollow(HttpSentContext context)
         {
             if (!context.IsSuccessfulResponse())
                 return false;

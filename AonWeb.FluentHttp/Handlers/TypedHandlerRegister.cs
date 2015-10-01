@@ -8,18 +8,16 @@ using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-
-
     public class TypedHandlerRegister
     {
         private delegate Task TypedHandlerDelegate(TypedHandlerContext context);
-        private readonly ISet<ITypedHandler> _callHandlers;
+        private readonly ISet<ITypedHandler> _handlerInstances;
         private readonly ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<TypedHandlerInfo>>> _handlers;
         private readonly ConcurrentDictionary<string, object> _contextConstructorCache;
 
         public TypedHandlerRegister()
         {
-            _callHandlers = new HashSet<ITypedHandler>();
+            _handlerInstances = new HashSet<ITypedHandler>();
 
             _handlers = new ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<TypedHandlerInfo>>>();
             _contextConstructorCache = new ConcurrentDictionary<string, object>();
@@ -116,10 +114,10 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            if (_callHandlers.Contains(handler))
+            if (_handlerInstances.Contains(handler))
                 throw new InvalidOperationException(SR.HanderAlreadyExistsError);
 
-            _callHandlers.Add(handler);
+            _handlerInstances.Add(handler);
 
             WithAsyncSendingHandler<TResult, TContent>(handler.GetPriority(HandlerType.Sending), async ctx =>
             {
@@ -160,7 +158,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
-            var handler = _callHandlers.OfType<THandler>().FirstOrDefault();
+            var handler = _handlerInstances.OfType<THandler>().FirstOrDefault();
 
             if (handler == null)
             {

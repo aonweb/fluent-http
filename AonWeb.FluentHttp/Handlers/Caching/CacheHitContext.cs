@@ -10,14 +10,14 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             : base(context)
         {
             _ignore = new Modifiable<bool>();
-            ResultInternal = result;
+            Result = result;
         }
 
         protected CacheHitContext(CacheHitContext context)
             : base(context)
         {
             _ignore = context._ignore;
-            ResultInternal = context.ResultInternal;
+            Result = context.Result;
         }
 
         public bool Ignore
@@ -26,7 +26,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             set { _ignore.Value = value; }
         }
 
-        protected object ResultInternal { get; set; }
+        public object Result { get; protected set; }
 
         public override Modifiable GetHandlerResult()
         {
@@ -42,10 +42,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         internal CacheHitContext(CacheHitContext context)
             : base(context) { }
 
-        public TResult Result
+        public new TResult Result
         {
-            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
-            set { ResultInternal = value; }
+            get { return ObjectHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
+            set { base.Result = value; }
         }
     }
 }

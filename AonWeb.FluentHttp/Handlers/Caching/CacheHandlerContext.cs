@@ -27,7 +27,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public Type ResultType => _cacheContext.ResultType;
         public IEnumerable<Uri> DependentUris => _cacheContext.DependentUris;
         public HttpRequestMessage Request => _cacheContext.Request;
-        //public string Key => _cacheContext.Key;
         public Uri Uri => _cacheContext.Uri;
         public bool SuppressTypeMismatchExceptions => _cacheContext.SuppressTypeMismatchExceptions;
 

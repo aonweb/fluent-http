@@ -30,7 +30,7 @@ namespace AonWeb.FluentHttp
             _contentTypeValue = new Modifiable<Type>(contentType);
             _errorTypeValue = new Modifiable<Type>(errorType);
 
-            Handler = new TypedHandlerRegister();
+            HandlerRegister = new TypedHandlerRegister();
             DeserializeResult = true;
 
             MediaType = Defaults.TypedBuilder.MediaType;
@@ -81,7 +81,7 @@ namespace AonWeb.FluentHttp
 
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; }
         public Func<ErrorContext, Exception> ExceptionFactory { get; set; }
-        public TypedHandlerRegister Handler { get; }
+        public TypedHandlerRegister HandlerRegister { get; }
         public MediaTypeFormatterCollection MediaTypeFormatters { get; }
 
         public virtual ITypedBuilderSettings WithContentType(Type type)

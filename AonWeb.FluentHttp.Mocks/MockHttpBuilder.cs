@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.Mocks
         private readonly MockHttpClientBuilder _clientBuilder;
 
         public MockHttpBuilder(IHttpBuilderSettings settings, MockHttpClientBuilder clientBuilder,
-            IReadOnlyCollection<IHandler> defaultHandlers)
+            IReadOnlyCollection<IHttpHandler> defaultHandlers)
             : base(settings, clientBuilder, defaultHandlers)
         {
             _clientBuilder = clientBuilder;
@@ -30,9 +30,9 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockHttpBuilder VerifyOnSending(Action<SendingContext> handler)
+        public IMockHttpBuilder VerifyOnSending(Action<HttpSendingContext> handler)
         {
-            var assert = new AssertAction<SendingContext>(handler, () => _assertFailure);
+            var assert = new AssertAction<HttpSendingContext>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 
@@ -41,9 +41,9 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockHttpBuilder VerifyOnSent(Action<SentContext> handler)
+        public IMockHttpBuilder VerifyOnSent(Action<HttpSentContext> handler)
         {
-            var assert = new AssertAction<SentContext>(handler, () => _assertFailure);
+            var assert = new AssertAction<HttpSentContext>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 
@@ -52,9 +52,9 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public IMockHttpBuilder VerifyOnException(Action<ExceptionContext> handler)
+        public IMockHttpBuilder VerifyOnException(Action<HttpExceptionContext> handler)
         {
-            var assert = new AssertAction<ExceptionContext>(handler, () => _assertFailure);
+            var assert = new AssertAction<HttpExceptionContext>(handler, () => _assertFailure);
 
             _asserts.Add(assert);
 

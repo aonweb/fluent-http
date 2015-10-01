@@ -12,6 +12,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Performance
 {
+    [Collection("LocalWebServer Tests")]
     public class StressTest
     {
         private static readonly Random Rng = new Random();

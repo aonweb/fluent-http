@@ -11,17 +11,14 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class ResponseInfo
     {
-        public ResponseInfo(object result, HttpResponseMessage response, ICacheContext context)
+        public ResponseInfo(object result, HttpRequestMessage request, HttpResponseMessage response, ICacheContext context)
         {
-            Uri = response.RequestMessage.RequestUri;
+            Uri = request.RequestUri;
             StatusCode = response.StatusCode;
             Date = response.Headers.Date ?? DateTimeOffset.UtcNow;
-
-            if (response.Content != null)
-            {
-                HasContent = true;
-                LastModified = response.Content.Headers.LastModified;
-            }
+            LastModified = response.Content?.Headers?.LastModified;
+            HasContent = response.Content != null;
+            ETag = response.Headers.ETag;
 
             if (response.Headers.CacheControl != null)
             {
@@ -30,13 +27,8 @@ namespace AonWeb.FluentHttp.Caching
                 ShouldRevalidate = context.MustRevalidateByDefault || response.Headers.CacheControl.MustRevalidate || NoCache;
             }
 
-            ETag = response.Headers.ETag;
-
-            var lastModified = LastModified ?? Date;
-            var expiration = GetExpiration(lastModified, result, response, context.DefaultExpiration);
-            HasExpiration = expiration.HasValue;
-            Expiration = expiration ?? lastModified.Add(context.DefaultExpiration);
-
+            CacheDuration = GetCacheDuration(result, context);
+            Expiration = GetExpiration(LastModified ?? Date, response, CacheDuration);
             VaryHeaders = new HashSet<string>(response.Headers.Vary.Concat(context.DefaultVaryByHeaders).Distinct(StringComparer.OrdinalIgnoreCase));
             DependentUris = GetDependentUris(result, context.DependentUris);
         }
@@ -50,33 +42,47 @@ namespace AonWeb.FluentHttp.Caching
         public bool NoStore { get; set; }
         public bool NoCache { get; set; }
         public bool ShouldRevalidate { get; set; }
-        public DateTimeOffset Expiration { get; set; }
-        public bool HasExpiration { get; set; }
+        public DateTimeOffset? Expiration { get; set; }
         public ISet<string> VaryHeaders { get; }
         public ISet<Uri> DependentUris { get; }
-        
+        public TimeSpan? CacheDuration { get; }
 
-        private static DateTimeOffset? GetExpiration(DateTimeOffset lastModified, object result, HttpResponseMessage response, TimeSpan defaultExpiration)
+        private static TimeSpan? GetCacheDuration(object result, ICacheContext context)
         {
             var cacheableResult = result as ICacheableHttpResult;
-            if (cacheableResult != null)
-            {
-                if (cacheableResult.Duration.HasValue && cacheableResult.Duration.Value > TimeSpan.Zero)
-                    return lastModified.Add(cacheableResult.Duration.Value);
 
-                return lastModified.Add(defaultExpiration);
-            }
+            return context.CacheDuration ?? (cacheableResult != null ? cacheableResult.Duration ?? context.DefaultDurationForCacheableResults : null);
+        }
+
+        private static DateTimeOffset? GetExpiration(DateTimeOffset lastModified, HttpResponseMessage response, TimeSpan? duration)
+        {
+            DateTimeOffset updatedLastModified;
+
+            if (TryUpdateLastModified(duration, lastModified, out updatedLastModified))
+                return updatedLastModified;
 
             if (response.Headers.CacheControl != null)
             {
-                if (response.Headers.CacheControl.MaxAge.HasValue)
-                    return lastModified.Add(response.Headers.CacheControl.MaxAge.Value);
+                if (TryUpdateLastModified(response.Headers.CacheControl.MaxAge, lastModified, out updatedLastModified))
+                    return updatedLastModified;
 
-                if (response.Headers.CacheControl.SharedMaxAge.HasValue)
-                    return lastModified.Add(response.Headers.CacheControl.SharedMaxAge.Value);
+                if (TryUpdateLastModified(response.Headers.CacheControl.SharedMaxAge, lastModified, out updatedLastModified))
+                    return updatedLastModified;
             }
 
             return response.Content?.Headers.Expires;
+        }
+
+        private static bool TryUpdateLastModified(TimeSpan? duration, DateTimeOffset originalLastModified, out DateTimeOffset lastModified)
+        {
+            lastModified = originalLastModified;
+
+            if (!duration.HasValue || duration.Value <= TimeSpan.Zero)
+                return false;
+
+            lastModified = originalLastModified.Add(duration.Value);
+
+            return true;
         }
 
         private static ISet<Uri> GetDependentUris(object result, IEnumerable<Uri> dependentUris)
@@ -92,17 +98,17 @@ namespace AonWeb.FluentHttp.Caching
             return new HashSet<Uri>(uris.NormalizeUris());
         }
 
-        public void UpdateExpiration(object result, HttpResponseMessage response, TimeSpan defaultExpiration)
+        public void UpdateExpiration(object result, HttpResponseMessage response, ICacheContext context)
         {
             var lastModified = response.Headers.Date ?? DateTimeOffset.UtcNow;
 
             if (response.Content?.Headers.LastModified != null)
                 lastModified = response.Content.Headers.LastModified.Value;
 
-            var newExpiration = GetExpiration(lastModified, result, response, defaultExpiration);
+            var newExpiration = GetExpiration(lastModified, response, CacheDuration);
 
-            if (newExpiration.HasValue && newExpiration > Expiration) 
-                Expiration = newExpiration.Value;
+            if (newExpiration > Expiration) 
+                Expiration = newExpiration;
         }
 
         public void Merge(ResponseInfo responseInfo)
@@ -118,9 +124,6 @@ namespace AonWeb.FluentHttp.Caching
 
            if (responseInfo.ETag != null)
                ETag = responseInfo.ETag;
-
-           if (responseInfo.HasExpiration)
-               HasExpiration = responseInfo.HasExpiration;
 
            if (responseInfo.Expiration > Expiration)
                Expiration = responseInfo.Expiration;

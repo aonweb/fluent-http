@@ -15,6 +15,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Hal
 {
+    [Collection("LocalWebServer Tests")]
     public class HalDeserializationTests
     {
         private readonly ITestOutputHelper _logger;

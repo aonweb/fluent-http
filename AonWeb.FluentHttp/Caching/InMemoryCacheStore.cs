@@ -15,7 +15,7 @@ namespace AonWeb.FluentHttp.Caching
     public class InMemoryCacheStore : IHttpCacheStore
     {
         private static readonly ConcurrentDictionary<string, CachedItem> _cache = new ConcurrentDictionary<string, CachedItem>();
-        private static readonly ConcurrentDictionary<Uri, UriCacheInfo> _uriCache = new ConcurrentDictionary<Uri, UriCacheInfo>();
+        private static readonly ConcurrentDictionary<string, UriCacheInfo> _uriCache = new ConcurrentDictionary<string, UriCacheInfo>();
         private static readonly ResponseSerializer Serializer = new ResponseSerializer();
 
         internal static string BuildKey(Type resultType, Uri uri, HttpRequestHeaders headers)
@@ -36,9 +36,16 @@ namespace AonWeb.FluentHttp.Caching
             return Convert.ToBase64String(hash);
         }
 
+        internal static string HashUri(Uri uri)
+        {
+            var hash = DigestHelpers.Sha256Hash(Encoding.UTF8.GetBytes(uri.ToString()));
+
+            return Convert.ToBase64String(hash);
+        }
+
         public async Task<CacheResult> GetCachedResult(ICacheContext context)
         {
-            var key = BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+            var key = BuildKey(context.ResultType, context.Uri, context.Request.Headers);
 
             CachedItem cachedItem = null;
             CachedItem temp;
@@ -71,7 +78,7 @@ namespace AonWeb.FluentHttp.Caching
         {
             var isResponseMessage = false;
 
-            var key = BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+            var key = BuildKey(context.ResultType, context.Uri, context.Request.Headers);
 
             CachedItem cachedItem = null;
             CachedItem temp;
@@ -88,7 +95,7 @@ namespace AonWeb.FluentHttp.Caching
                 object result;
                 if (response != null)
                 {
-                    result = await Serializer.Serialize(response);
+                    result = await Serializer.Serialize(context.Request, response);
                     isResponseMessage = true;
                 }
                 else
@@ -113,7 +120,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public IEnumerable<Uri> TryRemove(ICacheContext context, IEnumerable<Uri> additionalRelatedUris)
         {
-            var key = BuildKey(context.ResultType, context.Request.RequestUri, context.Request.Headers);
+            var key = BuildKey(context.ResultType, context.Uri, context.Request.Headers);
 
             CachedItem cachedItem;
             if (string.IsNullOrWhiteSpace(key) || !_cache.TryRemove(key, out cachedItem))
@@ -187,11 +194,11 @@ namespace AonWeb.FluentHttp.Caching
 
         private static UriCacheInfo GetCacheInfo(Uri uri)
         {
-            var normalizedUri = uri.NormalizeUri();
+            var hash = HashUri(uri.NormalizeUri());
 
             UriCacheInfo cacheInfo;
 
-            if (_uriCache.TryGetValue(normalizedUri, out cacheInfo))
+            if (_uriCache.TryGetValue(hash, out cacheInfo))
                 return cacheInfo;
 
             return null;
@@ -199,11 +206,11 @@ namespace AonWeb.FluentHttp.Caching
 
         private static void AddCacheKey(Uri uri, string cacheKey)
         {
-            var normalizedUri = uri.NormalizeUri();
+            var hash = HashUri(uri.NormalizeUri());
 
             UriCacheInfo cacheInfo;
 
-            if (!_uriCache.TryGetValue(normalizedUri, out cacheInfo))
+            if (!_uriCache.TryGetValue(hash, out cacheInfo))
                 cacheInfo = new UriCacheInfo();
 
             lock (cacheInfo)
@@ -212,16 +219,16 @@ namespace AonWeb.FluentHttp.Caching
                     cacheInfo.CacheKeys.Add(cacheKey);
             }
 
-            _uriCache[normalizedUri] = cacheInfo;
+            _uriCache[hash] = cacheInfo;
         }
 
         private static void RemoveCacheKey(Uri uri, string cacheKey)
         {
-            var normalizedUri = uri.NormalizeUri();
+            var hash = HashUri(uri.NormalizeUri());
 
             UriCacheInfo cacheInfo;
 
-            if (!_uriCache.TryGetValue(normalizedUri, out cacheInfo))
+            if (!_uriCache.TryGetValue(hash, out cacheInfo))
                 return;
 
             lock (cacheInfo)

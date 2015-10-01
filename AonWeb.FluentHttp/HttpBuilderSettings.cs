@@ -15,7 +15,7 @@ namespace AonWeb.FluentHttp
         {
             UriBuilder = new HttpUriBuilder();
             Items = new Dictionary<string, object>();
-            Handler = new HandlerRegister();
+            HandlerRegister = new HttpHandlerRegister();
             UriQuery = new UriQueryCollection();
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
             Method = Defaults.Builder.HttpMethod;
@@ -38,7 +38,7 @@ namespace AonWeb.FluentHttp
         public HttpCompletionOption CompletionOption { get; set; }
         public IRecursiveHttpBuilder Builder { get; protected internal set; }
         public Func<IHttpBuilderContext, HttpContent> ContentFactory { get; set; }
-        public HandlerRegister Handler { get; }
+        public HttpHandlerRegister HandlerRegister { get; }
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; }
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
         public bool SuppressCancellationErrors { get; set; }

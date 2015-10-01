@@ -134,7 +134,7 @@ namespace AonWeb.FluentHttp
 
         public static IAdvancedTypedBuilder WithHandler<TResult, TContent, TError>(this IAdvancedTypedBuilder builder, ITypedHandler handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithHandler<TResult, TContent, TError>(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithHandler<TResult, TContent, TError>(handler));
 
             return builder;
         }
@@ -147,7 +147,7 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithHandlerConfiguration<THandler>(this IAdvancedTypedBuilder builder, Action<THandler> configure)
             where THandler : class, ITypedHandler
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configure));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configure));
 
             return builder;
         }
@@ -155,14 +155,14 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithOptionalHandlerConfiguration<THandler>(this IAdvancedTypedBuilder builder, Action<THandler> configure)
             where THandler : class, ITypedHandler
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configure, false));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configure, false));
 
             return builder;
         }
 
-        public static IAdvancedTypedBuilder WithHttpHandler(this IAdvancedTypedBuilder builder, IHandler handler)
+        public static IAdvancedTypedBuilder WithHttpHandler(this IAdvancedTypedBuilder builder, IHttpHandler httpHandler)
         {
-            builder.WithConfiguration(s => s.Handler.WithHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithHandler(httpHandler));
 
             return builder;
         }
@@ -170,7 +170,7 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithHttpHandlerConfiguration<THandler>(this IAdvancedTypedBuilder builder, Action<THandler> configure)
             where THandler : class, ITypedHandler
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configure));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configure));
 
             return builder;
         }
@@ -178,7 +178,7 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithOptionalHttpHandlerConfiguration<THandler>(this IAdvancedTypedBuilder builder, Action<THandler> configure)
             where THandler : class, ITypedHandler
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configure, false));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configure, false));
 
             return builder;
         }
@@ -186,7 +186,7 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithRetryConfiguration(this IAdvancedTypedBuilder builder, Action<RetryHandler> configuration)
 
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configuration, false));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configuration, false));
 
             return builder;
         }
@@ -194,7 +194,7 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithRedirectConfiguration(this IAdvancedTypedBuilder builder, Action<RedirectHandler> configuration)
 
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configuration, false));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configuration, false));
 
             return builder;
         }
@@ -202,7 +202,7 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithAutoFollowConfiguration(this IAdvancedTypedBuilder builder, Action<FollowLocationHandler> configuration)
 
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configuration, false));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configuration, false));
 
             return builder;
         }
@@ -217,19 +217,19 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithCaching(this IAdvancedTypedBuilder builder, bool enabled = true)
         {
 
-            builder.WithHandlerConfiguration<TypedCacheHandler>(handler => handler.WithCaching(enabled));
+            builder.WithHandlerConfiguration<TypedCacheConfigurationHandler>(handler => handler.WithCaching(enabled));
 
             return builder;
         }
 
         public static IAdvancedTypedBuilder WithDependentUri(this IAdvancedTypedBuilder builder, Uri uri)
         {
-            return builder.WithOptionalHandlerConfiguration<TypedCacheHandler>(h => h.WithDependentUri(uri));
+            return builder.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(h => h.WithDependentUri(uri));
         }
 
         public static IAdvancedTypedBuilder WithDependentUris(this IAdvancedTypedBuilder builder, IEnumerable<Uri> uris)
         {
-            return builder.WithOptionalHandlerConfiguration<TypedCacheHandler>(h => h.WithDependentUris(uris));
+            return builder.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(h => h.WithDependentUris(uris));
         }
 
         public static IAdvancedTypedBuilder WithSuppressTypeMismatchExceptions(this IAdvancedTypedBuilder builder, bool suppress = true)
@@ -254,7 +254,7 @@ namespace AonWeb.FluentHttp
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(handler));
 
             return builder;
         }
@@ -264,7 +264,7 @@ namespace AonWeb.FluentHttp
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(priority, handler));
 
             return builder;
         }
@@ -274,7 +274,7 @@ namespace AonWeb.FluentHttp
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(handler));
 
             return builder;
         }
@@ -284,7 +284,7 @@ namespace AonWeb.FluentHttp
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(priority, handler));
 
             return builder;
         }
@@ -293,7 +293,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
 
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(handler));
 
             return builder;
         }
@@ -302,7 +302,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
 
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(priority, handler));
 
             return builder;
         }
@@ -311,7 +311,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(handler));
 
             return builder;
         }
@@ -320,7 +320,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithContentType(typeof(TContent)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(priority, handler));
 
             return builder;
         }
@@ -329,7 +329,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(handler));
 
             return builder;
         }
@@ -338,7 +338,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(priority, handler));
 
             return builder;
         }
@@ -347,7 +347,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(handler));
 
             return builder;
         }
@@ -356,7 +356,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(priority, handler));
 
             return builder;
         }
@@ -365,7 +365,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithSentHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSentHandler(handler));
 
             return builder;
         }
@@ -374,7 +374,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithSentHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSentHandler(priority, handler));
 
             return builder;
         }
@@ -383,7 +383,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSentHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSentHandler(handler));
 
             return builder;
         }
@@ -392,7 +392,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncSentHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSentHandler(priority, handler));
 
             return builder;
         }
@@ -401,7 +401,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithResultHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithResultHandler(handler));
 
             return builder;
         }
@@ -410,7 +410,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithResultHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithResultHandler(priority, handler));
 
             return builder;
         }
@@ -419,7 +419,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncResultHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncResultHandler(handler));
 
             return builder;
         }
@@ -428,7 +428,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TResult)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncResultHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncResultHandler(priority, handler));
 
             return builder;
         }
@@ -437,7 +437,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithErrorType(typeof(TError)));
 
-            builder.WithConfiguration(s => s.Handler.WithErrorHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithErrorHandler(handler));
 
             return builder;
         }
@@ -446,7 +446,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithErrorType(typeof(TError)));
 
-            builder.WithConfiguration(s => s.Handler.WithErrorHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithErrorHandler(priority, handler));
 
             return builder;
         }
@@ -455,7 +455,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithErrorType(typeof(TError)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncErrorHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncErrorHandler(handler));
 
             return builder;
         }
@@ -464,35 +464,35 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.WithErrorType(typeof(TError)));
 
-            builder.WithConfiguration(s => s.Handler.WithAsyncErrorHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncErrorHandler(priority, handler));
 
             return builder;
         }
 
         public static IAdvancedTypedBuilder OnException(this IAdvancedTypedBuilder builder, Action<TypedExceptionContext> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithExceptionHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithExceptionHandler(handler));
 
             return builder;
         }
 
         public static IAdvancedTypedBuilder OnException(this IAdvancedTypedBuilder builder, HandlerPriority priority, Action<TypedExceptionContext> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithExceptionHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithExceptionHandler(priority, handler));
 
             return builder;
         }
 
         public static IAdvancedTypedBuilder OnExceptionAsync(this IAdvancedTypedBuilder builder, Func<TypedExceptionContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncExceptionHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExceptionHandler(handler));
 
             return builder;
         }
 
         public static IAdvancedTypedBuilder OnExceptionAsync(this IAdvancedTypedBuilder builder, HandlerPriority priority, Func<TypedExceptionContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncExceptionHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExceptionHandler(priority, handler));
 
             return builder;
         }

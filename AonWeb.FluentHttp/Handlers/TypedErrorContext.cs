@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context)
         { }
 
-        public TError Error => ObjectHelpers.CheckType<TError>(ErrorInternal, SuppressTypeMismatchExceptions);
+        public new TError Error => ObjectHelpers.CheckType<TError>(base.Error, SuppressTypeMismatchExceptions);
     }
 
     public abstract class TypedErrorContext : TypedHandlerContext
@@ -25,7 +25,7 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context, request)
         {
             Response = response;
-            ErrorInternal = error;
+            Error = error;
             _errorHandled = new Modifiable<bool>(false);
         }
 
@@ -33,7 +33,7 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context)
         {
             Response = context.Response;
-            ErrorInternal = context.ErrorInternal;
+            Error = context.Error;
             _errorHandled = context._errorHandled;
         }
 
@@ -46,7 +46,7 @@ namespace AonWeb.FluentHttp.Handlers
             set {  _errorHandled.Value = value; }
         }
 
-        protected object ErrorInternal { get; }
+        public object Error { get; }
 
         public override Modifiable GetHandlerResult()
         {

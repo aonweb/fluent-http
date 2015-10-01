@@ -13,10 +13,10 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context)
         { }
 
-        public TResult Result
+        public new TResult Result
         {
-            get { return ObjectHelpers.CheckType<TResult>(ResultInternal, SuppressTypeMismatchExceptions); }
-            set { ResultInternal = value; }
+            get { return ObjectHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
+            set { base.Result = value; }
         }
     }
 
@@ -40,10 +40,10 @@ namespace AonWeb.FluentHttp.Handlers
 
         public HttpResponseMessage Response { get; }
 
-        protected object ResultInternal
+        public object Result
         {
             get { return _result.Value; }
-            set { _result.Value = value; }
+            protected set { _result.Value = value; }
         }
 
         public override Modifiable GetHandlerResult()
@@ -51,6 +51,6 @@ namespace AonWeb.FluentHttp.Handlers
             return _result.ToResult();
         }
 
-        object IHandlerContextWithResult.Result { set { ResultInternal = value; } }
+        object IHandlerContextWithResult.Result { set { Result = value; } }
     }
 }

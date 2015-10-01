@@ -8,7 +8,7 @@ using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class RedirectHandler : Handler
+    public class RedirectHandler : HttpHandler
     {
         
         public RedirectHandler()
@@ -22,7 +22,7 @@ namespace AonWeb.FluentHttp.Handlers
 
         private int MaxAutoRedirects { get; set; }
         private static ISet<HttpStatusCode> RedirectStatusCodes { get; set; }
-        private Func<SentContext, bool> RedirectValidtor { get; set; }
+        private Func<HttpSentContext, bool> RedirectValidtor { get; set; }
         private Action<RedirectContext> OnRedirect { get; set; }
 
         public RedirectHandler WithAutoRedirect(bool enabled = true)
@@ -53,7 +53,7 @@ namespace AonWeb.FluentHttp.Handlers
             return this;
         }
 
-        public RedirectHandler WithRedirectValidator(Func<SentContext, bool> validator)
+        public RedirectHandler WithRedirectValidator(Func<HttpSentContext, bool> validator)
         {
             if (validator == null)
                 throw new ArgumentNullException(nameof(validator));
@@ -78,7 +78,7 @@ namespace AonWeb.FluentHttp.Handlers
             return base.GetPriority(type);
         }
 
-        public override async Task OnSent(SentContext context)
+        public override async Task OnSent(HttpSentContext context)
         {
             if (!RedirectValidtor(context)) 
                 return;
@@ -119,7 +119,7 @@ namespace AonWeb.FluentHttp.Handlers
             
         }
 
-        private bool ShouldRedirect(SentContext context)
+        private bool ShouldRedirect(HttpSentContext context)
         {
             return RedirectStatusCodes.Contains(context.Result.StatusCode);
         } 

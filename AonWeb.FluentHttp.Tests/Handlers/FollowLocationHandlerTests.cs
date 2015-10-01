@@ -12,6 +12,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Handlers
 {
+    [Collection("LocalWebServer Tests")]
     public class FollowLocationHandlerTests
     {
         private readonly ITestOutputHelper _logger;

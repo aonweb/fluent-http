@@ -108,6 +108,12 @@ namespace AonWeb.FluentHttp
             return builder.WithClientConfiguration(c => c.WithNoCache(nocache));
         }
 
+        public static IAdvancedHttpBuilder WithCacheDuration(this IAdvancedHttpBuilder builder, TimeSpan? duration)
+
+        {
+            return builder.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(h => h.WithCacheDuration(duration));
+        }
+
         public static IAdvancedHttpBuilder WithSuppressCancellationExceptions(this IAdvancedHttpBuilder builder, bool suppress = true)
 
         {
@@ -134,25 +140,25 @@ namespace AonWeb.FluentHttp
             return builder.WithHandlerConfiguration(configuration);
         }
 
-        public static IAdvancedHttpBuilder WithHandler(this IAdvancedHttpBuilder builder, IHandler handler)
+        public static IAdvancedHttpBuilder WithHandler(this IAdvancedHttpBuilder builder, IHttpHandler httpHandler)
         {
-            builder.WithConfiguration(s => s.Handler.WithHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithHandler(httpHandler));
 
             return builder;
         }
 
         public static IAdvancedHttpBuilder WithHandlerConfiguration<THandler>(this IAdvancedHttpBuilder builder, Action<THandler> configure)
-            where THandler : class, IHandler
+            where THandler : class, IHttpHandler
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configure));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configure));
 
             return builder;
         }
 
         public static IAdvancedHttpBuilder WithOptionalHandlerConfiguration<THandler>(this IAdvancedHttpBuilder builder, Action<THandler> configure)
-            where THandler : class, IHandler
+            where THandler : class, IHttpHandler
         {
-            builder.WithConfiguration(s => s.Handler.WithConfiguration(configure, false));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration(configure, false));
 
             return builder;
         }
@@ -177,102 +183,102 @@ namespace AonWeb.FluentHttp
         public static IAdvancedHttpBuilder WithCaching(this IAdvancedHttpBuilder builder, bool enabled = true)
 
         {
-            return builder.WithHandlerConfiguration<HttpCacheHandler>(handler => handler.WithCaching(enabled));
+            return builder.WithHandlerConfiguration<HttpCacheConfigurationHandler>(handler => handler.WithCaching(enabled));
         }
 
         public static IAdvancedHttpBuilder WithDependentUri(this IAdvancedHttpBuilder builder, Uri uri)
 
         {
-            return builder.WithOptionalHandlerConfiguration<HttpCacheHandler>(h => h.WithDependentUri(uri));
+            return builder.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(h => h.WithDependentUri(uri));
         }
 
         public static IAdvancedHttpBuilder WithDependentUris(this IAdvancedHttpBuilder builder, IEnumerable<Uri> uris)
 
         {
-            return builder.WithOptionalHandlerConfiguration<HttpCacheHandler>(h => h.WithDependentUris(uris));
+            return builder.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(h => h.WithDependentUris(uris));
         }
 
-        public static IAdvancedHttpBuilder OnSending(this IAdvancedHttpBuilder builder, Action<SendingContext> handler)
+        public static IAdvancedHttpBuilder OnSending(this IAdvancedHttpBuilder builder, Action<HttpSendingContext> handler)
 
         {
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnSending(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<SendingContext> handler)
+        public static IAdvancedHttpBuilder OnSending(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<HttpSendingContext> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSendingHandler(priority, handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnSendingAsync(this IAdvancedHttpBuilder builder, Func<SendingContext, Task> handler)
+        public static IAdvancedHttpBuilder OnSendingAsync(this IAdvancedHttpBuilder builder, Func<HttpSendingContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnSendingAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<SendingContext, Task> handler)
+        public static IAdvancedHttpBuilder OnSendingAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<HttpSendingContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncSendingHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSendingHandler(priority, handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnSent(this IAdvancedHttpBuilder builder, Action<SentContext> handler)
+        public static IAdvancedHttpBuilder OnSent(this IAdvancedHttpBuilder builder, Action<HttpSentContext> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithSentHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSentHandler(handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnSent(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<SentContext> handler)
+        public static IAdvancedHttpBuilder OnSent(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<HttpSentContext> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithSentHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithSentHandler(priority, handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnSentAsync(this IAdvancedHttpBuilder builder, Func<SentContext, Task> handler)
+        public static IAdvancedHttpBuilder OnSentAsync(this IAdvancedHttpBuilder builder, Func<HttpSentContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncSentHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSentHandler(handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnSentAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<SentContext, Task> handler)
+        public static IAdvancedHttpBuilder OnSentAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<HttpSentContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncSentHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncSentHandler(priority, handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnException(this IAdvancedHttpBuilder builder, Action<ExceptionContext> handler)
+        public static IAdvancedHttpBuilder OnException(this IAdvancedHttpBuilder builder, Action<HttpExceptionContext> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithExceptionHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithExceptionHandler(handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnException(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<ExceptionContext> handler)
+        public static IAdvancedHttpBuilder OnException(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<HttpExceptionContext> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithExceptionHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithExceptionHandler(priority, handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnExceptionAsync(this IAdvancedHttpBuilder builder, Func<ExceptionContext, Task> handler)
+        public static IAdvancedHttpBuilder OnExceptionAsync(this IAdvancedHttpBuilder builder, Func<HttpExceptionContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncExceptionHandler(handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExceptionHandler(handler));
 
             return builder;
         }
 
-        public static IAdvancedHttpBuilder OnExceptionAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<ExceptionContext, Task> handler)
+        public static IAdvancedHttpBuilder OnExceptionAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<HttpExceptionContext, Task> handler)
         {
-            builder.WithConfiguration(s => s.Handler.WithAsyncExceptionHandler(priority, handler));
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExceptionHandler(priority, handler));
 
             return builder;
         }

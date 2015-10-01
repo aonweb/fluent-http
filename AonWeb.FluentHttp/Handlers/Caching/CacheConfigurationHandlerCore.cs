@@ -9,17 +9,17 @@ using AonWeb.FluentHttp.Helpers;
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
     // this class is inspired by the excellent work in CacheCow Caching libraries - https://github.com/aliostad/CacheCow
-    // for whatever reason, I couldn't get the inmemory cache in the HttpClientHandler / HttpCacheHandler 
+    // for whatever reason, I couldn't get the inmemory cache in the HttpClientHandler / HttpCacheConfigurationHandler 
     // to play nice with call / client builders, and the cache kept disappearing
     // additionally I need an implementation that allows for deserialized object level caching in addition to http response caching
     // so I implemented a cachehandler that plugs in to the TypedBuilder higher up,
     // but the base logic for cache validation / invalidation was based off CacheCow
-    public abstract class CacheHandlerCore
+    public abstract class CacheConfigurationHandlerCore
     {
-        protected CacheHandlerCore()
+        protected CacheConfigurationHandlerCore()
             : this(new CacheSettings()) { }
 
-        protected CacheHandlerCore(CacheSettings settings)
+        protected CacheConfigurationHandlerCore(CacheSettings settings)
         {
             Settings = settings;
         }
@@ -62,16 +62,11 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         {
             var context = CreateCacheContext(handlerContext);
 
-            var lookupResult = await context.Handler.OnLookup(context);
-
-            if (lookupResult.IsDirty)
-            {
-                context.Result = new CacheResult(lookupResult.Value, null);
-                context.ValidationResult = ResponseValidationResult.OK;
-            }
-
             if (!context.CacheValidator(context))
-                return;
+            {
+                await ExpireResult(context);
+                return ;
+            }
 
             context.Result = await Cache.CurrentCacheStore.GetCachedResult(context);
 
@@ -96,31 +91,31 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
                 //hang on to this we are going to need it in a sec. We could try to get it from cache store, but it may have expired by then
                 context.Items["CacheHandlerCachedItem"] = context.Result;
+
+                return;
             }
-            else
+
+            if (!context.Result.Found)
             {
-                if (!context.Result.Found)
-                {
-                    var missedResult = await context.Handler.OnMiss(context);
+                var missedResult = await context.Handler.OnMiss(context);
 
-                    if (missedResult.IsDirty)
-                    {
-                        context.Result = new CacheResult(missedResult.Value, null);
-                        context.ValidationResult = ResponseValidationResult.OK;
-                    }
+                if (missedResult.IsDirty)
+                {
+                    context.Result = new CacheResult(missedResult.Value, null);
+                    context.ValidationResult = ResponseValidationResult.OK;
                 }
+            }
 
-                if (context.Result.Found)
-                {
-                    var hitResult = await context.Handler.OnHit(context, context.Result.Result);
+            if (context.Result.Found)
+            {
+                var hitResult = await context.Handler.OnHit(context, context.Result.Result);
 
-                    if (!hitResult.IsDirty || !(bool)hitResult.Value)
-                        handlerContext.Result = context.Result.Result;
-                } 
-            } 
+                if (!hitResult.IsDirty || !(bool)hitResult.Value)
+                    handlerContext.Result = context.Result.Result;
+            }
         }
 
-        protected async Task TryGetRevalidatedResult(IHandlerContextWithResult handlerContext, HttpResponseMessage response)
+        protected async Task TryGetRevalidatedResult(IHandlerContextWithResult handlerContext, HttpRequestMessage request, HttpResponseMessage response)
         {
             var context = CreateCacheContext(handlerContext);
 
@@ -131,7 +126,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             if (context.Result.Found && context.Result.Result != null)
             {
-                context.Result.UpdateResponseInfo(response, context);
+                context.Result.UpdateResponseInfo(request, response, context);
 
                 context.ResultInspector?.Invoke(context.Result);
 
@@ -162,11 +157,11 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             }
         }
 
-        protected async Task TryCacheResult(IHandlerContext handlerContext, object result, HttpResponseMessage response)
+        protected async Task TryCacheResult(IHandlerContext handlerContext, object result, HttpRequestMessage request, HttpResponseMessage response)
         {
             var context = CreateCacheContext(handlerContext);
 
-            context.Result = new CacheResult(result, response, context);
+            context.Result = new CacheResult(result, request, response, context);
 
             if (context.CacheValidator(context))
             {

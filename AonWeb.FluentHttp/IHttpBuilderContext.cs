@@ -16,7 +16,7 @@ namespace AonWeb.FluentHttp
         bool AutoDecompression { get; }
         Func<IHttpBuilderContext, HttpContent> ContentFactory { get; }
         Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
-        HandlerRegister Handler { get; }
+        HttpHandlerRegister HandlerRegister { get; }
         CancellationToken Token { get; }
         void ValidateSettings();
     }

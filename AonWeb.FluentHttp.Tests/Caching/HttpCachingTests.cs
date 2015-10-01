@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Caching
 {
+    [Collection("LocalWebServer Tests")]
     public class HttpCachingTests
     {
         private readonly ITestOutputHelper _logger;
@@ -23,7 +24,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
 
         [Fact]
-        public async Task WhenHttpCachingIsOn_ExpectContentsCachedAccrossCallBuilders()
+        public async Task WhenCachingIsOn_ExpectContentsCachedAccrossCallBuilders()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
@@ -40,7 +41,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenHttpCachingIsOn_ExpectContentsCachedAccrossCallBuildersOnDifferentThreads()
+        public async Task WhenCachingIsOn_ExpectContentsCachedAccrossCallBuildersOnDifferentThreads()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
@@ -67,7 +68,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenHttpCachingIsOff_ExpectContentsNotCached()
+        public async Task WhenCachingIsOff_ExpectContentsNotCached()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -91,7 +92,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenHttpCachingIsOnAndServerSendsNoCacheHeader_ExpectContentsAreNotCached()
+        public async Task WhenCachingIsOnAndServerSendsNoCacheHeader_ExpectContentsAreNotCached()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -115,7 +116,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenHttpCachingIsOn_WithPost_ExpectCacheInvalidated()
+        public async Task WhenCachingIsOn_WithPost_ExpectCacheInvalidated()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -250,7 +251,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
 
         [Fact]
-        public async Task WhenHttpCachingIsOn_WithPut_ExpectCacheInvalidated()
+        public async Task WhenCachingIsOn_WithPut_ExpectCacheInvalidated()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -274,7 +275,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenHttpCachingIsOn_WithPatch_ExpectCacheInvalidated()
+        public async Task WhenCachingIsOn_WithPatch_ExpectCacheInvalidated()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -298,7 +299,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenHttpCachingIsOn_WithDelete_ExpectCacheInvalidated()
+        public async Task WhenCachingIsOn_WithDelete_ExpectCacheInvalidated()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))

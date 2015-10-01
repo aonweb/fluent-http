@@ -50,10 +50,11 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public Type ResultType => _handlerContext.ResultType;
         public ISet<HttpMethod> CacheableHttpMethods => _settings.CacheableHttpMethods;
         public ISet<HttpStatusCode> CacheableHttpStatusCodes => _settings.CacheableHttpStatusCodes;
-        public TimeSpan DefaultExpiration => _settings.DefaultExpiration;
+        public TimeSpan? DefaultDurationForCacheableResults => _settings.DefaultDurationForCacheableResults;
         public ISet<string> DefaultVaryByHeaders => _settings.DefaultVaryByHeaders;
         public bool MustRevalidateByDefault => _settings.MustRevalidateByDefault;
         public ISet<Uri> DependentUris => _settings.DependentUris;
+        public TimeSpan? CacheDuration => _settings.CacheDuration;
         public bool SuppressTypeMismatchExceptions => _settings.SuppressTypeMismatchExceptions;
 
         public HttpRequestMessage Request { get; }

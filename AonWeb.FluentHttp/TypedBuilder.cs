@@ -163,7 +163,7 @@ namespace AonWeb.FluentHttp
 
                 token.ThrowIfCancellationRequested();
 
-                var sendingResult = await context.Handler.OnSending(context, request, content, hasContent);
+                var sendingResult = await context.HandlerRegister.OnSending(context, request, content, hasContent);
 
                 if (sendingResult.IsDirty)
                     return sendingResult.Value;
@@ -195,7 +195,7 @@ namespace AonWeb.FluentHttp
                         return TypeHelpers.GetDefaultValueForType(context.ResultType);
                     }
 
-                    var errorResult = await context.Handler.OnError(context, request, response, error);
+                    var errorResult = await context.HandlerRegister.OnError(context, request, response, error);
 
                     var errorHandled = (bool)errorResult.Value;
 
@@ -210,7 +210,7 @@ namespace AonWeb.FluentHttp
                 }
                 else
                 {
-                    var sentResult = await context.Handler.OnSent(context, request, response);
+                    var sentResult = await context.HandlerRegister.OnSent(context, request, response);
 
                     object result = null;
 
@@ -230,7 +230,7 @@ namespace AonWeb.FluentHttp
 
                     token.ThrowIfCancellationRequested();
 
-                    var resultResult = await context.Handler.OnResult(context, request, response, result);
+                    var resultResult = await context.HandlerRegister.OnResult(context, request, response, result);
 
                     result = resultResult.Value;
 
@@ -257,7 +257,7 @@ namespace AonWeb.FluentHttp
 
             if (capturedException != null)
             {
-                var exceptionResult = await context.Handler.OnException(context, request, response, capturedException.SourceException);
+                var exceptionResult = await context.HandlerRegister.OnException(context, request, response, capturedException.SourceException);
 
                 if (!(bool)exceptionResult.Value)
                 {
