@@ -38,8 +38,11 @@
   <ItemGroup>
     <Compile Include="Cache.cs" />
     <Compile Include="Caching\CachedItem.cs" />
+    <Compile Include="Caching\CacheKeyBuilder.cs" />
     <Compile Include="Caching\CacheResult.cs" />
+    <Compile Include="Caching\CacheKey.cs" />
     <Compile Include="Caching\ICacheableHttpResult.cs" />
+    <Compile Include="Caching\ICacheKeyBuilder.cs" />
     <Compile Include="Caching\IHttpCacheStore.cs" />
     <Compile Include="Caching\InMemoryCacheStore.cs" />
     <Compile Include="Caching\InMemoryVaryByStore.cs" />

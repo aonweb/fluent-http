@@ -13,6 +13,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         ISet<Uri> DependentUris { get; }
         TimeSpan? CacheDuration { get; }
         HttpRequestMessage Request { get; }
+        CacheKey CacheKey { get; }
         Uri Uri { get; }
          CacheResult Result { get; set; }
         bool MustRevalidateByDefault { get; }
@@ -48,6 +49,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         Func<ICacheContext, ResponseInfo, ResponseValidationResult> ResponseValidator { get; set; }
         Func<ICacheContext, ResponseInfo, bool> RevalidateValidator { get; set; }
         Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator { get; set; }
+        ICacheKeyBuilder CacheKeyBuilder { get; set; }
     }
 
 
@@ -67,6 +69,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             ResponseValidator = Defaults.Caching.ResponseValidator;
             AllowStaleResultValidator = Defaults.Caching.AllowStaleResultValidator;
             SuppressTypeMismatchExceptions = Defaults.TypedBuilder.SuppressTypeMismatchExceptions;
+            CacheKeyBuilder = Defaults.Caching.CacheKeyBuilderFactory?.Invoke() ?? new CacheKeyBuilder();
         }
 
         public ISet<HttpMethod> CacheableHttpMethods { get; }
@@ -83,6 +86,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public Func<ICacheContext, bool> CacheValidator { get; set; }
         public Func<ICacheContext, ResponseInfo, bool> RevalidateValidator { get; set; }
         public Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator { get; set; }
+        public ICacheKeyBuilder CacheKeyBuilder { get; set; }
         public TimeSpan? DefaultDurationForCacheableResults { get; set; }
         public bool MustRevalidateByDefault { get; set; }
         public TimeSpan? CacheDuration { get; set; }

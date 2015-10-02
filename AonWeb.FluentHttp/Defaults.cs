@@ -106,6 +106,7 @@ namespace AonWeb.FluentHttp
 
             public Func<IReadOnlyCollection<ITypedCacheHandler>> TypedHandlerFactory { get; set; }
             public Func<IReadOnlyCollection<IHttpCacheHandler>> HttpHandlerFactory { get; set; }
+            public Func<ICacheKeyBuilder> CacheKeyBuilderFactory { get; set; }
 
             public bool DefaultCacheValidator(ICacheContext context)
             {
@@ -308,8 +309,9 @@ namespace AonWeb.FluentHttp
             Caching.CacheValidator = Caching.DefaultCacheValidator;
             Caching.RevalidateValidator = Caching.DefaultRevalidateValidator;
             Caching.AllowStaleResultValidator = Caching.DefaultAllowStaleResultValidator;
+            Caching.CacheKeyBuilderFactory = () => new CacheKeyBuilder();
 
-        //Auto Follow Location
+            //Auto Follow Location
             Handlers.AutoFollowLocationEnabled = true;
             Handlers.FollowedStatusCodes = new HashSet<HttpStatusCode>
             {

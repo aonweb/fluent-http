@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using AonWeb.FluentHttp.Caching;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
@@ -11,6 +12,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     {
         private readonly ICacheSettings _settings;
         private readonly IHandlerContext _handlerContext;
+        private readonly Lazy<CacheKey> _cacheKey;
 
         public CacheContext(ICacheContext context)
             : this(context.GetSettings(), context.GetHandlerContext()) { }
@@ -28,13 +30,14 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             _handlerContext = handlerContext;
 
             Request = handlerContext.Request;
-            Uri = Request?.RequestUri;
+            Uri = Request?.RequestUri.NormalizeUri();
+            _cacheKey = new Lazy<CacheKey>(() => _settings.CacheKeyBuilder.BuildKey(this));
         }
 
         public CacheResult Result { get; set; }
 
         public ResponseInfo ResponseInfo => Result.ResponseInfo;
-
+        public CacheKey CacheKey => _cacheKey.Value;
         public Func<ICacheContext, bool> CacheValidator => _settings.CacheValidator;
         public Func<ICacheContext, ResponseInfo, bool> RevalidateValidator => _settings.RevalidateValidator;
         public Action<CacheResult> ResultInspector => _settings.ResultInspector;

@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers.Caching;
@@ -14,27 +13,9 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class InMemoryCacheStore : IHttpCacheStore
     {
-        private static readonly ConcurrentDictionary<string, CachedItem> _cache = new ConcurrentDictionary<string, CachedItem>();
+        private static readonly ConcurrentDictionary<CacheKey, CachedItem> _cache = new ConcurrentDictionary<CacheKey, CachedItem>();
         private static readonly ConcurrentDictionary<string, UriCacheInfo> _uriCache = new ConcurrentDictionary<string, UriCacheInfo>();
         private static readonly ResponseSerializer Serializer = new ResponseSerializer();
-
-        internal static string BuildKey(Type resultType, Uri uri, HttpRequestHeaders headers)
-        {
-            var varyBy = Cache.CurrentVaryByStore.Get(uri);
-            var parts = new List<string> { uri.ToString() };
-
-            if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))
-                parts.Add("HttpResponseMessage");
-
-            parts.AddRange(headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase)))
-                .SelectMany(h => h.Value.Select(v => $"{UriHelpers.NormalizeHeader(h.Key)}:{UriHelpers.NormalizeHeader(v)}"))
-                .Distinct());
-
-            var body = string.Join("-", parts);
-            var hash = DigestHelpers.Sha256Hash(Encoding.UTF8.GetBytes(body));
-
-            return Convert.ToBase64String(hash);
-        }
 
         internal static string HashUri(Uri uri)
         {
@@ -45,11 +26,9 @@ namespace AonWeb.FluentHttp.Caching
 
         public async Task<CacheResult> GetCachedResult(ICacheContext context)
         {
-            var key = BuildKey(context.ResultType, context.Uri, context.Request.Headers);
-
             CachedItem cachedItem = null;
             CachedItem temp;
-            if (_cache.TryGetValue(key, out temp))
+            if (_cache.TryGetValue(context.CacheKey, out temp))
             {
                 if (context.ResponseValidator(context, temp.ResponseInfo) == ResponseValidationResult.OK)
                     cachedItem = temp;
@@ -78,11 +57,9 @@ namespace AonWeb.FluentHttp.Caching
         {
             var isResponseMessage = false;
 
-            var key = BuildKey(context.ResultType, context.Uri, context.Request.Headers);
-
             CachedItem cachedItem = null;
             CachedItem temp;
-            if (_cache.TryGetValue(key, out temp))
+            if (_cache.TryGetValue(context.CacheKey, out temp))
             {
                 if (context.ResponseValidator(context, temp.ResponseInfo) == ResponseValidationResult.OK)
                     cachedItem = temp;
@@ -113,21 +90,19 @@ namespace AonWeb.FluentHttp.Caching
                 cachedItem.ResponseInfo.Merge(context.Result.ResponseInfo);
             }
 
-            _cache.TryAdd(key, cachedItem);
+            _cache.TryAdd(context.CacheKey, cachedItem);
 
-            AddCacheKey(context.Uri, key);
+            AddCacheKey(context.Uri, context.CacheKey);
         }
 
         public IEnumerable<Uri> TryRemove(ICacheContext context, IEnumerable<Uri> additionalRelatedUris)
         {
-            var key = BuildKey(context.ResultType, context.Uri, context.Request.Headers);
-
             CachedItem cachedItem;
-            if (string.IsNullOrWhiteSpace(key) || !_cache.TryRemove(key, out cachedItem))
+            if (context.CacheKey == CacheKey.Empty || !_cache.TryRemove(context.CacheKey, out cachedItem))
                 yield break;
 
             if (context.Uri != null)
-                RemoveCacheKey(context.Uri, key);
+                RemoveCacheKey(context.Uri, context.CacheKey);
 
             yield return context.Uri;
 
@@ -204,7 +179,7 @@ namespace AonWeb.FluentHttp.Caching
             return null;
         }
 
-        private static void AddCacheKey(Uri uri, string cacheKey)
+        private static void AddCacheKey(Uri uri, CacheKey cacheKey)
         {
             var hash = HashUri(uri.NormalizeUri());
 
@@ -222,7 +197,7 @@ namespace AonWeb.FluentHttp.Caching
             _uriCache[hash] = cacheInfo;
         }
 
-        private static void RemoveCacheKey(Uri uri, string cacheKey)
+        private static void RemoveCacheKey(Uri uri, CacheKey cacheKey)
         {
             var hash = HashUri(uri.NormalizeUri());
 
@@ -242,10 +217,10 @@ namespace AonWeb.FluentHttp.Caching
         {
             public UriCacheInfo()
             {
-                CacheKeys = new HashSet<string>();
+                CacheKeys = new HashSet<CacheKey>();
             }
 
-            public ISet<string> CacheKeys { get; }
+            public ISet<CacheKey> CacheKeys { get; }
         }
     }
 }

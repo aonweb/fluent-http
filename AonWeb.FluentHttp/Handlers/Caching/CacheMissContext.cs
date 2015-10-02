@@ -36,7 +36,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public object Result
         {
             get { return _result.Value; }
-            protected set { _result.Value = value; }
+             set { _result.Value = value; }
         }
 
         public override Modifiable GetHandlerResult()
