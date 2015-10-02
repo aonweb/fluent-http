@@ -216,8 +216,7 @@ namespace AonWeb.FluentHttp
 
         public static IAdvancedTypedBuilder WithCaching(this IAdvancedTypedBuilder builder, bool enabled = true)
         {
-
-            builder.WithHandlerConfiguration<TypedCacheConfigurationHandler>(handler => handler.WithCaching(enabled));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration<TypedCacheConfigurationHandler>(handler => handler.WithCaching(enabled), enabled));
 
             return builder;
         }

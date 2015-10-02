@@ -199,10 +199,7 @@ namespace AonWeb.FluentHttp.HAL
 
         public static IAdvancedHalBuilder WithCaching(this IAdvancedHalBuilder builder, bool enabled = true)
         {
-
-            builder.WithHandlerConfiguration<TypedCacheConfigurationHandler>(handler => handler.WithCaching(enabled));
-
-            return builder;
+            return builder.WithConfiguration(b => b.WithCaching(enabled));
         }
 
         public static IAdvancedHalBuilder WithNoCache(this IAdvancedHalBuilder builder, bool nocache = true)

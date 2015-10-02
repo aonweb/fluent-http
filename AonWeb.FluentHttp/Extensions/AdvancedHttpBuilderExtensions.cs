@@ -183,7 +183,9 @@ namespace AonWeb.FluentHttp
         public static IAdvancedHttpBuilder WithCaching(this IAdvancedHttpBuilder builder, bool enabled = true)
 
         {
-            return builder.WithHandlerConfiguration<HttpCacheConfigurationHandler>(handler => handler.WithCaching(enabled));
+            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration<HttpCacheConfigurationHandler>(handler => handler.WithCaching(enabled), enabled));
+
+            return builder;
         }
 
         public static IAdvancedHttpBuilder WithDependentUri(this IAdvancedHttpBuilder builder, Uri uri)
