@@ -8,16 +8,28 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public class HttpCacheConfigurationHandler : CacheConfigurationHandlerCore, IHttpHandler
     {
-        public HttpCacheConfigurationHandler() { }
+        public HttpCacheConfigurationHandler()
+            : this(new CacheSettings()) { }
 
-        protected HttpCacheConfigurationHandler(CacheSettings settings)
-            : base(settings) { }
+        protected HttpCacheConfigurationHandler(ICacheSettings settings)
+            : base(settings)
+        {
+            var handlers = Defaults.Caching.HttpHandlerFactory?.Invoke();
+
+            if (handlers != null)
+            {
+                foreach (var handler in handlers)
+                {
+                    WithHandler(handler);
+                }
+            }
+        }
 
         #region Configuration Methods
 
         public HttpCacheConfigurationHandler WithCaching(bool enabled = true)
         {
-            Settings.Enabled = enabled;
+            Enabled = enabled;
 
             return this;
         }

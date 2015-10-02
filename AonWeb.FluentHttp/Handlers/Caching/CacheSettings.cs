@@ -7,52 +7,6 @@ using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
-    public interface ICacheContext : IContextWithSettings<ICacheSettings>
-    {
-        bool Enabled { get; }
-        ISet<Uri> DependentUris { get; }
-        TimeSpan? CacheDuration { get; }
-        HttpRequestMessage Request { get; }
-        CacheKey CacheKey { get; }
-        Uri Uri { get; }
-         CacheResult Result { get; set; }
-        bool MustRevalidateByDefault { get; }
-        TimeSpan? DefaultDurationForCacheableResults { get; }
-        ISet<string> DefaultVaryByHeaders { get; }
-        Action<CacheResult> ResultInspector { get; }
-        Func<ICacheContext, ResponseInfo, ResponseValidationResult> ResponseValidator { get; }
-        Func<ICacheContext, bool> CacheValidator { get; }
-        Func<ICacheContext, ResponseInfo, bool> RevalidateValidator { get; }
-        Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator { get; }
-        CacheHandlerRegister Handler { get; }
-        ISet<HttpMethod> CacheableHttpMethods { get; }
-        ISet<HttpStatusCode> CacheableHttpStatusCodes { get; }
-        ResponseValidationResult ValidationResult { get; set; }
-        bool SuppressTypeMismatchExceptions { get; }
-        IHandlerContext GetHandlerContext();
-    }
-
-    public interface ICacheSettings
-    {
-        bool Enabled { get; }
-        ISet<Uri> DependentUris { get; }
-        TimeSpan? CacheDuration { get; set; }
-        CacheHandlerRegister Handler { get; }
-        ISet<HttpMethod> CacheableHttpMethods { get; }
-        ISet<HttpStatusCode> CacheableHttpStatusCodes { get; }
-        ISet<string> DefaultVaryByHeaders { get; }
-        bool SuppressTypeMismatchExceptions { get; }
-        TimeSpan? DefaultDurationForCacheableResults { get; set; }
-        bool MustRevalidateByDefault { get; set; }
-        Action<CacheResult> ResultInspector { get; set; }
-        Func<ICacheContext, bool> CacheValidator { get; set; }
-        Func<ICacheContext, ResponseInfo, ResponseValidationResult> ResponseValidator { get; set; }
-        Func<ICacheContext, ResponseInfo, bool> RevalidateValidator { get; set; }
-        Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator { get; set; }
-        ICacheKeyBuilder CacheKeyBuilder { get; set; }
-    }
-
-
     public class CacheSettings : ICacheSettings
     {
         public CacheSettings()

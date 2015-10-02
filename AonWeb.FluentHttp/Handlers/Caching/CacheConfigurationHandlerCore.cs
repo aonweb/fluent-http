@@ -16,29 +16,20 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     // but the base logic for cache validation / invalidation was based off CacheCow
     public abstract class CacheConfigurationHandlerCore
     {
-        protected CacheConfigurationHandlerCore()
-            : this(new CacheSettings()) { }
-
-        protected CacheConfigurationHandlerCore(CacheSettings settings)
+        protected CacheConfigurationHandlerCore(ICacheSettings settings)
         {
             Settings = settings;
         }
 
-        protected CacheSettings Settings { get; set; }
+        protected ICacheSettings Settings { get; set; }
 
-        #region HttpCallHandler Implementation
+        #region IHandler<HandlerType> Implementation
 
         public bool Enabled
         {
-            get
-            {
-                return Settings.Enabled;
-            }
-            set
-            {
-                Settings.Enabled = value;
-            }
-        }
+            get { return Settings.Enabled; }
+            protected set { Settings.Enabled = value;}
+        } 
 
         public HandlerPriority GetPriority(HandlerType type)
         {

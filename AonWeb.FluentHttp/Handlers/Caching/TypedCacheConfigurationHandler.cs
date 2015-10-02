@@ -7,9 +7,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public class TypedCacheConfigurationHandler : CacheConfigurationHandlerCore, ITypedHandler
     {
-        public TypedCacheConfigurationHandler() { }
+        public TypedCacheConfigurationHandler()
+            : this(new CacheSettings()) { }
 
-        protected TypedCacheConfigurationHandler(CacheSettings settings)
+        protected TypedCacheConfigurationHandler(ICacheSettings settings)
             : base(settings)
         {
             var handlers = Defaults.Caching.TypedHandlerFactory?.Invoke();
@@ -27,7 +28,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         public TypedCacheConfigurationHandler WithCaching(bool enabled = true)
         {
-            Settings.Enabled = enabled;
+            Enabled = enabled;
 
             return this;
         }

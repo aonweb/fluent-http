@@ -59,6 +59,8 @@
     <Compile Include="Extensions\AdvancedTypedBuilderExtensions.cs" />
     <Compile Include="Extensions\HttpBuilderCoreExtensions.cs" />
     <Compile Include="Extensions\TypedBuilderExtensions.cs" />
+    <Compile Include="Handlers\Caching\ICacheContext.cs" />
+    <Compile Include="Handlers\Caching\ICacheSettings.cs" />
     <Compile Include="Handlers\Caching\TypedCacheHandler.cs" />
     <Compile Include="Handlers\Caching\HttpCacheHandler.cs" />
     <Compile Include="Handlers\HttpHandlerContext.cs" />

@@ -267,7 +267,7 @@ namespace AonWeb.FluentHttp
             Builder.ContentEncoding = Encoding.UTF8;
             Builder.AutoDecompressionEnabled = true;
             Builder.HandlerFactory = () => new IHttpHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCacheConfigurationHandler() };
-            Builder.ChildHandlerFactory = () => new IHttpHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler(), new HttpCacheConfigurationHandler() };
+            Builder.ChildHandlerFactory = () => new IHttpHandler[] { new RetryHandler(), new RedirectHandler(), new FollowLocationHandler() };
 
             //Typed Builder Defaults
             TypedBuilder.HttpMethod = HttpMethod.Get;
