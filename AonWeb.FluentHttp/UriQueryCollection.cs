@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,21 +12,17 @@ namespace AonWeb.FluentHttp
         private string _cache;
         private readonly IDictionary<string, ISet<string>> _inner;
 
-        public UriQueryCollection()
+        protected UriQueryCollection(IDictionary<string, ISet<string>> inner)
         {
-            _inner = new SortedDictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase);
+            _inner = inner;
         }
+
+        public UriQueryCollection()
+            :this(new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)) { }
 
         public UriQueryCollection(IReadonlyUriQueryCollection collection)
-        {
-            _inner = collection.ToDictionary();
-        }
-
-        public UriQueryCollection(string queryString)
-            : this()
-        {
-            FillFromString(queryString);
-        }
+            : this(new Dictionary<string, ISet<string>>(collection.ToDictionary(), StringComparer.OrdinalIgnoreCase)) { }
+        
 
         public IEnumerable<string> this[string name]
         {
@@ -42,7 +38,7 @@ namespace AonWeb.FluentHttp
 
         public IUriQueryCollection Set(string name, string value)
         {
-            return Set(name, new[] {value});
+            return Set(name, new[] { value });
         }
 
         public IUriQueryCollection Set(string name, IEnumerable<string> values)
@@ -52,7 +48,7 @@ namespace AonWeb.FluentHttp
 
             lock (_inner)
             {
-                _inner[name] = new SortedSet<string>(values, StringComparer.Ordinal);
+                _inner[name] = CreateItem(values);
                 _isCacheValid = false;
             }
 
@@ -118,6 +114,11 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        protected virtual ISet<string> CreateItem(IEnumerable<string> values)
+        {
+            return new HashSet<string>(values, StringComparer.Ordinal);
+        }
+
         private void AddIfNeeded(string name)
         {
             if (!_inner.ContainsKey(name))
@@ -126,7 +127,7 @@ namespace AonWeb.FluentHttp
                 {
                     if (!_inner.ContainsKey(name))
                     {
-                        _inner[name] = new SortedSet<string>(StringComparer.Ordinal);
+                        _inner[name] = CreateItem(Enumerable.Empty<string>());
                         _isCacheValid = false;
                     }
                 }
@@ -151,7 +152,6 @@ namespace AonWeb.FluentHttp
                             sb.Append("=");
                             sb.Append(Uri.EscapeDataString(value ?? string.Empty));
                         }
-
                     }
 
                     _cache = sb.ToString();
@@ -162,9 +162,9 @@ namespace AonWeb.FluentHttp
             return _cache;
         }
 
-        public IDictionary<string, ISet<string>> ToDictionary()
+        public virtual IDictionary<string, ISet<string>> ToDictionary()
         {
-            return new SortedDictionary<string, ISet<string>>(_inner, StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, ISet<string>>(_inner, StringComparer.OrdinalIgnoreCase);
         }
 
         public IUriQueryCollection Clear()
@@ -175,7 +175,7 @@ namespace AonWeb.FluentHttp
         }
 
         //implemented from of System.Web.HttpValueCollection.FillFromString
-        public static UriQueryCollection ParseQueryString(string queryString)
+        public static UriQueryCollection FromQueryString(string queryString)
         {
             var collection = new UriQueryCollection();
 
@@ -184,7 +184,7 @@ namespace AonWeb.FluentHttp
             return collection;
         }
 
-        private void FillFromString(string queryString)
+        protected void FillFromString(string queryString)
         {
             if (string.IsNullOrWhiteSpace(queryString))
                 return;

@@ -68,7 +68,7 @@ namespace AonWeb.FluentHttp.Helpers
         /// <returns>Uri Builder with modified query</returns>
         internal static UriBuilder NormalizeQuery(this UriBuilder builder)
         {
-            var qsCollection = new UriQueryCollection(builder.Query);
+            var qsCollection = NormalizedUriQueryCollection.FromQueryString(builder.Query);
             builder.Query = qsCollection.ToEncodedString();
 
             return builder;

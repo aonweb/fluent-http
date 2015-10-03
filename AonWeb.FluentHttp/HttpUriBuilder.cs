@@ -7,7 +7,7 @@ namespace AonWeb.FluentHttp
     public class HttpUriBuilder
     {
         private UriBuilder _builder = new UriBuilder();
-        private UriQueryCollection _query = new UriQueryCollection();
+        private NormalizedUriQueryCollection _query = new NormalizedUriQueryCollection();
 
         public HttpUriBuilder()
         {
@@ -28,7 +28,7 @@ namespace AonWeb.FluentHttp
             set
             {
                 _builder = new UriBuilder(value);
-                _query = UriQueryCollection.ParseQueryString(_builder.Query);
+                _query = NormalizedUriQueryCollection.FromQueryString(_builder.Query);
 
                 IsSet = true;
             }
@@ -107,7 +107,7 @@ namespace AonWeb.FluentHttp
             get { return _query; }
             set
             {
-                _query = new UriQueryCollection(value);
+                _query = new NormalizedUriQueryCollection(value);
                 IsSet = true;
             }
         }
@@ -117,7 +117,7 @@ namespace AonWeb.FluentHttp
             get { return _query.ToEncodedString(); }
             set
             {
-                _query = UriQueryCollection.ParseQueryString(value);
+                _query = NormalizedUriQueryCollection.FromQueryString(value);
                 IsSet = true;
             }
         }

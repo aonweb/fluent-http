@@ -16,7 +16,7 @@ namespace AonWeb.FluentHttp
             UriBuilder = new HttpUriBuilder();
             Items = new Dictionary<string, object>();
             HandlerRegister = new HttpHandlerRegister();
-            UriQuery = new UriQueryCollection();
+            NormalizedUriQuery = new NormalizedUriQueryCollection();
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
             Method = Defaults.Builder.HttpMethod;
             CompletionOption = Defaults.Builder.CompletionOption;
@@ -31,7 +31,7 @@ namespace AonWeb.FluentHttp
 
         public HttpUriBuilder UriBuilder { get; }
         public Uri Uri => UriBuilder.Uri;
-        public UriQueryCollection UriQuery { get; set; }
+        public NormalizedUriQueryCollection NormalizedUriQuery { get; set; }
         public HttpMethod Method { get; set; }
         public string MediaType { get; set; }
         public Encoding ContentEncoding { get; set; }
