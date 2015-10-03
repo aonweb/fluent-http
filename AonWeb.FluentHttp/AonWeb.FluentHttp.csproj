@@ -141,7 +141,7 @@
     <Compile Include="ITypedBuilderSettings.cs" />
     <Compile Include="IUriQueryCollection.cs" />
     <Compile Include="Serialization\ResponseSerializer.cs" />
-    <Compile Include="UriQueryCollection.cs" />
+    <Compile Include="NormalizedUriQueryCollection.cs" />
     <Compile Include="Formatter.cs" />
     <Compile Include="IContext.cs" />
     <Compile Include="Handlers\IContextWithResult.cs" />
@@ -173,6 +173,7 @@
     </Compile>
     <Compile Include="TypedBuilder.cs" />
     <Compile Include="TypedBuilderSettings.cs" />
+    <Compile Include="UriQueryCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

@@ -267,6 +267,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 
 # Get the directory that this script is in.
 $THIS_SCRIPTS_DIRECTORY_PATH = Split-Path $script:MyInvocation.MyCommand.Path
+$NuPkgOutputPath = $THIS_SCRIPTS_DIRECTORY_PATH + "\..\..\bin\Release"
 
 # The list of project type extensions that NuGet supports packing.
 $VALID_NUGET_PROJECT_TYPE_EXTENSIONS_ARRAY = @(".csproj", ".vbproj", ".fsproj")
@@ -989,7 +990,7 @@ try
 				$filterTypes = $filterTypes.Substring(0, $filterTypes.Length - 1)			# Trim off the last character, as it will be a ";".
 				$filter = "$filterMessage|$filterTypes"
 			
-				$filePathToUse = Read-OpenFileDialog -WindowTitle "Select the .nuspec or project file to pack, or the package file (.nupkg) to push..." -InitialDirectory $THIS_SCRIPTS_DIRECTORY_PATH -Filter $filter
+				$filePathToUse = Read-OpenFileDialog -WindowTitle "Select the .nuspec or project file to pack, or the package file (.nupkg) to push..." -InitialDirectory $NuPkgOutputPath -Filter $filter
 			}
 			
 			# If the user cancelled the file dialog, throw an error since we don't have a .nuspec file to use.
