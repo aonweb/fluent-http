@@ -45,6 +45,7 @@
     <Compile Include="IAdvancedHalBuilder.cs" />
     <Compile Include="IHalBuilder.cs" />
     <Compile Include="IHalBuilderFactory.cs" />
+    <Compile Include="Exceptions\MissingLinkException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Representations\EmptyHalRequest.cs" />
     <Compile Include="Representations\EmptyHalResult.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.HAL
 {
@@ -33,33 +34,50 @@ namespace AonWeb.FluentHttp.HAL
         public static Uri GetLink(this IHalResource resource, string key)
         {
             if (resource == null)
-                throw new ArgumentNullException(nameof(resource));
+                throw new MissingLinkException(key, (Type)null);
 
             return resource.Links.GetLink(key);
         }
 
         public static Uri GetLink(this IHalResource resource, string key, string tokenKey, object tokenValue)
         {
-            return resource.GetLink(key, new Dictionary<string, object> { { tokenKey, tokenValue } });
+            if (resource == null)
+                throw new MissingLinkException(key, (Type)null);
+
+            return resource?.Links.GetLink(key, tokenKey, tokenValue);
         }
 
         public static Uri GetLink(this IHalResource resource, string key, IDictionary<string, object> tokens)
         {
             if (resource == null)
-                throw new ArgumentNullException(nameof(resource));
+                throw new MissingLinkException(key, (Type)null);
 
             return resource.Links.GetLink(key, tokens);
         }
 
         public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key)
         {
-            var uri = linkEntity.GetLinkImplementation(key).Href;
+            var link = linkEntity.GetLinkImplementation(key);
 
-            return new Uri(uri);
+            if (link.Templated)
+                throw new MissingLinkException($"Cannot get link value. Link for rel '{key}' with uri '{link.Href}' on type {linkEntity?.GetType().FormattedTypeName()} is templated and no template parameters were provided.");
+
+            Uri uri;
+            if (!Uri.TryCreate(link.Href, UriKind.Absolute, out uri))
+                throw new MissingLinkException($"Cannot get link value. Link for rel '{key}' with value '{link.Href}' on type {linkEntity?.GetType().FormattedTypeName()} is not a valid uri.");
+
+            return uri;
         }
 
         public static Uri GetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, string tokenKey, object tokenValue)
         {
+            if (string.IsNullOrWhiteSpace(tokenKey))
+            {
+                var uri = linkEntity.TryGetLink(key);
+                 
+                throw new InvalidTokenException($"A token for rel '{key}' with templated uri '{uri}' on type {linkEntity?.GetType().FormattedTypeName()} was null or empty.");
+            }
+
             return linkEntity.GetLink(key, new Dictionary<string, object> { { tokenKey, tokenValue } });
         }
 
@@ -67,7 +85,11 @@ namespace AonWeb.FluentHttp.HAL
         {
             var url = linkEntity.GetTemplatedLinkString(key, tokens);
 
-            return new Uri(url);
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
+                throw new MissingLinkException($"Cannot get link value. Link for rel '{key}' with value '{url}' on type {linkEntity?.GetType().FormattedTypeName()} is not a valid uri.");
+
+            return uri;
         }
 
         #endregion
@@ -76,39 +98,28 @@ namespace AonWeb.FluentHttp.HAL
 
         public static Uri TryGetLink(this IHalResource resource, string key)
         {
-            if (resource == null)
-                throw new ArgumentNullException(nameof(resource));
-
-            return resource.Links.TryGetLink(key);
+            return resource?.Links.TryGetLink(key);
         }
 
         public static Uri TryGetLink(this IHalResource resource, string key, string tokenKey, object tokenValue)
         {
-            return resource.TryGetLink(key, new Dictionary<string, object> { { tokenKey, tokenValue } });
+            return resource.TryGetLink(key, new Dictionary<string, object> { { tokenKey ?? string.Empty, tokenValue } });
         }
 
         public static Uri TryGetLink(this IHalResource resource, string key, IDictionary<string, object> tokens)
         {
-            if (resource == null)
-                throw new ArgumentNullException(nameof(resource));
-
-            return resource.Links.TryGetLink(key, tokens);
+            return resource?.Links.TryGetLink(key, tokens);
         }
 
         public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key)
         {
-            if (linkEntity == null)
-                throw new ArgumentNullException(nameof(linkEntity));
+            var link = linkEntity?.GetLinkImplementation(key, false);
 
-            if (string.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException(nameof(key));
-
-            var link = linkEntity.GetLinkImplementation(key, false);
-
-            if (link == null)
+            Uri uri;
+            if (link == null || !Uri.TryCreate(link.Href, UriKind.Absolute, out uri))
                 return null;
 
-            return new Uri(link.Href);
+            return uri;
         }
 
         public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, string tokenKey, object tokenValue)
@@ -118,12 +129,13 @@ namespace AonWeb.FluentHttp.HAL
 
         public static Uri TryGetLink(this IEnumerable<HyperMediaLink> linkEntity, string key, IDictionary<string, object> tokens)
         {
-            var uri = linkEntity.GetTemplatedLinkString(key, tokens, false);
+            var link = linkEntity.GetTemplatedLinkString(key, tokens, false);
 
-            if (uri == null) 
+            Uri uri;
+            if (link == null || !Uri.TryCreate(link, UriKind.Absolute, out uri))
                 return null;
 
-            return new Uri(uri);
+            return uri;
         }
 
         #endregion
@@ -133,7 +145,7 @@ namespace AonWeb.FluentHttp.HAL
         public static Uri GetSelf(this IHalResource resource)
         {
             if (resource == null)
-                throw new ArgumentNullException(nameof(resource));
+                throw new MissingLinkException(HalResource.LinkKeySelf, (Type)null);
 
             return resource.Links.GetSelf();
         }
@@ -149,21 +161,20 @@ namespace AonWeb.FluentHttp.HAL
 
         private static HyperMediaLink GetLinkImplementation(this IEnumerable<HyperMediaLink> linkEntity, string key, bool throwOnMissingLink = true)
         {
-            if (linkEntity == null)
-                throw new ArgumentNullException(nameof(linkEntity));
+            if (linkEntity == null || string.IsNullOrWhiteSpace(key))
+            {
+                if (throwOnMissingLink)
+                    throw new MissingLinkException(key, linkEntity?.GetType());
 
-            if (string.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException(nameof(key));
-
-            if (!linkEntity.Any())
-                throw new ArgumentException("HyperMediaLinks entity does not contain any links");
+                return null;
+            }
 
             var link = linkEntity.FirstOrDefault(l => string.Equals(l.Rel, key, StringComparison.OrdinalIgnoreCase));
 
             if (link == null)
             {
                 if (throwOnMissingLink)
-                    throw new KeyNotFoundException($"Could not locate key '{key}' in HyperMediaLinks entity Links collection");
+                    throw new MissingLinkException(key, linkEntity.GetType());
 
                 return null;
             }
@@ -171,32 +182,80 @@ namespace AonWeb.FluentHttp.HAL
             return link;
         }
 
-        private static string GetTemplatedLinkString(this IEnumerable<HyperMediaLink> linkEntity, string key, IEnumerable<KeyValuePair<string, object>> tokens, bool throwOnMissingLink = true)
+        private static string GetTemplatedLinkString(this IEnumerable<HyperMediaLink> linkEntity, string key, IDictionary<string, object> tokens, bool throwOnError = true)
         {
-            var link = linkEntity.GetLinkImplementation(key, throwOnMissingLink);
+            var link = linkEntity.GetLinkImplementation(key, throwOnError);
 
             if (link == null)
                 return null;
 
+            if ((tokens == null || !tokens.Any()) && !link.Templated)
+                return link.Href;
+
             var formatUrl = link.Href;
 
-            if (tokens == null)
-                throw new ArgumentNullException("tokens");
+            if (throwOnError && !link.Templated)
+                throw new InvalidTokenException($"Cannot get templated link value. Link for rel '{key}' with uri '{formatUrl}' on type {linkEntity?.GetType().FormattedTypeName()} is not a templated link.");
 
-            //TODO: isTemplated and token validation?
+            if (throwOnError && (tokens == null || !tokens.Any()))
+                throw new InvalidTokenException($"Cannot get templated link value. No tokens provided for rel '{key}' with templated uri '{formatUrl}' on type {linkEntity?.GetType().FormattedTypeName()}.");
+
             var outputUrl = formatUrl;
 
-            foreach (var token in tokens)
+            foreach (var token in (tokens ?? Enumerable.Empty<KeyValuePair<string, object>>()))
             {
                 if (string.IsNullOrWhiteSpace(token.Key))
-                    throw new ArgumentException($"A supplied url token for url '{formatUrl}' was null or empty.");
+                {
+                    if (throwOnError)
+                        throw new InvalidTokenException($"Cannot get templated link value. A token for rel '{key}' with templated uri '{formatUrl}' on type {linkEntity?.GetType().FormattedTypeName()} was null or empty.");
+                    
+                    continue;
+                }
 
-                var val = Uri.EscapeDataString((token.Value ?? string.Empty).ToString());
+                var tokenKey = "{" + token.Key + "}";
+                var valueString = (token.Value ?? string.Empty).ToString();
+                var encodedValue = Uri.EscapeDataString(valueString);
 
-                outputUrl = outputUrl.Replace("{" + token.Key + "}", val);
+                if (outputUrl.IndexOf(tokenKey, StringComparison.Ordinal) < 0)
+                {
+                    if (throwOnError)
+                        throw new InvalidTokenException($"Cannot get templated link value. Token '{token.Key}' with value '{valueString}' for rel '{key}' with templated uri '{formatUrl}' on type {linkEntity?.GetType().FormattedTypeName()} does not exist.");
+
+                    continue;
+                }
+
+                outputUrl = outputUrl.Replace(tokenKey, encodedValue);
             }
 
-            return outputUrl;
+            if (!throwOnError)
+                return outputUrl;
+
+            var end = 0;
+            List<string> missedTokens = null;
+
+            while (true)
+            {
+                var start = outputUrl.IndexOf("{", end, StringComparison.Ordinal);
+
+                if (start < 0)
+                    break;
+
+                end = outputUrl.IndexOf("}", start + 1, StringComparison.Ordinal);
+
+                if (end < 0)
+                    break;
+
+                var token = outputUrl.Substring(start + 1, end - start);
+                missedTokens = missedTokens ?? new List<string>();
+
+                missedTokens.Add(token);
+            }
+
+            if (missedTokens == null)
+                return outputUrl;
+
+            var missedTokenString = string.Join(", ", missedTokens);
+            throw new InvalidTokenException($"Cannot get templated link value. Token(s) {missedTokenString} where not replaced with values for rel '{key}' with templated uri '{formatUrl}' on type {linkEntity?.GetType().FormattedTypeName()}.");
         }
 
         #endregion

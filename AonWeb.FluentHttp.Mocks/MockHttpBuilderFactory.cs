@@ -6,11 +6,11 @@ namespace AonWeb.FluentHttp.Mocks
         {
             var settings = new MockHttpBuilderSettings();
 
-            var builder = new MockHttpBuilder(settings, new MockHttpClientBuilder(), Defaults.Builder.HandlerFactory());
+            var builder = new MockHttpBuilder(settings, new MockHttpClientBuilder(), Defaults.Current.GetHttpBuilderDefaults().Handlers.GetHandlers(settings));
 
             settings.SetBuilder(builder);
 
-            Defaults.Factory.DefaultHttpBuilderConfiguration?.Invoke(builder);
+            Defaults.Current.GetHttpBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
 
             return builder;
 
@@ -22,7 +22,7 @@ namespace AonWeb.FluentHttp.Mocks
             var builder = new MockHttpBuilder(
                 settings,
                 new MockHttpClientBuilder(),
-                Defaults.Builder.ChildHandlerFactory());
+                Defaults.Current.GetHttpBuilderDefaults().ChildHandlers.GetHandlers(settings));
 
             settings.SetBuilder(builder);
 

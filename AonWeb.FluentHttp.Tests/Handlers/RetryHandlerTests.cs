@@ -19,7 +19,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public RetryHandlerTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
             {
                 server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.ServiceUnavailable));
 
-                int expected = Defaults.Handlers.MaxAutoRetries;
+                int expected = Defaults.Current.GetHandlerDefaults().MaxAutoRetries;
                 int actual = 0;
                 server.WithRequestInspector(r => actual++);
 

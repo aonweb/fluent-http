@@ -1,13 +1,15 @@
-﻿namespace AonWeb.FluentHttp.Caching
+﻿using AonWeb.FluentHttp.Serialization;
+
+namespace AonWeb.FluentHttp.Caching
 {
     public class CachedItem
     {
-        public CachedItem(ResponseInfo responseInfo)
+        public CachedItem(IWritableResponseMetadata responseInfo)
         {
             ResponseInfo = responseInfo;
         }
 
-        public ResponseInfo ResponseInfo { get; private set; }
+        public IWritableResponseMetadata ResponseInfo { get; private set; }
         public object Result { get; set; }
 
         public bool IsHttpResponseMessage { get; set; }

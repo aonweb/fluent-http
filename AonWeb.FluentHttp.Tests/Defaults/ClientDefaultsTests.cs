@@ -13,20 +13,20 @@ namespace AonWeb.FluentHttp.Tests
 
         public ClientDefaultsTests()
         {
-            Defaults.Reset();
+            Defaults.Current.Reset();
         }
 
         [Fact]
         public void DefaultValue_DecompressionMethods_HasDefaultValue()
         {
-             Defaults.Client.DecompressionMethods.ShouldBe(DecompressionMethods.GZip | DecompressionMethods.Deflate);
+             Defaults.Current.GetClientDefaults().DecompressionMethods.ShouldBe(DecompressionMethods.GZip | DecompressionMethods.Deflate);
         }
 
         [Fact]
         public void HttpClientSettings_WithDefaultTimeout_ExpectDefaultValueUsed()
         {
             var expected = TimeSpan.FromSeconds(90);
-            Defaults.Client.Timeout = expected;
+            Defaults.Current.GetClientDefaults().Timeout = expected;
             var settings = new HttpClientSettings();
 
              settings.Timeout.ShouldBe(expected);
@@ -36,7 +36,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultMaxRequestContentBufferSize_ExpectDefaultValueUsed()
         {
             var expected = 1024;
-            Defaults.Client.MaxRequestContentBufferSize = expected;
+            Defaults.Current.GetClientDefaults().MaxRequestContentBufferSize = expected;
             var settings = new HttpClientSettings();
 
              settings.MaxRequestContentBufferSize.ShouldBe(expected);
@@ -46,7 +46,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultClientConfiguration_ExpectDefaultValueUsed()
         {
             Action<IHttpClient> expected = c => c.Timeout = TimeSpan.FromSeconds(45);
-            Defaults.Client.ClientConfiguration = expected;
+            Defaults.Current.GetClientDefaults().ClientConfiguration = expected;
             var settings = new HttpClientSettings();
 
              settings.ClientConfiguration.ShouldBe(expected);
@@ -55,7 +55,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultRequestHeaderConfiguration_ExpectDefaultValueUsed()
         {
             Action<HttpRequestHeaders> expected = h => h.CacheControl = new CacheControlHeaderValue();
-            Defaults.Client.RequestHeaderConfiguration = expected;
+            Defaults.Current.GetClientDefaults().RequestHeaderConfiguration = expected;
             var settings = new HttpClientSettings();
 
              settings.RequestHeaderConfiguration.ShouldBe(expected);
@@ -65,7 +65,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultDecompressionMethods_ExpectDefaultValueUsed()
         {
             var expected = DecompressionMethods.GZip;
-            Defaults.Client.DecompressionMethods = expected;
+            Defaults.Current.GetClientDefaults().DecompressionMethods = expected;
             var settings = new HttpClientSettings();
 
              settings.DecompressionMethods.ShouldBe(expected);
@@ -75,7 +75,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultClientCertificateOptions_ExpectDefaultValueUsed()
         {
             var expected = ClientCertificateOption.Manual;
-            Defaults.Client.ClientCertificateOptions = expected;
+            Defaults.Current.GetClientDefaults().ClientCertificateOptions = expected;
             var settings = new HttpClientSettings();
 
              settings.ClientCertificateOptions.ShouldBe(expected);
@@ -85,7 +85,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultCredentials_ExpectDefaultValueUsed()
         {
             var expected = new NetworkCredential("username", "password");
-            Defaults.Client.Credentials = expected;
+            Defaults.Current.GetClientDefaults().Credentials = expected;
             var settings = new HttpClientSettings();
 
              settings.Credentials.ShouldBe(expected);
@@ -95,7 +95,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultCookieContainer_ExpectDefaultValueUsed()
         {
             var expected = new CookieContainer();
-            Defaults.Client.CookieContainer = expected;
+            Defaults.Current.GetClientDefaults().CookieContainer = expected;
             var settings = new HttpClientSettings();
 
              settings.CookieContainer.ShouldBe(expected);
@@ -105,7 +105,7 @@ namespace AonWeb.FluentHttp.Tests
         public void HttpClientSettings_WithDefaultProxy_ExpectDefaultValueUsed()
         {
             var expected = new WebProxy();
-            Defaults.Client.Proxy = expected;
+            Defaults.Current.GetClientDefaults().Proxy = expected;
             var settings = new HttpClientSettings();
 
              settings.Proxy.ShouldBe(expected);

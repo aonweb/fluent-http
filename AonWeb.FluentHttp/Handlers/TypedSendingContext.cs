@@ -15,11 +15,11 @@ namespace AonWeb.FluentHttp.Handlers
 
         public new TResult Result
         {
-            get { return ObjectHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
+            get { return TypeHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
             set { base.Result = value; }
         }
 
-        public new TContent Content => ObjectHelpers.CheckType<TContent>(base.Content, SuppressTypeMismatchExceptions);
+        public new TContent Content => TypeHelpers.CheckType<TContent>(base.Content, SuppressTypeMismatchExceptions);
     }
 
     public abstract class TypedSendingContext : TypedHandlerContext, IHandlerContextWithResult

@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.Mocks
         private readonly MockHttpClientBuilder _clientBuilder;
 
         public MockHttpBuilder(IHttpBuilderSettings settings, MockHttpClientBuilder clientBuilder,
-            IReadOnlyCollection<IHttpHandler> defaultHandlers)
+            IEnumerable<IHttpHandler> defaultHandlers)
             : base(settings, clientBuilder, defaultHandlers)
         {
             _clientBuilder = clientBuilder;

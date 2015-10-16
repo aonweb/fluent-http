@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
@@ -35,14 +36,13 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         }
 
         public CacheResult Result { get; set; }
-
-        public ResponseInfo ResponseInfo => Result.ResponseInfo;
+        
         public CacheKey CacheKey => _cacheKey.Value;
         public Func<ICacheContext, bool> CacheValidator => _settings.CacheValidator;
-        public Func<ICacheContext, ResponseInfo, bool> RevalidateValidator => _settings.RevalidateValidator;
+        public Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator => _settings.RevalidateValidator;
         public Action<CacheResult> ResultInspector => _settings.ResultInspector;
-        public Func<ICacheContext, ResponseInfo, ResponseValidationResult> ResponseValidator => _settings.ResponseValidator;
-        public Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator => _settings.AllowStaleResultValidator;
+        public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator => _settings.ResponseValidator;
+        public Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator => _settings.AllowStaleResultValidator;
         public CacheHandlerRegister Handler => _settings.Handler;
 
         public IDictionary Items => _handlerContext.Items;
@@ -55,7 +55,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public ISet<HttpStatusCode> CacheableHttpStatusCodes => _settings.CacheableHttpStatusCodes;
         public TimeSpan? DefaultDurationForCacheableResults => _settings.DefaultDurationForCacheableResults;
         public ISet<string> DefaultVaryByHeaders => _settings.DefaultVaryByHeaders;
-        public bool MustRevalidateByDefault => _settings.MustRevalidateByDefault;
+        public bool MustRevalidate => _settings.MustRevalidate;
         public ISet<Uri> DependentUris => _settings.DependentUris;
         public TimeSpan? CacheDuration => _settings.CacheDuration;
         public bool SuppressTypeMismatchExceptions => _settings.SuppressTypeMismatchExceptions;

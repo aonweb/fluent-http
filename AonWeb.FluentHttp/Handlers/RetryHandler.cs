@@ -11,12 +11,12 @@ namespace AonWeb.FluentHttp.Handlers
     {
         public RetryHandler()
         {
-            Enabled = Defaults.Handlers.AutoRetryEnabled;
-            MaxAutoRetries = Defaults.Handlers.MaxAutoRetries;
-            DefaultRetryAfter = Defaults.Handlers.DefaultRetryAfter;
-            MaxRetryAfter = Defaults.Handlers.MaxRetryAfter;
+            Enabled = Defaults.Current.GetHandlerDefaults().AutoRetryEnabled;
+            MaxAutoRetries = Defaults.Current.GetHandlerDefaults().MaxAutoRetries;
+            DefaultRetryAfter = Defaults.Current.GetHandlerDefaults().DefaultRetryAfter;
+            MaxRetryAfter = Defaults.Current.GetHandlerDefaults().MaxRetryAfter;
 
-            RetryStatusCodes = new HashSet<HttpStatusCode>(Defaults.Handlers.RetryStatusCodes);
+            RetryStatusCodes = new HashSet<HttpStatusCode>(Defaults.Current.GetHandlerDefaults().RetryStatusCodes);
             RetryValidator = ShouldRetry;
         }
 

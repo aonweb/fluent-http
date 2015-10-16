@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using AonWeb.FluentHttp.Serialization;
+using Newtonsoft.Json;
 
 namespace AonWeb.FluentHttp.HAL.Representations
 {
-    public interface IHalResource
+    public interface IHalResource: IWritableResponseMetadata
     {
         [JsonProperty("_links")]
         HyperMediaLinks Links { get; set; }

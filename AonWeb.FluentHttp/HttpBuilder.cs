@@ -16,13 +16,16 @@ namespace AonWeb.FluentHttp
         private readonly IHttpClientBuilder _clientBuilder;
         private CancellationTokenSource _tokenSource;
 
-        public HttpBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder, IReadOnlyCollection<IHttpHandler> defaultHandlers)
+        public HttpBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder, IEnumerable<IHttpHandler> defaultHandlers)
         {
             Settings = settings;
             _clientBuilder = clientBuilder;
 
-            foreach (var handler in defaultHandlers)
+            if (defaultHandlers != null)
+            {
+                foreach (var handler in defaultHandlers)
                 Settings.HandlerRegister.WithHandler(handler);
+            }
         }
 
         public IAdvancedHttpBuilder Advanced => this;

@@ -16,7 +16,7 @@ namespace AonWeb.FluentHttp.Tests
         public HttpBuilderCoreExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
         }
 
@@ -51,7 +51,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public void WithUri_WhenNullString_ExpectException()
         {
             //arrange
@@ -91,7 +90,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public void WithUri_WhenNullUri_ExpectException()
         {
 
@@ -100,7 +98,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WithUri_WhenNeverSet_ExpectException()
         {
             await Should.ThrowAsync<InvalidOperationException>(new MockHttpBuilderFactory().Create().ResultAsync());

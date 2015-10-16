@@ -29,7 +29,7 @@ namespace AonWeb.FluentHttp.HAL
                     f.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 });
 
-            HalDefaults.Factory.DefaultHalBuilderConfiguration?.Invoke(builder);
+            Defaults.Current.GetHalBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
 
             return builder;
         }

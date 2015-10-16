@@ -18,7 +18,7 @@ namespace AonWeb.FluentHttp.Tests
 
         public TypedBuilderTests()
         {
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
         }
 
@@ -70,7 +70,7 @@ namespace AonWeb.FluentHttp.Tests
                     .WithContentEncoding(Encoding.UTF8)
                     .WithContentType("application/json")
                     .WithStatusCode(HttpStatusCode.OK)
-                    .WithContent("\"" + expected + "\""))
+                    .WithContent(expected))
                 .WithUri(MockUri);
 
             //act
@@ -290,7 +290,7 @@ namespace AonWeb.FluentHttp.Tests
                 .WithContentEncoding(Encoding.UTF8)
                 .WithContentType("application/json")
                 .WithStatusCode(HttpStatusCode.BadRequest)
-                .WithContent("\"" + expected + "\""))
+                .WithContent(expected))
             .WithUri(MockUri)
             .WithErrorType<string>();
 
@@ -333,10 +333,10 @@ namespace AonWeb.FluentHttp.Tests
                     .WithStatusCode(HttpStatusCode.BadRequest)
                     .WithContent(null))
                 .WithUri(MockUri)
-                .WithErrorType<TestResult>();
+                .WithErrorType<EmptyError>();
 
             // act
-            var ex = await Should.ThrowAsync<HttpErrorException<TestResult>>(builder.ResultAsync<EmptyResult>());
+            var ex = await Should.ThrowAsync<HttpErrorException<EmptyError>>(builder.ResultAsync<EmptyResult>());
 
             //assert
             ex.Error.ShouldBeNull();

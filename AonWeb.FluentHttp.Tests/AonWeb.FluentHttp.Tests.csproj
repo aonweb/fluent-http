@@ -87,6 +87,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AdvancedHttpBuilderCoreExtensionsTests.cs" />
+    <Compile Include="Hal\HypermediaLinkHelpersTest.cs" />
     <Compile Include="HttpBuilderCoreExtensionsTests.cs" />
     <Compile Include="AdvancedTypedBuilderExtensionsTests.cs" />
     <Compile Include="BuilderExtensionsTests.cs" />
@@ -97,7 +98,6 @@
     <Compile Include="Hal\HalDeserializationTests.cs" />
     <Compile Include="Handlers\FollowLocationHandlerTests.cs" />
     <Compile Include="Helpers\Extensions.cs" />
-    <Compile Include="Helpers\HalMother.cs" />
     <Compile Include="Helpers\TestError.cs" />
     <Compile Include="Helpers\TestLinks.cs" />
     <Compile Include="Helpers\TestListEmbeddedArrayParentResource.cs" />

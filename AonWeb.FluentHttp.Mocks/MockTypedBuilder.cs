@@ -7,16 +7,16 @@ namespace AonWeb.FluentHttp.Mocks
 {
     public class MockTypedBuilder : TypedBuilder, IMockTypedBuilder
     {
-        private readonly IMockFormatter _formatter;
+        private readonly IMockTypedBuilderSettings _settings;
         private readonly IMockHttpBuilder _innerBuilder;
         private readonly IList<IAssertAction> _asserts;
         private Action _assertFailure;
 
-        public MockTypedBuilder(ITypedBuilderSettings settings, IMockHttpBuilder builder, IMockFormatter formatter, IReadOnlyCollection<ITypedHandler> defaultHandlers) 
-            : base(settings, builder, formatter, defaultHandlers)
+        public MockTypedBuilder(IMockTypedBuilderSettings settings, IMockHttpBuilder builder, IEnumerable<ITypedHandler> defaultHandlers) 
+            : base(settings, builder, defaultHandlers)
         {
+            _settings = settings;
             _innerBuilder = builder;
-            _formatter = formatter;
             _asserts = new List<IAssertAction>();
             _assertFailure = (() => { throw new Exception("assertion was never called"); });
         }
@@ -34,7 +34,7 @@ namespace AonWeb.FluentHttp.Mocks
             Predicate<IMockRequestContext> responsePredicate,
             Func<IMockRequestContext, IMockResponse> responseFactory)
         {
-            _formatter.WithResult(resultPredicate, resultFactory);
+            _settings.WithResult(resultPredicate, resultFactory);
             _innerBuilder.WithResponse(responsePredicate, responseFactory);
 
             return this;
@@ -46,7 +46,7 @@ namespace AonWeb.FluentHttp.Mocks
             Predicate<IMockRequestContext> responsePredicate,
             Func<IMockRequestContext, IMockResponse> responseFactory)
         {
-            _formatter.WithError(errorPredicate, errorFactory);
+            _settings.WithError(errorPredicate, errorFactory);
             _innerBuilder.WithResponse(responsePredicate, responseFactory);
 
             return this;

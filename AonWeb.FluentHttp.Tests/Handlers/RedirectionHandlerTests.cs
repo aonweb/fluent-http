@@ -23,7 +23,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public RedirectionHandlerTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
         }
 
         [Theory]

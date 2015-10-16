@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Runtime.ExceptionServices;
 using System.Threading;
-
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Handlers.Caching;
 
 namespace AonWeb.FluentHttp
 {
@@ -16,16 +18,17 @@ namespace AonWeb.FluentHttp
         private readonly Modifiable<Type> _errorTypeValue;
         private readonly Modifiable<Type> _contentTypeValue;
 
-        public TypedBuilderSettings()
-            : this(
-            Defaults.TypedBuilder.ResultType,
-            Defaults.TypedBuilder.ContentType,
-            Defaults.TypedBuilder.ErrorType) { }
+        public TypedBuilderSettings(IFormatter formatter)
+            : this(formatter,
+            Defaults.Current.GetTypedBuilderDefaults().ResultType,
+            Defaults.Current.GetTypedBuilderDefaults().ContentType,
+            Defaults.Current.GetTypedBuilderDefaults().ErrorType) { }
 
-        public TypedBuilderSettings(Type resultType, Type contentType, Type errorType)
+        public TypedBuilderSettings(IFormatter formatter, Type resultType, Type contentType, Type errorType)
         {
             Items = new Dictionary<string, object>();
 
+            Formatter = formatter;
             _resultTypeValue = new Modifiable<Type>(resultType);
             _contentTypeValue = new Modifiable<Type>(contentType);
             _errorTypeValue = new Modifiable<Type>(errorType);
@@ -33,17 +36,24 @@ namespace AonWeb.FluentHttp
             HandlerRegister = new TypedHandlerRegister();
             DeserializeResult = true;
 
-            MediaType = Defaults.TypedBuilder.MediaType;
-            MediaTypeFormatters = new MediaTypeFormatterCollection(Defaults.TypedBuilder.MediaTypeFormatters());
+            var defaults = Defaults.Current.GetTypedBuilderDefaults();
+
+            MediaType = defaults.MediaType;
+            MediaTypeFormatters = new MediaTypeFormatterCollection(defaults.MediaTypeFormatters());
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>
             {
-                Defaults.TypedBuilder.SuccessfulResponseValidator
+                defaults.SuccessfulResponseValidator
             };
-            ExceptionFactory = Defaults.TypedBuilder.ExceptionFactory;
-            DefaultResultFactory = Defaults.TypedBuilder.DefaultResultFactory;
-            SuppressCancellationErrors = Defaults.TypedBuilder.SuppressCancellationErrors;
-            MediaType = Defaults.TypedBuilder.MediaType;
-            SuppressTypeMismatchExceptions = Defaults.TypedBuilder.SuppressTypeMismatchExceptions;
+            ExceptionFactory = defaults.ExceptionFactory;
+            DefaultResultFactory = defaults.DefaultResultFactory;
+            DefaultErrorFactory = defaults.DefaultErrorFactory;
+            SuppressCancellationErrors = defaults.SuppressCancellationErrors;
+            MediaType = defaults.MediaType;
+            SuppressTypeMismatchExceptions = defaults.SuppressTypeMismatchExceptions;
+            CacheSettings = new CacheSettings();
+            HttpContentFactory = defaults.HttpContentFactory;
+            ResultFactory = defaults.ResultFactory;
+            ErrorFactory = defaults.ErrorFactory;
         }
 
         public IDictionary Items { get; }
@@ -53,7 +63,7 @@ namespace AonWeb.FluentHttp
             get { return _resultTypeValue.Value; }
             private set { _resultTypeValue.Value = value; }
         }
-
+     
         public Type ContentType
         {
             get { return _contentTypeValue.Value; }
@@ -67,8 +77,10 @@ namespace AonWeb.FluentHttp
         }
 
         public Func<object> ContentFactory { get; set; }
+
         public string MediaType { get; set; }
         public Func<Type, object> DefaultResultFactory { get; set; }
+        public Func<Type, Exception, object> DefaultErrorFactory { get; set; }
         public bool DeserializeResult { get; set; }
         public bool SuppressTypeMismatchExceptions { get; set; }
         public bool SuppressCancellationErrors { get; set; }
@@ -80,9 +92,15 @@ namespace AonWeb.FluentHttp
         }
 
         public IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; }
-        public Func<ErrorContext, Exception> ExceptionFactory { get; set; }
+        public Func<ExceptionCreationContext, Exception> ExceptionFactory { get; set; }
         public TypedHandlerRegister HandlerRegister { get; }
         public MediaTypeFormatterCollection MediaTypeFormatters { get; }
+        public IFormatter Formatter { get; }
+
+        public Func<ITypedBuilderContext, object, Task<HttpContent>> HttpContentFactory { get; set; }
+        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<object>> ResultFactory { get; set; }
+
+        public ICacheSettings CacheSettings { get; }
 
         public virtual ITypedBuilderSettings WithContentType(Type type)
         {
@@ -122,6 +140,7 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
+        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> ErrorFactory { get; set; }
 
         public void Reset()
         {

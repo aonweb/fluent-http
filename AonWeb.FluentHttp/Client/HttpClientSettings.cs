@@ -18,15 +18,15 @@ namespace AonWeb.FluentHttp.Client
 
         private void Init()
         {
-            Timeout = Defaults.Client.Timeout;
-            MaxRequestContentBufferSize = Defaults.Client.MaxRequestContentBufferSize;
-            ClientConfiguration = Defaults.Client.ClientConfiguration;
-            RequestHeaderConfiguration = Defaults.Client.RequestHeaderConfiguration;
-            DecompressionMethods = Defaults.Client.DecompressionMethods;
-            ClientCertificateOptions = Defaults.Client.ClientCertificateOptions;
-            Credentials = Defaults.Client.Credentials;
-            CookieContainer = Defaults.Client.CookieContainer;
-            Proxy = Defaults.Client.Proxy;
+            Timeout = Defaults.Current.GetClientDefaults().Timeout;
+            MaxRequestContentBufferSize = Defaults.Current.GetClientDefaults().MaxRequestContentBufferSize;
+            ClientConfiguration = Defaults.Current.GetClientDefaults().ClientConfiguration;
+            RequestHeaderConfiguration = Defaults.Current.GetClientDefaults().RequestHeaderConfiguration;
+            DecompressionMethods = Defaults.Current.GetClientDefaults().DecompressionMethods;
+            ClientCertificateOptions = Defaults.Current.GetClientDefaults().ClientCertificateOptions;
+            Credentials = Defaults.Current.GetClientDefaults().Credentials;
+            CookieContainer = Defaults.Current.GetClientDefaults().CookieContainer;
+            Proxy = Defaults.Current.GetClientDefaults().Proxy;
         }
 
         public Action<IHttpClient> ClientConfiguration { get; set; }

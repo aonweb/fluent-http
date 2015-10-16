@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using AonWeb.FluentHttp.Handlers.Caching;
 
 namespace AonWeb.FluentHttp
 {
-    public interface IHttpBuilderSettings: IHttpBuilderContext
+    public interface IHttpBuilderSettings : IHttpBuilderContext
     {
         HttpUriBuilder UriBuilder { get; }
         new HttpMethod Method { get; set; }
@@ -19,7 +20,7 @@ namespace AonWeb.FluentHttp
         new Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
         void Reset();
         IList<Func<HttpResponseMessage, bool>> SuccessfulResponseValidators { get; }
-
-       new CancellationToken Token { get; set; }
+        new CancellationToken Token { get; set; }
+        ICacheSettings CacheSettings { get; }
     }
 }

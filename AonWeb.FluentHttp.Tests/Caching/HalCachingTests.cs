@@ -21,7 +21,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         public HalCachingTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = true;
+            Defaults.Current.GetCachingDefaults().Enabled = true;
             Cache.Clear();
         }
 
@@ -35,9 +35,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var canonicalUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/canonical/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestResourceJson).WithPrivateCacheHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestResourceJson2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault2).WithPrivateCacheHeader());
 
                 var result1 = new HalBuilderFactory().Create()
                     .WithLink(nonCanonicalUri).ResultAsync<TestResource>();
@@ -65,9 +65,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var canonicalUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/canonical/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithPrivateCacheHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault2).WithPrivateCacheHeader());
 
                 var result1 = await new HalBuilderFactory().Create().WithLink(listUri).ResultAsync<TestListResource>();
 
@@ -89,7 +89,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
 
                 var miss = false;
                 var hit = false;
@@ -123,7 +123,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
 
                 var miss = false;
                 var hit = false;
@@ -158,7 +158,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
 
                 var miss = false;
                 var hit = false;
@@ -193,7 +193,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
 
                 var miss = false;
                 var hit = false;
@@ -227,7 +227,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
 
                 var miss1 = false;
                 var hit1 = false;
@@ -276,7 +276,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
 
                 var expected = "Initial";
                 var key = "MyCacheItemsKey";
@@ -330,7 +330,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
                 server
                     .WithNextResponse(
-                        new MockHttpResponseMessage().WithContent(HalMother.TestListJson).WithCacheHeader(
+                        new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(
                             expires: DateTime.Now.AddHours(1)));
                 var current = 0;
                 var miss1 = 0;

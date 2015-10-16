@@ -13,30 +13,33 @@ namespace AonWeb.FluentHttp.HAL
 {
     public static class HalDefaults
     {
+        private static readonly Lazy<HalBuilderDefaults> _hal;
+
         static HalDefaults()
         {
-            Hal = new HalBuilderDefaults();
-            Factory = new FactoryDefaults();
-
-            Reset();
+            _hal = new Lazy<HalBuilderDefaults>(() => new HalBuilderDefaults(Defaults.Current));
         }
-        
-        public static readonly HalBuilderDefaults Hal;
-        public static readonly FactoryDefaults Factory;
+
+        public static HalBuilderDefaults GetHalBuilderDefaults(this Defaults defaults)
+        {
+            return _hal.Value;
+        }
 
         public class HalBuilderDefaults
         {
-            
-        }
+            public HalBuilderDefaults(Defaults defaults)
+            {
+                defaults.ResetRequested += (sender, args) => Reset();
 
-        public class FactoryDefaults
-        {
-            public Action<IHalBuilder> DefaultHalBuilderConfiguration { get; set; }
-        }
+                Reset();
+            }
 
-        public static void Reset()
-        {
-            Factory.DefaultHalBuilderConfiguration = null;
+            public Action<IHalBuilder> DefaultBuilderConfiguration { get; set; }
+
+            private void Reset()
+            {
+                DefaultBuilderConfiguration = null;
+            }
         }
     }
 }

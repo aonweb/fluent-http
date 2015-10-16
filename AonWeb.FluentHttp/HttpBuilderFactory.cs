@@ -8,11 +8,11 @@ namespace AonWeb.FluentHttp
         {
             var settings = new HttpBuilderSettings();
 
-            var builder = new HttpBuilder(settings, new HttpClientBuilder(), Defaults.Builder.HandlerFactory());
+            var builder = new HttpBuilder(settings, new HttpClientBuilder(), Defaults.Current.GetHttpBuilderDefaults().Handlers.GetHandlers(settings));
 
             settings.Builder = builder;
 
-            Defaults.Factory.DefaultHttpBuilderConfiguration?.Invoke(builder);
+            Defaults.Current.GetHttpBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
 
             return builder;
 
@@ -24,7 +24,7 @@ namespace AonWeb.FluentHttp
             var builder = new HttpBuilder(
                 settings,
                 new HttpClientBuilder(),
-                Defaults.Builder.ChildHandlerFactory());
+                Defaults.Current.GetHttpBuilderDefaults().ChildHandlers.GetHandlers(settings));
 
             settings.Builder = builder;
 

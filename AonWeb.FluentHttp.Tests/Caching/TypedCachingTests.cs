@@ -19,8 +19,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
         public TypedCachingTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = true;
-            Defaults.Caching.DefaultDurationForCacheableResults = null;
+            Defaults.Current.GetCachingDefaults().Enabled = true;
+            Defaults.Current.GetCachingDefaults().DefaultDurationForCacheableResults = null;
             Cache.Clear();
         }
 
@@ -115,7 +115,6 @@ namespace AonWeb.FluentHttp.Tests.Caching
         [Fact]
         public async Task WhenCachingIsOnAndServerDoesntSendCacheHeadersButTypeIsCacheable_ExpectContentsCached()
         {
-
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
@@ -161,7 +160,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         [Fact]
         public async Task WhenCachingIsOnAndServerDoesntSendNoCacheHeadersAndTypeIsCacheableButDurationNullAndDefaultIsNotNull_ExpectContentsCached()
         {
-            Defaults.Caching.DefaultDurationForCacheableResults = TimeSpan.FromMinutes(5);
+            Defaults.Current.GetCachingDefaults().DefaultDurationForCacheableResults = TimeSpan.FromMinutes(5);
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
@@ -180,7 +179,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 result1.ShouldBe(result2);
             }
 
-            Defaults.Caching.DefaultDurationForCacheableResults = null;
+            Defaults.Current.GetCachingDefaults().DefaultDurationForCacheableResults = null;
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using AonWeb.FluentHttp.Exceptions;
 
 namespace AonWeb.FluentHttp.Helpers
 {
@@ -8,16 +9,8 @@ namespace AonWeb.FluentHttp.Helpers
     {
         public static object GetDefaultValueForType(Type type)
         {
-            if (type.GetTypeInfo().IsValueType)
+            if (!IsNullable(type))
                 return Activator.CreateInstance(type);
-
-            return null;
-        }
-
-        public static object GetDefaultValueForType(TypeInfo type)
-        {
-            if (type.IsValueType)
-                return Activator.CreateInstance(type.GetType());
 
             return null;
         }
@@ -60,6 +53,34 @@ namespace AonWeb.FluentHttp.Helpers
         internal static T As<T>(this object @this)
         {
             return (T)@this;
+        }
+
+        internal static bool IsNullable(Type type)
+        {
+            if (!type.GetTypeInfo().IsValueType)
+                return true;
+
+            return Nullable.GetUnderlyingType(type) != null;
+        }
+
+        public static T CheckType<T>(object value, bool suppressTypeMismatchException = false, Func<string> additionalErrorDetails = null)
+        {
+            var requestedType = typeof(T);
+
+            if (ValidateType(value, requestedType, suppressTypeMismatchException, additionalErrorDetails))
+                return (T)value;
+
+            return default(T);
+        }
+
+        public static bool ValidateType(object value, Type requestedType, bool suppressTypeMismatchException = false, Func<string> additionalErrorDetails = null)
+        {
+            var canCast = (value == null && IsNullable(requestedType)) || requestedType.IsInstanceOfType(value);
+
+            if (!canCast && !suppressTypeMismatchException)
+                throw new TypeMismatchException(requestedType, value?.GetType(), additionalErrorDetails?.Invoke());
+
+            return canCast;
         }
     }
 }

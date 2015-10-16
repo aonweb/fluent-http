@@ -1,6 +1,6 @@
 ﻿using AonWeb.FluentHttp.HAL;
 
-namespace AonWeb.FluentHttp.Tests
+namespace AonWeb.FluentHttp.Tests.Hal
 {
     public class HalBuilderExtensionsTests
     {

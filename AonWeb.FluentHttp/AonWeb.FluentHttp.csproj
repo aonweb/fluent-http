@@ -46,7 +46,7 @@
     <Compile Include="Caching\IHttpCacheStore.cs" />
     <Compile Include="Caching\InMemoryCacheStore.cs" />
     <Compile Include="Caching\InMemoryVaryByStore.cs" />
-    <Compile Include="Caching\ResponseInfo.cs" />
+    <Compile Include="Caching\ResponseMetadata.cs" />
     <Compile Include="Caching\ResponseValidationResult.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
     <Compile Include="Client\HttpClientSettings.cs" />
@@ -60,18 +60,19 @@
     <Compile Include="Extensions\HttpBuilderCoreExtensions.cs" />
     <Compile Include="Extensions\TypedBuilderExtensions.cs" />
     <Compile Include="Handlers\Caching\ICacheContext.cs" />
+    <Compile Include="Caching\ICacheMetadata.cs" />
     <Compile Include="Handlers\Caching\ICacheSettings.cs" />
     <Compile Include="Handlers\Caching\TypedCacheHandler.cs" />
     <Compile Include="Handlers\Caching\HttpCacheHandler.cs" />
     <Compile Include="Handlers\HttpHandlerContext.cs" />
     <Compile Include="Handlers\IHandler.cs" />
     <Compile Include="Handlers\TypedHandler.cs" />
+    <Compile Include="Helpers\CachingHelpers.cs" />
     <Compile Include="Helpers\DigestHelpers.cs" />
     <Compile Include="HttpBuilderFactory.cs" />
     <Compile Include="Exceptions\HttpCallException.cs" />
     <Compile Include="Exceptions\HttpErrorException.cs" />
     <Compile Include="Exceptions\MaximumAutoRedirectsException.cs" />
-    <Compile Include="Exceptions\TypeActivationException.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
     <Compile Include="Handlers\Caching\CacheContext.cs" />
     <Compile Include="Handlers\Caching\CacheExpiredContext.cs" />
@@ -99,7 +100,7 @@
     <Compile Include="Handlers\HttpHandler.cs" />
     <Compile Include="Handlers\HandlerType.cs" />
     <Compile Include="Handlers\HandlerPriority.cs" />
-    <Compile Include="Handlers\ErrorContext.cs" />
+    <Compile Include="Handlers\ExceptionCreationContext.cs" />
     <Compile Include="Handlers\RedirectContext.cs" />
     <Compile Include="Handlers\RetryContext.cs" />
     <Compile Include="Handlers\RedirectionHandler.cs" />
@@ -140,6 +141,8 @@
     <Compile Include="ITypedBuilderFactory.cs" />
     <Compile Include="ITypedBuilderSettings.cs" />
     <Compile Include="IUriQueryCollection.cs" />
+    <Compile Include="Serialization\IResponseMetadata.cs" />
+    <Compile Include="Serialization\IWritableResponseMetadata.cs" />
     <Compile Include="Serialization\ResponseSerializer.cs" />
     <Compile Include="NormalizedUriQueryCollection.cs" />
     <Compile Include="Formatter.cs" />
@@ -147,6 +150,7 @@
     <Compile Include="Handlers\IContextWithResult.cs" />
     <Compile Include="Handlers\Modifiable.cs" />
     <Compile Include="Handlers\ModifiableUriList.cs" />
+    <Compile Include="Serialization\ResultWithResponseMetadata.cs" />
     <Compile Include="TypedBuilderContext.cs" />
     <Compile Include="Handlers\TypedHandlerRegister.cs" />
     <Compile Include="Handlers\TypedExceptionContext.cs" />

@@ -8,7 +8,7 @@ using AonWeb.FluentHttp.Tests.Helpers;
 using Shouldly;
 using Xunit;
 
-namespace AonWeb.FluentHttp.Tests
+namespace AonWeb.FluentHttp.Tests.Hal
 {
     public class AdvancedHalBuilderExtensionsTests
     {
@@ -16,19 +16,21 @@ namespace AonWeb.FluentHttp.Tests
 
         public AdvancedHalBuilderExtensionsTests()
         {
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenResultAndSendingHandlerTypesMismatch_ExpectException()
         {
 
             var builder = new MockHalBuilderFactory().Create().WithLink(MockUri);
 
             //act
-            await builder.Advanced.OnSendingWithResult<AlternateTestResource>(ctx => { }).ResultAsync<TestResource>();
+            await Should.ThrowAsync<TypeMismatchException>(builder.Advanced.OnSendingWithResult<AlternateTestResource>(ctx =>
+            {
+                var result = ctx.Result;
+            }).ResultAsync<TestResource>());
         }
 
         [Fact]
@@ -77,7 +79,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
         {
 
@@ -102,16 +103,17 @@ namespace AonWeb.FluentHttp.Tests
             var actual = await builder
                 .WithErrorType<TestResource>()
                 .Advanced
-                .WithExceptionFactory(context => null)
                 .WithSuppressTypeMismatchExceptions()
-                .OnError<AlternateTestResource>(ctx => { })
+                .OnError<AlternateTestResource>(ctx =>
+                {
+                    ctx.ErrorHandled = true;
+                })
                 .ResultAsync<TestResource>();
 
             actual.ShouldBeNull();
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenDefaultResultAndResultTypesMismatch_ExpectException()
         {
 
@@ -134,7 +136,7 @@ namespace AonWeb.FluentHttp.Tests
             //act
             var actual = await builder.WithDefaultResult(TestResource.Default1())
                  .Advanced.WithSuppressTypeMismatchExceptions()
-                 .WithExceptionFactory(context => null)
+                 .OnException(context => context.ExceptionHandled = true)
                  .ResultAsync<AlternateTestResource>();
 
             actual.ShouldBeNull();
@@ -158,7 +160,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenHandlerIsSuperTypeOfResult_ExpectException()
         {
             var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
@@ -263,9 +264,9 @@ namespace AonWeb.FluentHttp.Tests
                 .Advanced
                 .OnError<object>(ctx =>
                 {
+                    ctx.ErrorHandled = true;
                     called = true;
                 })
-                .WithExceptionFactory(context => null)
                 .ResultAsync<SubTestResource>();
 
             result.ShouldBeNull();
@@ -288,6 +289,7 @@ namespace AonWeb.FluentHttp.Tests
                 .Advanced
                 .OnError<object>(ctx =>
                 {
+                    ctx.ErrorHandled = true;
                     type = ctx.ErrorType;
                     error = ctx.Error as TestResource;
                 })

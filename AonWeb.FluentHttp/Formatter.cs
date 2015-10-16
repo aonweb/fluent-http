@@ -63,6 +63,9 @@ namespace AonWeb.FluentHttp
             if (typeof(byte[]).IsAssignableFrom(typeInfo))
                 return await content.ReadAsByteArrayAsync();
 
+            if (typeof(string).IsAssignableFrom(typeInfo))
+                return await content.ReadAsStringAsync();
+
             var mediaType = content.Headers.ContentType ?? new MediaTypeHeaderValue("application/octet-stream");
 
             var formatter = formatters.FindReader(type, mediaType);

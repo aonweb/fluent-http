@@ -21,7 +21,7 @@ namespace AonWeb.FluentHttp.Tests
         public AdvancedHttpBuilderExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
         }
 
@@ -55,7 +55,6 @@ namespace AonWeb.FluentHttp.Tests
         #region Timeout & Cancellation
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task CancelRequest_WhenSuppressCancelOff_ExpectException()
         {
             //arrange
@@ -115,7 +114,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
         {
             //arrange

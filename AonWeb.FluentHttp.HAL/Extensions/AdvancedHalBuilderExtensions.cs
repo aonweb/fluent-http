@@ -190,7 +190,7 @@ namespace AonWeb.FluentHttp.HAL
         }
 
 
-        public static IAdvancedHalBuilder WithExceptionFactory(this IAdvancedHalBuilder builder, Func<ErrorContext, Exception> factory)
+        public static IAdvancedHalBuilder WithExceptionFactory(this IAdvancedHalBuilder builder, Func<ExceptionCreationContext, Exception> factory)
         {
             builder.WithConfiguration(s => s.ExceptionFactory = factory);
 

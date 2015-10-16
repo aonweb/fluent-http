@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public FollowLocationHandlerTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Created).WithHeader("Location", expected.ToString()))
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent("\"Success\""));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
                 Uri actualUrl = null;
                 HttpMethod actualMethod = null;
@@ -86,7 +86,6 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                             var content = await r.Content.ReadAsStringAsync();
                             hasBody = !string.IsNullOrWhiteSpace(content);
                         }
-                        
                     });
 
                 //act

@@ -107,7 +107,7 @@ namespace AonWeb.FluentHttp {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The current Cache Context must have ResponseInfo..
+        ///   Looks up a localized string similar to The current Cache Context must have ResponseMetadata..
         /// </summary>
         internal static string CacheContextResponseInfoRequiredError {
             get {

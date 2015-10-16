@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
@@ -11,19 +12,20 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     {
         public CacheSettings()
         {
-            Enabled = Defaults.Caching.Enabled;
-            CacheableHttpMethods = new HashSet<HttpMethod>(Defaults.Caching.CacheableHttpMethods);
-            CacheableHttpStatusCodes = new HashSet<HttpStatusCode>(Defaults.Caching.CacheableHttpStatusCodes);
-            DefaultVaryByHeaders = new HashSet<string>(Defaults.Caching.VaryByHeaders);
+            Enabled = Defaults.Current.GetCachingDefaults().Enabled;
+            CacheableHttpMethods = new HashSet<HttpMethod>(Defaults.Current.GetCachingDefaults().CacheableHttpMethods);
+            CacheableHttpStatusCodes = new HashSet<HttpStatusCode>(Defaults.Current.GetCachingDefaults().CacheableHttpStatusCodes);
+            DefaultVaryByHeaders = new HashSet<string>(Defaults.Current.GetCachingDefaults().VaryByHeaders);
             DependentUris = new HashSet<Uri>();
-            DefaultDurationForCacheableResults = Defaults.Caching.DefaultDurationForCacheableResults;
+            DefaultDurationForCacheableResults = Defaults.Current.GetCachingDefaults().DefaultDurationForCacheableResults;
             Handler = new CacheHandlerRegister();
-            CacheValidator = Defaults.Caching.CacheValidator;
-            RevalidateValidator = Defaults.Caching.RevalidateValidator;
-            ResponseValidator = Defaults.Caching.ResponseValidator;
-            AllowStaleResultValidator = Defaults.Caching.AllowStaleResultValidator;
-            SuppressTypeMismatchExceptions = Defaults.TypedBuilder.SuppressTypeMismatchExceptions;
-            CacheKeyBuilder = Defaults.Caching.CacheKeyBuilderFactory?.Invoke() ?? new CacheKeyBuilder();
+            CacheValidator = Defaults.Current.GetCachingDefaults().CacheValidator;
+            RevalidateValidator = Defaults.Current.GetCachingDefaults().RevalidateValidator;
+            ResponseValidator = Defaults.Current.GetCachingDefaults().ResponseValidator;
+            AllowStaleResultValidator = Defaults.Current.GetCachingDefaults().AllowStaleResultValidator;
+            SuppressTypeMismatchExceptions = Defaults.Current.GetTypedBuilderDefaults().SuppressTypeMismatchExceptions;
+            CacheKeyBuilder = Defaults.Current.GetCachingDefaults().CacheKeyBuilderFactory?.Invoke() ?? new CacheKeyBuilder();
+            MustRevalidate = Defaults.Current.GetCachingDefaults().MustRevalidate;
         }
 
         public ISet<HttpMethod> CacheableHttpMethods { get; }
@@ -36,13 +38,13 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         public bool Enabled { get; set; }
         public Action<CacheResult> ResultInspector { get; set; }
-        public Func<ICacheContext, ResponseInfo, ResponseValidationResult> ResponseValidator { get; set; }
+        public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; set; }
         public Func<ICacheContext, bool> CacheValidator { get; set; }
-        public Func<ICacheContext, ResponseInfo, bool> RevalidateValidator { get; set; }
-        public Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator { get; set; }
+        public Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; set; }
+        public Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; set; }
         public ICacheKeyBuilder CacheKeyBuilder { get; set; }
         public TimeSpan? DefaultDurationForCacheableResults { get; set; }
-        public bool MustRevalidateByDefault { get; set; }
+        public bool MustRevalidate { get; set; }
         public TimeSpan? CacheDuration { get; set; }
 
         public ISet<string> GetVaryByHeaders(Uri uri)

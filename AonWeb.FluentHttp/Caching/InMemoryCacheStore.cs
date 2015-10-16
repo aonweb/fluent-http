@@ -87,7 +87,7 @@ namespace AonWeb.FluentHttp.Caching
             }
             else
             {
-                cachedItem.ResponseInfo.Merge(context.Result.ResponseInfo);
+                cachedItem.ResponseInfo.Merge(context.Result.ResponseInfo, true);
             }
 
             _cache.TryAdd(context.CacheKey, cachedItem);

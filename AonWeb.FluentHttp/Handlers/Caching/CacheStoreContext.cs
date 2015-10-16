@@ -32,7 +32,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         internal CacheStoreContext(CacheStoreContext context)
             : base(context) { }
 
-        public new TResult Result => ObjectHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions);
+        public new TResult Result => TypeHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions);
         
     }
 }

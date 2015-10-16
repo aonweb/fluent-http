@@ -2,26 +2,29 @@ namespace AonWeb.FluentHttp.Mocks
 {
     public class MockTypedBuilderFactory : IMockTypedBuilderFactory
     {
+        private readonly IMockFormatterFactory _formatterFactory;
         private readonly IMockHttpBuilderFactory _innerBuilderFactory;
 
         public MockTypedBuilderFactory()
-            :this(new MockHttpBuilderFactory()) { }
+            :this(new MockHttpBuilderFactory(), new MockFormatterFactory()) { }
 
-        public MockTypedBuilderFactory(IMockHttpBuilderFactory innerBuilderFactory)
+        public MockTypedBuilderFactory(IMockHttpBuilderFactory innerBuilderFactory, IMockFormatterFactory formatterFactory)
         {
             _innerBuilderFactory = innerBuilderFactory;
+            _formatterFactory = formatterFactory;
         }
 
         public IMockTypedBuilder Create()
         {
             var child = _innerBuilderFactory.CreateAsChild();
-            var settings = new MockTypedBuilderSettings();
+            var formatter = _formatterFactory.Create();
+            var settings = new MockTypedBuilderSettings(formatter);
 
-            var builder = new MockTypedBuilder(settings, child, new MockFormatter(), Defaults.TypedBuilder.HandlerFactory());
+            var builder = new MockTypedBuilder(settings, child, Defaults.Current.GetTypedBuilderDefaults().Handlers.GetHandlers(settings));
 
             settings.SetBuilder(builder);
 
-            Defaults.Factory.DefaultTypedBuilderConfiguration?.Invoke(builder);
+            Defaults.Current.GetTypedBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
 
             return builder;
         }
@@ -29,9 +32,10 @@ namespace AonWeb.FluentHttp.Mocks
         public IMockTypedBuilder CreateAsChild()
         {
             var child = _innerBuilderFactory.CreateAsChild();
-            var settings = new MockTypedBuilderSettings();
+            var formatter = _formatterFactory.Create();
+            var settings = new MockTypedBuilderSettings(formatter);
 
-            var builder = new MockTypedBuilder(settings, child, new MockFormatter(), Defaults.TypedBuilder.ChildHandlerFactory());
+            var builder = new MockTypedBuilder(settings, child, Defaults.Current.GetTypedBuilderDefaults().ChildHandlers.GetHandlers(settings));
 
             settings.SetBuilder(builder);
 

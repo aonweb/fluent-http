@@ -8,13 +8,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public class HttpCacheConfigurationHandler : CacheConfigurationHandlerCore, IHttpHandler
     {
-        public HttpCacheConfigurationHandler()
-            : this(new CacheSettings()) { }
-
-        protected HttpCacheConfigurationHandler(ICacheSettings settings)
+        public HttpCacheConfigurationHandler(ICacheSettings settings)
             : base(settings)
         {
-            var handlers = Defaults.Caching.HttpHandlerFactory?.Invoke();
+            var handlers = Defaults.Current.GetCachingDefaults().HttpHandlers.GetHandlers(settings);
 
             if (handlers != null)
             {

@@ -21,7 +21,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             Settings = settings;
         }
 
-        protected ICacheSettings Settings { get; set; }
+        public ICacheSettings Settings { get; set; }
 
         #region IHandler<HandlerType> Implementation
 

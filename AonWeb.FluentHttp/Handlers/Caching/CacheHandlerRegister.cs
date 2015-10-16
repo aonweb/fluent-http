@@ -199,7 +199,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheHitContext<TResult>)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Hit, handler.GetType(), false, (Func<ICacheContext, object, CacheHitContext>)((ctx, result) => new CacheHitContext<TResult>(ctx, ObjectHelpers.CheckType<TResult>(result, ctx.SuppressTypeMismatchExceptions)))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Hit, handler.GetType(), false, (Func<ICacheContext, object, CacheHitContext>)((ctx, result) => new CacheHitContext<TResult>(ctx, TypeHelpers.CheckType<TResult>(result, ctx.SuppressTypeMismatchExceptions)))),
                 ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Hit, handler.GetType(), true, (Func<CacheHitContext, CacheHitContext>)(ctx => new CacheHitContext<TResult>(ctx))),
             };
 
@@ -277,7 +277,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheStoreContext<TResult>)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Store, handler.GetType(), false, (Func<ICacheContext, object, CacheStoreContext>)((ctx, result) => new CacheStoreContext<TResult>(ctx, ObjectHelpers.CheckType<TResult>(result, ctx.SuppressTypeMismatchExceptions)))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Store, handler.GetType(), false, (Func<ICacheContext, object, CacheStoreContext>)((ctx, result) => new CacheStoreContext<TResult>(ctx, TypeHelpers.CheckType<TResult>(result, ctx.SuppressTypeMismatchExceptions)))),
                 ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Store, handler.GetType(), true, (Func<CacheStoreContext, CacheStoreContext>)(ctx => new CacheStoreContext<TResult>(ctx))),
             };
 

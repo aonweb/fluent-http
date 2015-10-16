@@ -13,9 +13,9 @@ namespace AonWeb.FluentHttp.Handlers
         
         public RedirectHandler()
         {
-            Enabled = Defaults.Handlers.AutoRedirectEnabled;
-            MaxAutoRedirects = Defaults.Handlers.MaxAutoRedirects;
-            RedirectStatusCodes = new HashSet<HttpStatusCode>(Defaults.Handlers.RedirectStatusCodes);
+            Enabled = Defaults.Current.GetHandlerDefaults().AutoRedirectEnabled;
+            MaxAutoRedirects = Defaults.Current.GetHandlerDefaults().MaxAutoRedirects;
+            RedirectStatusCodes = new HashSet<HttpStatusCode>(Defaults.Current.GetHandlerDefaults().RedirectStatusCodes);
 
             RedirectValidtor = ShouldRedirect;
         }

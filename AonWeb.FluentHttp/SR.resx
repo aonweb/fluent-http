@@ -145,7 +145,7 @@
     <value>The current Cache Context must have Request Message.</value>
   </data>
   <data name="CacheContextResponseInfoRequiredError" xml:space="preserve">
-    <value>The current Cache Context must have ResponseInfo.</value>
+    <value>The current Cache Context must have ResponseMetadata.</value>
   </data>
   <data name="NoReadFormatterForMimeTypeErrorFormat" xml:space="preserve">
     <value>No MediaTypeFormatter is available to read an object of type '{0}' from content with media type '{1}'. {2}</value>

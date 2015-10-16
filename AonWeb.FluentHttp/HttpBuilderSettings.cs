@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Handlers.Caching;
 
 namespace AonWeb.FluentHttp
 {
@@ -18,12 +19,13 @@ namespace AonWeb.FluentHttp
             HandlerRegister = new HttpHandlerRegister();
             NormalizedUriQuery = new NormalizedUriQueryCollection();
             SuccessfulResponseValidators = new List<Func<HttpResponseMessage, bool>>();
-            Method = Defaults.Builder.HttpMethod;
-            CompletionOption = Defaults.Builder.CompletionOption;
-            SuppressCancellationErrors = Defaults.Builder.SuppressCancellationErrors;
-            MediaType = Defaults.Builder.MediaType;
-            ContentEncoding = Defaults.Builder.ContentEncoding;
-            AutoDecompression = Defaults.Builder.AutoDecompressionEnabled;
+            Method = Defaults.Current.GetHttpBuilderDefaults().HttpMethod;
+            CompletionOption = Defaults.Current.GetHttpBuilderDefaults().CompletionOption;
+            SuppressCancellationErrors = Defaults.Current.GetHttpBuilderDefaults().SuppressCancellationErrors;
+            MediaType = Defaults.Current.GetHttpBuilderDefaults().MediaType;
+            ContentEncoding = Defaults.Current.GetHttpBuilderDefaults().ContentEncoding;
+            AutoDecompression = Defaults.Current.GetHttpBuilderDefaults().AutoDecompressionEnabled;
+            CacheSettings = new CacheSettings();
         }
 
         public IDictionary Items { get; }
@@ -44,6 +46,8 @@ namespace AonWeb.FluentHttp
         public bool SuppressCancellationErrors { get; set; }
         public bool AutoDecompression { get; set; }
         public CancellationToken Token { get; set; }
+        public ICacheSettings CacheSettings { get; }
+
         public bool IsSuccessfulResponse(HttpResponseMessage response)
         {
             return !SuccessfulResponseValidators.Any() || SuccessfulResponseValidators.All(v => v(response));

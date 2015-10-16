@@ -17,42 +17,6 @@ namespace AonWeb.FluentHttp.HAL
 
         public IAdvancedHalBuilder Advanced => this;
 
-        
-
-        
-
-        
-
-        //public IAdvancedHalBuilder WithDependentResources(params IHalResource[] resources)
-        //{
-        //    if (resources == null) 
-        //        return this;
-
-        //    var uris = resources.Select(r => r.Links.Self());
-
-        //    _innerBuilder.WithDependentUris(uris);
-
-        //    return this;
-        //}
-
-        //public IAdvancedHalBuilder WithDependentLink(Uri link)
-        //{
-        //    _innerBuilder.WithDependentUri(link);
-
-        //    return this;
-        //}
-
-        //public IAdvancedHalBuilder WithDependentLink(Func<Uri> linkFactory)
-        //{
-        //    if (linkFactory == null)
-        //        throw new ArgumentNullException(nameof(linkFactory));
-
-        //    _innerBuilder.WithDependentUri(linkFactory());
-
-        //    return this;
-        //}
-
-
         public IAdvancedHalBuilder WithClientConfiguration(Action<IHttpClientBuilder> configuration)
         {
             _innerBuilder.WithClientConfiguration(configuration);

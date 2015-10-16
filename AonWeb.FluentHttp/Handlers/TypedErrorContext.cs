@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Net.Http;
 using AonWeb.FluentHttp.Helpers;
@@ -14,7 +15,7 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context)
         { }
 
-        public new TError Error => ObjectHelpers.CheckType<TError>(base.Error, SuppressTypeMismatchExceptions);
+        public new TError Error => TypeHelpers.CheckType<TError>(base.Error, SuppressTypeMismatchExceptions);
     }
 
     public abstract class TypedErrorContext : TypedHandlerContext

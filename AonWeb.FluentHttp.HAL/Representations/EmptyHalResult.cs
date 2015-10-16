@@ -4,7 +4,7 @@ using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.HAL.Representations
 {
-    public class EmptyHalResult : IHalResource, IEmptyResult  {
+    public class EmptyHalResult : ResultWithResponseMetadata, IHalResource, IEmptyResult  {
         public HyperMediaLinks Links
         {
             get

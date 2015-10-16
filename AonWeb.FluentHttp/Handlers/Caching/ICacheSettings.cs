@@ -1,28 +1,21 @@
 using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
 using AonWeb.FluentHttp.Caching;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
-    public interface ICacheSettings
+    public interface ICacheSettings: ICacheMetadata
     {
-        bool Enabled { get; set; }
-        ISet<Uri> DependentUris { get; }
-        TimeSpan? CacheDuration { get; set; }
+        new bool Enabled { get; set; }
+        new TimeSpan? CacheDuration { get; set; }
+        new TimeSpan? DefaultDurationForCacheableResults { get; set; }
         CacheHandlerRegister Handler { get; }
-        ISet<HttpMethod> CacheableHttpMethods { get; }
-        ISet<HttpStatusCode> CacheableHttpStatusCodes { get; }
-        ISet<string> DefaultVaryByHeaders { get; }
-        bool SuppressTypeMismatchExceptions { get; }
-        TimeSpan? DefaultDurationForCacheableResults { get; set; }
-        bool MustRevalidateByDefault { get; set; }
+        new bool MustRevalidate { get; set; }
         Action<CacheResult> ResultInspector { get; set; }
         Func<ICacheContext, bool> CacheValidator { get; set; }
-        Func<ICacheContext, ResponseInfo, ResponseValidationResult> ResponseValidator { get; set; }
-        Func<ICacheContext, ResponseInfo, bool> RevalidateValidator { get; set; }
-        Func<ICacheContext, ResponseInfo, bool> AllowStaleResultValidator { get; set; }
+        Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; set; }
+        Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; set; }
+        Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; set; }
         ICacheKeyBuilder CacheKeyBuilder { get; set; }
     }
 }

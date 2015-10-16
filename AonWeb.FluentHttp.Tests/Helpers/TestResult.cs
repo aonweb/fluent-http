@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using AonWeb.FluentHttp.Caching;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Tests.Helpers
 {
 
-    public class TestResult : IEquatable<TestResult>
+    public class TestResult : ResultWithResponseMetadata, IEquatable<TestResult>
     {
         public static string SerializedDefault1 = @"{""StringProperty"":""TestString1"",""IntProperty"":1,""BoolProperty"":true,""DateOffsetProperty"":""2000-01-01T00:00:00-05:00"",""DateProperty"":""2000-01-01T00:00:00""}";
         public static string SerializedDefault2 = @"{""StringProperty"":""TestString2"",""IntProperty"":2,""BoolProperty"":false,""DateOffsetProperty"":""2000-01-02T00:00:00-05:00"",""DateProperty"":""2000-01-02T00:00:00""}";

@@ -207,7 +207,7 @@ namespace AonWeb.FluentHttp
             return builder;
         }
 
-        public static IAdvancedTypedBuilder WithExceptionFactory(this IAdvancedTypedBuilder builder, Func<ErrorContext, Exception> factory)
+        public static IAdvancedTypedBuilder WithExceptionFactory(this IAdvancedTypedBuilder builder, Func<ExceptionCreationContext, Exception> factory)
         {
             builder.WithConfiguration(s => s.ExceptionFactory = factory);
 

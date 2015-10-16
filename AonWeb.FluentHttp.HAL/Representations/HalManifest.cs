@@ -5,7 +5,7 @@ namespace AonWeb.FluentHttp.HAL.Representations
 {
     public class HalManifest : HalResource, IHalManifest
     {
-        public virtual TimeSpan? Duration {  get { return null; } }
+        public virtual TimeSpan? Duration => null;
 
         public virtual IEnumerable<Uri> DependentUris { get { yield break; } }
     }
@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.HAL.Representations
     public abstract class HalManifest<TLinks> : HalResource<TLinks>, IHalManifest
         where TLinks: HyperMediaLinks, new()
     {
-        public virtual TimeSpan? Duration { get { return null; } }
+        public virtual TimeSpan? Duration => null;
 
         public virtual IEnumerable<Uri> DependentUris { get { yield break; } }
     }

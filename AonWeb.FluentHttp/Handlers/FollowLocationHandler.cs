@@ -11,8 +11,8 @@ namespace AonWeb.FluentHttp.Handlers
     {
         public FollowLocationHandler()
         {
-            Enabled = Defaults.Handlers.AutoFollowLocationEnabled;
-            FollowedStatusCodes = new HashSet<HttpStatusCode>(Defaults.Handlers.FollowedStatusCodes);
+            Enabled = Defaults.Current.GetHandlerDefaults().AutoFollowLocationEnabled;
+            FollowedStatusCodes = new HashSet<HttpStatusCode>(Defaults.Current.GetHandlerDefaults().FollowedStatusCodes);
             FollowValidtor = ShouldFollow;
         }
 

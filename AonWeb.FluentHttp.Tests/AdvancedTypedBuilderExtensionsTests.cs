@@ -24,7 +24,7 @@ namespace AonWeb.FluentHttp.Tests
         public AdvancedTypedBuilderExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
         }
         #region WithMethod
@@ -49,7 +49,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public void WithMethod_WhenNullString_ExpectException()
         {
             //arrange
@@ -61,7 +60,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public void WithMethod_WhenEmptyString_ExpectException()
         {
             //arrange
@@ -92,7 +90,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public void WithMethod_WhenNullMethod_ExpectException()
         {
             //arrange
@@ -157,7 +154,6 @@ namespace AonWeb.FluentHttp.Tests
         #region Timeout & Cancellation
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task CancelRequest_WhenSuppressCancelOff_ExpectException()
         {
             //arrange
@@ -219,7 +215,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WithTimeout_WithLongCallAndSuppressCancelFalse_ExpectException()
         {
             //arrange
@@ -314,7 +309,6 @@ namespace AonWeb.FluentHttp.Tests
         #region Handlers
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenResultAndSendingHandlerTypesMismatch_ExpectException()
         {
 
@@ -337,7 +331,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenContentAndSendingHandlerTypesMismatch_ExpectException()
         {
 
@@ -572,7 +565,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
         {
 
@@ -594,16 +586,17 @@ namespace AonWeb.FluentHttp.Tests
             var actual = await builder
                 .WithErrorType<TestResult>()
                 .Advanced
-                .WithExceptionFactory(context => null)
                 .WithSuppressTypeMismatchExceptions()
-                .OnError<Uri>(ctx => { })
+                .OnError<Uri>(ctx =>
+                {
+                    ctx.ErrorHandled = true;
+                })
                 .ResultAsync<TestResult>();
 
             actual.ShouldBeNull();
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenDefaultResultAndResultTypesMismatch_ExpectException()
         {
 
@@ -625,8 +618,9 @@ namespace AonWeb.FluentHttp.Tests
 
             //act
             var actual = await builder.WithDefaultResult(TestResult.Default1())
-                 .Advanced.WithSuppressTypeMismatchExceptions()
-                 .WithExceptionFactory(context => null)
+                 .Advanced
+                 .WithSuppressTypeMismatchExceptions()
+                 .OnException(ctx => ctx.ExceptionHandled = true)
                  .ResultAsync<Uri>();
 
             actual.ShouldBeNull();
@@ -650,7 +644,6 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        // await Should.ThrowAsync<TypeMismatchException>(async () => );
         public async Task WhenHandlerIsSuperTypeOfResult_ExpectException()
         {
 
@@ -753,8 +746,11 @@ namespace AonWeb.FluentHttp.Tests
             var result = await builder
                 .WithErrorType<TestResult>()
                 .Advanced
-                .OnError<object>(ctx => { called = true; })
-                .WithExceptionFactory(context => null)
+                .OnError<object>(ctx =>
+                {
+                    ctx.ErrorHandled = true;
+                    called = true;
+                })
                 .ResultAsync<SubTestResult>();
 
             result.ShouldBeNull();
@@ -778,10 +774,10 @@ namespace AonWeb.FluentHttp.Tests
                 .Advanced
                 .OnError<object>(ctx =>
                 {
+                    ctx.ErrorHandled = true;
                     type = ctx.ErrorType;
                     error = ctx.Error as TestResult;
                 })
-                .WithExceptionFactory(context => null)
                 .ResultAsync<TestResult>();
 
             error.ShouldNotBeNull();

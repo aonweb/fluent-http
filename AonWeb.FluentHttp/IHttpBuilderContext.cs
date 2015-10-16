@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Handlers.Caching;
 
 namespace AonWeb.FluentHttp
 {

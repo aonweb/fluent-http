@@ -23,9 +23,9 @@ namespace AonWeb.FluentHttp.Tests.Performance
         [Fact]
         public async Task LessThan15PercentOverhead()
         {
-            Defaults.Caching.Enabled = false;
+            Defaults.Current.GetCachingDefaults().Enabled = false;
 
-            const int iterations = 1000;
+            const int iterations = 5000;
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {

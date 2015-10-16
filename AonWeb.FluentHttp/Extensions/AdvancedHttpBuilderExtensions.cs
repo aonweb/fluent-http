@@ -90,8 +90,8 @@ namespace AonWeb.FluentHttp
 
             return builder.WithClientConfiguration(c =>
                 c.WithDecompressionMethods(enabled
-                    ? Defaults.Client.DecompressionMethods.HasValue && !Defaults.Client.DecompressionMethods.Value.HasFlag(DecompressionMethods.None)
-                        ? Defaults.Client.DecompressionMethods.Value
+                    ? Defaults.Current.GetClientDefaults().DecompressionMethods.HasValue && !Defaults.Current.GetClientDefaults().DecompressionMethods.Value.HasFlag(DecompressionMethods.None)
+                        ? Defaults.Current.GetClientDefaults().DecompressionMethods.Value
                         : DecompressionMethods.GZip | DecompressionMethods.Deflate
                     : DecompressionMethods.None));
         }
