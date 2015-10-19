@@ -54,6 +54,8 @@
     <Compile Include="Client\IHttpClient.cs" />
     <Compile Include="Client\IHttpClientBuilder.cs" />
     <Compile Include="Client\IHttpClientSettings.cs" />
+    <Compile Include="Defaults_Classes.cs" />
+    <Compile Include="Defaults_Handlers.cs" />
     <Compile Include="Extensions\AdvancedHttpBuilderCoreExtensions.cs" />
     <Compile Include="Extensions\AdvancedHttpBuilderExtensions.cs" />
     <Compile Include="Extensions\AdvancedTypedBuilderExtensions.cs" />
