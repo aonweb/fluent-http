@@ -1,6 +1,5 @@
 using System;
-using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Serialization;
 
 namespace AonWeb.FluentHttp.Tests.Helpers
 {

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.HAL.Serialization;
 using Newtonsoft.Json;
 

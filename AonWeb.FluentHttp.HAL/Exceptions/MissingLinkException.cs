@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.HAL
 {

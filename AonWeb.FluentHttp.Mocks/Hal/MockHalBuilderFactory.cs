@@ -3,7 +3,7 @@ using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.HAL.Serialization;
 using Newtonsoft.Json.Serialization;
 
-namespace AonWeb.FluentHttp.Mocks
+namespace AonWeb.FluentHttp.Mocks.Hal
 {
     public class MockHalBuilderFactory : IMockHalBuilderFactory
     {

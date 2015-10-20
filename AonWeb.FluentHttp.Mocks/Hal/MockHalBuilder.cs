@@ -1,9 +1,9 @@
 ﻿using System;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Serialization;
 
-namespace AonWeb.FluentHttp.Mocks
+namespace AonWeb.FluentHttp.Mocks.Hal
 {
     public class MockHalBuilder: HalBuilder, IMockHalBuilder
     {

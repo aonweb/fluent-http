@@ -13,6 +13,11 @@
     <summary>An fluent interface for making http calls, with retry, redirect, caching, and serialzation pre-configured.</summary>
     <language>en-US</language>
     <tags>fluent, http</tags>
+    <dependencies>
+      <group>
+        <dependency id="AonWeb.FluentHttp.Serialization" version="3.0.0-beta2" />
+      </group>
+    </dependencies>
   </metadata>
     <files />
 </package>

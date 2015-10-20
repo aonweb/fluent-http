@@ -1,6 +1,6 @@
 using AonWeb.FluentHttp.HAL;
 
-namespace AonWeb.FluentHttp.Mocks
+namespace AonWeb.FluentHttp.Mocks.Hal
 {
     public interface IMockHalBuilderFactory: IHalBuilderFactory
     {

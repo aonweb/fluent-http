@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Helpers;
-using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.HAL
 {

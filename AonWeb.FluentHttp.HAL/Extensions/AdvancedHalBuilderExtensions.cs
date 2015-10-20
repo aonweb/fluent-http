@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
-using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Serialization;
 
 namespace AonWeb.FluentHttp.HAL
 {

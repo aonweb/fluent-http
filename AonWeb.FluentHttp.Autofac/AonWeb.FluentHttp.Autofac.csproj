@@ -36,6 +36,7 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="AonWeb.FluentHttp.Autofac.nuspec" />
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="_CreateNewNuGetPackage\Config.ps1" />
     <None Include="_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1" />
@@ -44,10 +45,28 @@
     <None Include="_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutofacHttpBuilderFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Registration.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="_CreateNewNuGetPackage\DoNotModify\NuGet.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.0.0-beta8-157\lib\portable-net45+dnxcore50+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10\Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj">
+      <Project>{83de5005-470a-421a-af25-59df14d7458b}</Project>
+      <Name>AonWeb.FluentHttp.HAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
+      <Project>{930566b9-044b-45ab-b231-87ec4c222a4d}</Project>
+      <Name>AonWeb.FluentHttp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>

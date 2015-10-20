@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Shouldly;
 using Xunit;

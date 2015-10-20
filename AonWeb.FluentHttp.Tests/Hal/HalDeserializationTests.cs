@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;

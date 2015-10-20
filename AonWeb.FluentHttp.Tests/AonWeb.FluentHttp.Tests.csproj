@@ -127,6 +127,14 @@
     <Compile Include="TypedBuilderTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AonWeb.FluentHttp.Autofac\AonWeb.FluentHttp.Autofac.csproj">
+      <Project>{88b42254-124b-453d-b1c9-c0e56ae18022}</Project>
+      <Name>AonWeb.FluentHttp.Autofac</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj">
+      <Project>{74bd325d-285e-4e8a-8ec7-ba7c330a404c}</Project>
+      <Name>AonWeb.FluentHttp.HAL.Serialization</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj">
       <Project>{83de5005-470a-421a-af25-59df14d7458b}</Project>
       <Name>AonWeb.FluentHttp.HAL</Name>
@@ -134,6 +142,10 @@
     <ProjectReference Include="..\AonWeb.FluentHttp.Mocks\AonWeb.FluentHttp.Mocks.csproj">
       <Project>{819f270c-4105-4380-8ea5-310832a54b7f}</Project>
       <Name>AonWeb.FluentHttp.Mocks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AonWeb.FluentHttp.Serialization\AonWeb.FluentHttp.Serialization.csproj">
+      <Project>{9dfff77a-14d1-40c7-a78a-2a8b77391d82}</Project>
+      <Name>AonWeb.FluentHttp.Serialization</Name>
     </ProjectReference>
     <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
       <Project>{930566B9-044B-45AB-B231-87EC4C222A4D}</Project>

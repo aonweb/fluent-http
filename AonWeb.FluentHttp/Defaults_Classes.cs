@@ -11,6 +11,7 @@ using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Serialization;
+using StringMediaFormatter = AonWeb.FluentHttp.StringMediaFormatter;
 
 namespace AonWeb.FluentHttp
 {

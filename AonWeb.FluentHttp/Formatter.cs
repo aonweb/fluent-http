@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp
 {

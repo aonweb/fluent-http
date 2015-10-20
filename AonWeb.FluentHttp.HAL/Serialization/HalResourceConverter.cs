@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-
-using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -322,6 +320,35 @@ namespace AonWeb.FluentHttp.HAL.Serialization
         public override bool CanConvert(Type objectType)
         {
             return typeof(IHalResource).IsAssignableFrom(objectType);
+        }
+
+        private class SerializationErrorHelper
+        {
+            internal static JsonSerializationException CreateError(JsonReader reader, string message, Exception ex = null)
+            {
+                message = FormatMessage(reader as IJsonLineInfo, reader.Path, message);
+
+                return new JsonSerializationException(message, ex);
+            }
+
+            internal static string FormatMessage(IJsonLineInfo lineInfo, string path, string message)
+            {
+                if (!message.EndsWith(Environment.NewLine))
+                {
+                    message = message.Trim();
+                    if (!message.EndsWith("."))
+                        message = message + ".";
+                    message = message + " ";
+                }
+
+                message = message + $"Path '{path}'";
+
+                if (lineInfo != null && lineInfo.HasLineInfo())
+                    message = message + $", line {lineInfo.LineNumber}, position {lineInfo.LinePosition}";
+
+                message = message + ".";
+                return message;
+            }
         }
     }
 }

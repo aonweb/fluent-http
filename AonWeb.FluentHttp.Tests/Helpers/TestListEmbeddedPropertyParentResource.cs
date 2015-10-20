@@ -1,5 +1,4 @@
 using System;
-using AonWeb.FluentHttp.HAL.Representations;
 using AonWeb.FluentHttp.HAL.Serialization;
 using Newtonsoft.Json;
 

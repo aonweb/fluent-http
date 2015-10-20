@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Serialization;
@@ -171,10 +170,10 @@ namespace AonWeb.FluentHttp.Helpers
 
             if (response.Headers.ETag != null)
             {
-                if (metadata.ETag != null && !response.Headers.ETag.Equals(metadata.ETag))
-                    metadata.ETag = new EntityTagHeaderValue((metadata.ETag.Tag ?? string.Empty) + response.Headers.ETag.Tag);
+                if (metadata.ETag != null && !response.Headers.ETag.Tag.Equals(metadata.ETag))
+                    metadata.ETag = (metadata.ETag?? string.Empty) + response.Headers.ETag.Tag;
                 else
-                    metadata.ETag = response.Headers.ETag;
+                    metadata.ETag = response.Headers.ETag?.Tag;
             }
 
             metadata.NoStore = metadata.NoStore || (response.Headers.CacheControl?.NoStore ?? false);
@@ -215,7 +214,7 @@ namespace AonWeb.FluentHttp.Helpers
                 metadataA.ShouldRevalidate = metadataB.ShouldRevalidate;
 
             if (metadataB.ETag != null)
-                metadataA.ETag = new EntityTagHeaderValue((metadataA.ETag?.Tag ?? string.Empty) + metadataB.ETag);
+                metadataA.ETag = (metadataA.ETag ?? string.Empty) + metadataB.ETag;
 
             foreach (var header in metadataB.VaryHeaders.Where(header => !metadataA.VaryHeaders.Contains(header)))
             {

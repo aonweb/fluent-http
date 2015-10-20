@@ -1,8 +1,8 @@
 ﻿using AonWeb.FluentHttp.Client;
-using AonWeb.FluentHttp.HAL.Representations;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.HAL.Serialization;
 
 namespace AonWeb.FluentHttp.HAL
 {
