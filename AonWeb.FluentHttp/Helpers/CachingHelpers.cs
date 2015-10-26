@@ -130,27 +130,13 @@ namespace AonWeb.FluentHttp.Helpers
             return false;
         }
 
-        public static IWritableResponseMetadata CreateResponseMetadata(object result, HttpRequestMessage request, HttpResponseMessage response, ICacheMetadata context)
+        public static IResponseMetadata CreateResponseMetadata(object result, HttpRequestMessage request, HttpResponseMessage response, ICacheMetadata context)
         {
-            var metadata = result as IWritableResponseMetadata ?? new ResponseMetadata();
 
-            ApplyResponseMetadata(metadata, result, request, response, context);
-
-            return metadata;
+            return CreateResponseMetadata(result, request, response, true, context.CacheDuration, context.DependentUris, context.MustRevalidate, context.DefaultVaryByHeaders, context.DefaultDurationForCacheableResults);
         }
 
-        public static void ApplyResponseMetadata(
-            IWritableResponseMetadata metadata,
-            object result,
-            HttpRequestMessage request,
-            HttpResponseMessage response,
-            ICacheMetadata context)
-        {
-            ApplyResponseMetadata(metadata, result, request, response, true, context.CacheDuration, context.DependentUris, context.MustRevalidate, context.DefaultVaryByHeaders, context.DefaultDurationForCacheableResults);
-        }
-
-        private static void ApplyResponseMetadata(
-            IWritableResponseMetadata metadata,
+        private static IResponseMetadata CreateResponseMetadata(
             object result,
             HttpRequestMessage request,
             HttpResponseMessage response,
@@ -161,6 +147,9 @@ namespace AonWeb.FluentHttp.Helpers
             IEnumerable<string> additionalVaryByHeaders = null,
             TimeSpan? defaultCacheDuration = null)
         {
+            var metadata = (result as IResultWithMetadata)?.Metadata ?? new ResponseMetadata();
+
+
             metadata.Uri = request.RequestUri;
             metadata.StatusCode = response.StatusCode;
 
@@ -202,9 +191,11 @@ namespace AonWeb.FluentHttp.Helpers
                     originalDependentUris.Add(u);
                 }
             }
+
+            return metadata;
         }
 
-        public static void Merge(this IWritableResponseMetadata metadataA, IResponseMetadata metadataB, bool useGreater = true)
+        public static void Merge(this IResponseMetadata metadataA, IResponseMetadata metadataB, bool useGreater = true)
         {
             metadataA.Date = metadataA.Date.GetValue(metadataB.Date, useGreater);
             metadataA.LastModified = metadataA.LastModified.GetValue(metadataB.LastModified, useGreater);
@@ -258,7 +249,7 @@ namespace AonWeb.FluentHttp.Helpers
             return true;
         }
 
-        private static IEnumerable<Uri> GetDependentUris(IWritableResponseMetadata metadata, object result, IEnumerable<Uri> dependentUris)
+        private static IEnumerable<Uri> GetDependentUris(IResponseMetadata metadata, object result, IEnumerable<Uri> dependentUris)
         {
             var uris = (dependentUris ?? Enumerable.Empty<Uri>()).Concat(metadata.DependentUris);
 

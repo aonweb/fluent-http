@@ -45,10 +45,10 @@ namespace AonWeb.FluentHttp.Helpers
                 result = await context.Formatter.DeserializeResult(response, context);
             }
 
-            var metadata = result as IWritableResponseMetadata;
-            if (metadata != null)
+            var resultWithMeta = result as IResultWithWritableMetadata;
+            if (resultWithMeta != null)
             {
-                CachingHelpers.ApplyResponseMetadata(metadata, metadata, request, response, context.GetSettings().CacheSettings);
+                resultWithMeta.Metadata = CachingHelpers.CreateResponseMetadata(result, request, response, context.GetSettings().CacheSettings);
             }
 
             return result;
@@ -85,9 +85,11 @@ namespace AonWeb.FluentHttp.Helpers
             if(error == null && !allowNullError)
                 capturedException?.Throw();
 
-            if (error is IWritableResponseMetadata)
+            var errorWithMeta = error as IResultWithWritableMetadata;
+
+            if (errorWithMeta != null)
             {
-                CachingHelpers.ApplyResponseMetadata((IWritableResponseMetadata)error, error, request, response, context.GetSettings().CacheSettings);
+                errorWithMeta.Metadata = CachingHelpers.CreateResponseMetadata(error, request, response, context.GetSettings().CacheSettings);
             }
 
             return error;

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using AonWeb.FluentHttp.HAL.Serialization;
 using Newtonsoft.Json;
 
@@ -6,10 +7,15 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 {
     public class TestResource : HalResource, IEquatable<TestResource>
     {
+        
         public string StringProperty { get; set; }
+        
         public int IntProperty { get; set; }
+        
         public bool BoolProperty { get; set; }
+        
         public DateTimeOffset DateOffsetProperty { get; set; }
+        
         public DateTime DateProperty { get; set; }
 
         #region Equality
@@ -163,6 +169,42 @@ namespace AonWeb.FluentHttp.Tests.Helpers
     public class SubTestResource : TestResource
     {
         public bool SubBoolProperty { get; set; }
+        public bool? SubNullableBoolProperty { get; set; }
+
+        #region Defaults
+        public new static SubTestResource Default1()
+        {
+            return new SubTestResource
+            {
+                SubBoolProperty = false,
+                StringProperty = "TestString",
+                IntProperty = 2,
+                BoolProperty = true,
+                DateOffsetProperty = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.FromHours(-5)),
+                DateProperty = new DateTime(2000, 1, 1, 0, 0, 0),
+                Links = new HyperMediaLinks()
+                {
+                    new HyperMediaLink
+                    {
+                        Rel = "self",
+                        Href= "http://link.com/self/1"
+                    },
+                    new HyperMediaLink
+                    {
+                        Rel = "template",
+                        Href= "http://link.com/self/1/child/{child-id}",
+                        Templated = true
+                    },
+                    new HyperMediaLink
+                    {
+                        Rel = "nontemplate",
+                        Href= "http://link.com/self/1/child/1",
+                        Templated = false
+                    }
+                }
+            };
+        }
+        #endregion
     }
 
     public class AlternateTestResource : HalResource

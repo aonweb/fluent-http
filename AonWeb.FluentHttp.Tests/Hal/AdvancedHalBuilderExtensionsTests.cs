@@ -28,10 +28,10 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var builder = new MockHalBuilderFactory().Create().WithLink(MockUri);
 
             //act
-            await Should.ThrowAsync<TypeMismatchException>(builder.Advanced.OnSendingWithResult<AlternateTestResource>(ctx =>
+            await Should.ThrowAsync<TypeMismatchException>(builder.Advanced.OnResult<TestResource>(ctx =>
             {
-                var result = ctx.Result;
-            }).ResultAsync<TestResource>());
+                ctx.Result = TestResource.Default1();
+            }).ResultAsync<AlternateTestResource>());
         }
 
         [Fact]

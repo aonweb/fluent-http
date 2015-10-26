@@ -15,7 +15,10 @@ namespace AonWeb.FluentHttp.Handlers
 
         public new TResult Result
         {
-            get { return TypeHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
+            get
+            {
+                return TypeHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions);
+            }
             set { base.Result = value; }
         }
 

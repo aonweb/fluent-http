@@ -4,12 +4,12 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class CachedItem
     {
-        public CachedItem(IWritableResponseMetadata responseInfo)
+        public CachedItem(IResponseMetadata responseInfo)
         {
             ResponseInfo = responseInfo;
         }
 
-        public IWritableResponseMetadata ResponseInfo { get; private set; }
+        public IResponseMetadata ResponseInfo { get; private set; }
         public object Result { get; set; }
 
         public bool IsHttpResponseMessage { get; set; }

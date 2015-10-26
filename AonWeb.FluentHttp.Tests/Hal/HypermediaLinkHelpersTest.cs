@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.HAL.Serialization;
+using AonWeb.FluentHttp.HAL.Serialization.Exceptions;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Shouldly;
 using Xunit;

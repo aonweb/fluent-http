@@ -64,21 +64,21 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (context.Result.Found)
             {
                 context.ResultInspector?.Invoke(context.Result);
-                context.ValidationResult = context.ResponseValidator(context, context.Result.ResponseInfo);
+                context.ValidationResult = context.ResponseValidator(context, context.Result.ResponseMetadata);
             }
 
             // TODO: Determine the need for conditional put - if so, that logic would go here
 
 
-            if (context.ValidationResult == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, context.Result.ResponseInfo))
+            if (context.ValidationResult == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, context.Result.ResponseMetadata))
                 context.ValidationResult = ResponseValidationResult.MustRevalidate;
 
             if (context.ValidationResult == ResponseValidationResult.MustRevalidate && context.Request != null)
             {
-                if (context.Result.ResponseInfo.ETag != null)
-                    context.Request.Headers.Add("If-None-Match", context.Result.ResponseInfo.ETag.ToString());
-                else if (context.Result.ResponseInfo.LastModified != null)
-                    context.Request.Headers.Add("If-Modified-Since", context.Result.ResponseInfo.LastModified.Value.ToString("r"));
+                if (context.Result.ResponseMetadata.ETag != null)
+                    context.Request.Headers.Add("If-None-Match", context.Result.ResponseMetadata.ETag.ToString());
+                else if (context.Result.ResponseMetadata.LastModified != null)
+                    context.Request.Headers.Add("If-Modified-Since", context.Result.ResponseMetadata.LastModified.Value.ToString("r"));
 
                 //hang on to this we are going to need it in a sec. We could try to get it from cache store, but it may have expired by then
                 context.Items["CacheHandlerCachedItem"] = context.Result;
@@ -110,7 +110,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         {
             var context = CreateCacheContext(handlerContext);
 
-            if (!context.RevalidateValidator(context, context.Result.ResponseInfo))
+            if (!context.RevalidateValidator(context, context.Result.ResponseMetadata))
                 return;
 
             context.Result = (CacheResult)context.Items["CacheHandlerCachedItem"];
@@ -156,7 +156,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             if (context.CacheValidator(context))
             {
-                context.ValidationResult = context.ResponseValidator(context, context.Result.ResponseInfo);
+                context.ValidationResult = context.ResponseValidator(context, context.Result.ResponseMetadata);
 
                 if (context.ValidationResult == ResponseValidationResult.OK
                     || context.ValidationResult == ResponseValidationResult.MustRevalidate)

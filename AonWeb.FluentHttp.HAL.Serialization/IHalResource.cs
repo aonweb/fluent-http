@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace AonWeb.FluentHttp.HAL.Serialization
 {
-    public interface IHalResource: IWritableResponseMetadata
+    public interface IHalResource: IResultWithMetadata
     {
         [JsonProperty("_links")]
         HyperMediaLinks Links { get; set; }

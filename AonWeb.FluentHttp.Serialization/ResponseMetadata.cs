@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Net;
 
 namespace AonWeb.FluentHttp.Serialization
 {
-    public class ResponseMetadata: IWritableResponseMetadata
+    public class ResponseMetadata: IResponseMetadata
     {
         public ResponseMetadata()
         {
@@ -27,9 +25,5 @@ namespace AonWeb.FluentHttp.Serialization
         
         public ISet<string> VaryHeaders { get; }
         public ISet<Uri> DependentUris { get; }
-
-        IReadOnlyCollection<Uri> IResponseMetadata.DependentUris => new ReadOnlyCollection<Uri>(DependentUris.ToList());
-
-        IReadOnlyCollection<string> IResponseMetadata.VaryHeaders => new ReadOnlyCollection<string>(VaryHeaders.ToList());
     }
 }

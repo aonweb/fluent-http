@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.HAL.Serialization
@@ -11,9 +12,10 @@ namespace AonWeb.FluentHttp.HAL.Serialization
         }
 
         public const string LinkKeySelf = "self";
+        
         public HyperMediaLinks Links { get; set; }
     }
-
+    
     public abstract class HalResource<TLinks> : ResultWithResponseMetadata, IHalResource<TLinks>
         where TLinks : HyperMediaLinks, new()
     {
@@ -34,7 +36,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                     throw new ArgumentException($"Value must be of type {typeof (TLinks).FormattedTypeName()}");
             }
         }
-
+        
         public TLinks Links { get; set; }
     } 
 }

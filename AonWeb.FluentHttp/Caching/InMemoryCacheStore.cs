@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
-using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Caching
 {
@@ -79,7 +78,7 @@ namespace AonWeb.FluentHttp.Caching
                 {
                     result = context.Result.Result;
                 }
-                cachedItem = new CachedItem(context.Result.ResponseInfo)
+                cachedItem = new CachedItem(context.Result.ResponseMetadata)
                 {
                     Result = result,
                     IsHttpResponseMessage = isResponseMessage
@@ -87,7 +86,7 @@ namespace AonWeb.FluentHttp.Caching
             }
             else
             {
-                cachedItem.ResponseInfo.Merge(context.Result.ResponseInfo, true);
+                cachedItem.ResponseInfo.Merge(context.Result.ResponseMetadata, true);
             }
 
             _cache.TryAdd(context.CacheKey, cachedItem);
@@ -124,7 +123,7 @@ namespace AonWeb.FluentHttp.Caching
 
         private IEnumerable<Uri> RemoveRelatedUris(CachedItem cachedItem, ICacheContext cacheContext, IEnumerable<Uri> additionalRelatedUris)
         {
-            var uris = cacheContext.Result.ResponseInfo?.DependentUris ?? Enumerable.Empty<Uri>();
+            var uris = cacheContext.Result.ResponseMetadata?.DependentUris ?? Enumerable.Empty<Uri>();
 
             if (cachedItem?.ResponseInfo != null)
                 uris = uris.Concat(cachedItem.ResponseInfo.DependentUris ?? Enumerable.Empty<Uri>());

@@ -7,6 +7,10 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 {
     public class TestListResource : HalResource, IEquatable<TestListResource>
     {
+
+        [HalEmbedded("results")]
+        public IList<TestResource> Results { get; set; }
+
         #region SerializedDefaults
         
         [JsonIgnore]
@@ -73,9 +77,9 @@ namespace AonWeb.FluentHttp.Tests.Helpers
   }
 }";
 
-
+        [JsonIgnore]
         public const string SerializedDefault2 = "{\"_embedded\":{\"results\":[{\"result\":\"Response2ForItem1\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/1\",\"templated\":false}}},{\"result\":\"Response2ForItem2\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/2\",\"templated\":false}}},{\"result\":\"Response2ForItem3\",\"_links\":{\"self\":{\"href\":\"http://localhost:8889/canonical/1\",\"templated\":false}}}]},\"_links\":{\"self\":{\"href\":\"http://localhost:8889/list/1\",\"templated\":false}}}";
-        #endregion
+       
 
         public static TestListResource Default1()
         {
@@ -94,10 +98,8 @@ namespace AonWeb.FluentHttp.Tests.Helpers
                 }
             };
         }
-
-        [HalEmbedded("results")]
-        public IList<TestResource> Results { get; set; }
-
+ #endregion
+       
         #region IEquatable<TestListResource>
 
         public bool Equals(TestListResource other)

@@ -10,22 +10,22 @@ namespace AonWeb.FluentHttp.Caching
         public CacheResult(object result, HttpRequestMessage request, HttpResponseMessage response, ICacheContext context)
             : this(result, CachingHelpers.CreateResponseMetadata(result, request, response, context)) { }
 
-        public CacheResult(object result, IWritableResponseMetadata responseInfo)
+        public CacheResult(object result, IResponseMetadata responseMetadata)
         {
             Found = true;
             Result = result;
-            ResponseInfo = responseInfo;
+            ResponseMetadata = responseMetadata;
         }
 
         public bool Found { get; set; }
         public object Result { get; set; }
-        public IWritableResponseMetadata ResponseInfo { get; private set; }
+        public IResponseMetadata ResponseMetadata { get; private set; }
 
         public static CacheResult Empty = new CacheResult();
 
         public void UpdateResponseInfo(HttpRequestMessage request, HttpResponseMessage response, ICacheContext context)
         {
-            ResponseInfo = CachingHelpers.CreateResponseMetadata(Result, request, response, context);
+            ResponseMetadata = CachingHelpers.CreateResponseMetadata(Result, request, response, context);
         }
     }
 }

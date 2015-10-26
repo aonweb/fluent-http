@@ -8,6 +8,12 @@ namespace AonWeb.FluentHttp.Mocks
 {
     public static class MockHttpResponseMessageExtensions
     {
+        public static MockHttpResponseMessage WithHttpContent(this MockHttpResponseMessage response, HttpContent content)
+        {
+            response.Content = content;
+            return response;
+        }
+
         public static MockHttpResponseMessage WithContent(this MockHttpResponseMessage response, string content)
         {
             response.ContentString = content;
