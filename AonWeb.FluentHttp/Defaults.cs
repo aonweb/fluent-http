@@ -23,6 +23,8 @@ namespace AonWeb.FluentHttp
             _handlers = new Lazy<HttpHandlerDefaults>(() => new HttpHandlerDefaults(this));
 
             ResetRequested += (sender, args) => ResetClient();
+
+            Reset();
         }
 
         public HttpClientSettings GetClientDefaults()

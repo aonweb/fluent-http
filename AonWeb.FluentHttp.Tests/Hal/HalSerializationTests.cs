@@ -7,8 +7,6 @@ using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,30 +17,17 @@ namespace AonWeb.FluentHttp.Tests.Hal
     public class HalDeserializationTests
     {
         private readonly ITestOutputHelper _logger;
-        private readonly JsonSerializerSettings _settings = new JsonSerializerSettings
-        {
-            Converters = new List<JsonConverter>
-            {
-                new HalResourceConverter()
-            },
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
-            {
-                IgnoreSerializableInterface = true,
-                IgnoreSerializableAttribute = true,
-                SerializeCompilerGeneratedMembers = false
-            },
-            Formatting = Formatting.Indented
-        };
 
         public HalDeserializationTests(ITestOutputHelper logger)
         {
             _logger = logger;
+
+            Defaults.Current.GetCachingDefaults().Enabled = false;
         }
 
         [Fact]
         public async Task CanDeserializeResource()
         {
-
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var uri = server.ListeningUri;
@@ -60,9 +45,6 @@ namespace AonWeb.FluentHttp.Tests.Hal
         [Fact]
         public async Task CanDeserializeResourceWithLinks()
         {
-
-            _logger.WriteLine(JsonConvert.SerializeObject(TestResourceWithLinks.Default1(), _settings));
-
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var uri = server.ListeningUri;
@@ -147,7 +129,6 @@ namespace AonWeb.FluentHttp.Tests.Hal
         [Fact]
         public async Task CanDeserializeCamelCaseError()
         {
-
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var uri = server.ListeningUri;
