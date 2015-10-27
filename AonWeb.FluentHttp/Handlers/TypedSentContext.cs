@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.Handlers
             : base(context)
         { }
 
-        public TResult Result
+        public new TResult Result
         {
             get { return TypeHelpers.CheckType<TResult>(base.Result, SuppressTypeMismatchExceptions); }
             set { base.Result = value; }
