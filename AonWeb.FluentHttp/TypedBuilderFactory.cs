@@ -50,11 +50,6 @@ namespace AonWeb.FluentHttp
             return builder;
         }
 
-        protected virtual IBuilderScope GetScope()
-        {
-            return null;
-        }
-
         protected virtual IChildHttpBuilder GetChildBuilder()
         {
             return _httpBuilderFactory.CreateAsChild();

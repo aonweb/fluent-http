@@ -54,7 +54,6 @@
     <Compile Include="IAdvancedCacheConfigurable.cs" />
     <Compile Include="IBuilderConfiguration.cs" />
     <Compile Include="IBuilderFactory.cs" />
-    <Compile Include="IBuilderScope.cs" />
     <Compile Include="IChildIBuilderFactory.cs" />
     <Compile Include="IResponseValidator.cs" />
     <Compile Include="ResponseValidatorCollection.cs" />

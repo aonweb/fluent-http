@@ -6,12 +6,6 @@ namespace AonWeb.FluentHttp.Helpers
 {
     public static class TypeHelpers
     {
-        public static TScope As<TScope>(this IBuilderScope scope)
-            where TScope : IBuilderScope
-        {
-            return (TScope)scope;
-        }
-
         public static object GetDefaultValueForType(Type type)
         {
             if (!IsNullable(type))
@@ -19,7 +13,6 @@ namespace AonWeb.FluentHttp.Helpers
 
             return null;
         }
-
         
         public static bool IsAssignableFrom(this Type baseType, Type childType)
         {

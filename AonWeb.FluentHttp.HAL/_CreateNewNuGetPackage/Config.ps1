@@ -55,7 +55,7 @@ $appendConfigurationAndPlatformToNuGetPackageFileName = $true
 #------------------------------------------------
 
 # The NuGet gallery to upload to. If not provided, the DefaultPushSource in your NuGet.config file is used (typically nuget.org).
-$sourceToUploadTo = "http://svd0nugetd01"
+$sourceToUploadTo = "http://192.168.110.7:8030"
 
 # The API Key to use to upload the package to the gallery. If not provided and a system-level one does not exist for the specified Source, you will be prompted for it.
 $apiKey = ""
