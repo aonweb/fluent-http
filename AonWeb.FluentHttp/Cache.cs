@@ -5,12 +5,16 @@ namespace AonWeb.FluentHttp
 {
     public static class Cache
     {
-        private static readonly Lazy<IHttpCacheStore> CacheStore = new Lazy<IHttpCacheStore>(() => Defaults.Current.GetCachingDefaults().CacheStoreFactory(), true);
-        private static readonly Lazy<IVaryByStore> VaryStore = new Lazy<IVaryByStore>(() => Defaults.Current.GetCachingDefaults().VaryByStoreFactory(), true);
-       
+        private static Lazy<ICacheProvider> _cacheStore;
+
+        static Cache()
+        {
+            SetProvider(() => new InMemoryCacheProvider(new InMemoryVaryByProvider()));
+        }
+
         public static void Clear()
         {
-            CurrentCacheStore.Clear();
+            _cacheStore.Value.Clear();
         }
 
         public static void Remove(string uri)
@@ -20,11 +24,14 @@ namespace AonWeb.FluentHttp
 
         public static void Remove(Uri uri)
         {
-            CurrentCacheStore.RemoveItem(uri);
+            _cacheStore.Value.Remove(uri);
         }
 
-        internal static IHttpCacheStore CurrentCacheStore => CacheStore.Value;
+        public static void SetProvider(Func<ICacheProvider> cacheFactory)
+        {
+            _cacheStore = new Lazy<ICacheProvider>(cacheFactory, true);
+        }
 
-        internal static IVaryByStore CurrentVaryByStore => VaryStore.Value;
+        internal static ICacheProvider Current => _cacheStore.Value;
     }
 }

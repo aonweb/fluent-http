@@ -23,7 +23,12 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public RedirectionHandlerTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
+            Cache.Clear();
+        }
+
+        private static IHttpBuilder CreateBuilder()
+        {
+            return new HttpBuilderFactory().Create().Advanced.WithCaching(false);
         }
 
         [Theory]
@@ -45,7 +50,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var response = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync();
+                var response = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync();
                 var result = await response.ReadContentsAsync();
 
                 actual.ShouldBe(expected);
@@ -74,7 +79,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 });
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).AsPost().WithContent("Content").ResultAsync().Result.ReadContentsAsync();
+                var result = await CreateBuilder().WithUri(server.ListeningUri).AsPost().WithContent("Content").ResultAsync().Result.ReadContentsAsync();
 
                 actual.Count.ShouldBe(2);
                 actual[1].ShouldBe("Content");
@@ -100,7 +105,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var response = await new HttpBuilderFactory().Create().WithUri(uri).AsPost().WithContent("Content").ResultAsync();
+                var response = await CreateBuilder().WithUri(uri).AsPost().WithContent("Content").ResultAsync();
                 var result = await response.Content.ReadAsStringAsync();
 
                 result.ShouldBe("Success");
@@ -121,7 +126,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var calledBack = false;
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithRedirectConfiguration(h => h.WithAutoRedirect(false).WithCallback(ctx => calledBack = true))
                     .ResultAsync();
 
@@ -143,7 +148,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithRedirectConfiguration(h => h.WithAutoRedirect()).ResultAsync().ReadContentsAsync();
+                var result = await CreateBuilder().WithUri(server.ListeningUri).Advanced.WithRedirectConfiguration(h => h.WithAutoRedirect()).ResultAsync().ReadContentsAsync();
 
                 actual.ShouldBe(expected);
                 result.ShouldBe("Success");
@@ -168,7 +173,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RedirectHandler>(h => h.WithCallback(ctx =>
                     {
                         if (ctx.CurrentRedirectionCount >= 1)
@@ -191,7 +196,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                     .WithNextResponse(new MockHttpResponseMessage());
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync();
+                var result = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync();
 
                 result.StatusCode.ShouldBe(HttpStatusCode.Created);
             }
@@ -210,7 +215,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result = await CreateBuilder().WithUri(server.ListeningUri)
                     .Advanced.WithRedirectConfiguration(h => h.WithRedirectStatusCode(HttpStatusCode.MultipleChoices)).ResultAsync().ReadContentsAsync();
 
                 actual.ShouldBe(expected);
@@ -231,7 +236,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual = r.RequestUri);
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result = await CreateBuilder().WithUri(server.ListeningUri)
                     .Advanced.WithRedirectConfiguration(h =>
                         h.WithRedirectValidator(r => r.Result.StatusCode == HttpStatusCode.MultipleChoices))
                     .ResultAsync().ReadContentsAsync();
@@ -244,7 +249,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         [Fact]
         public void WithRedirectValidator_WithValidatorIsNull_ExpectException()
         {
-            Should.Throw<ArgumentNullException>(() => new HttpBuilderFactory().Create().WithUri("http://somedomain.com")
+            Should.Throw<ArgumentNullException>(() => CreateBuilder().WithUri("http://somedomain.com")
                 .Advanced.WithRedirectConfiguration(h =>
                     h.WithRedirectValidator(null)));
         }
@@ -261,7 +266,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                             .WithHeader("Location", redirectUrl.ToString()));
 
                     //act
-                    await new HttpBuilderFactory().Create()
+                    await CreateBuilder()
                             .WithUri(server.ListeningUri)
                             .Advanced.WithRedirectConfiguration(h => h.WithAutoRedirect(1))
                             .ResultAsync();

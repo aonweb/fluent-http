@@ -55,11 +55,9 @@ namespace AonWeb.FluentHttp
                 {
                     mediaType = content.Headers.ContentType.MediaType;
 
-                    if (content.Headers.ContentType != null)
-                        charSet = content.Headers.ContentType.CharSet;
-                    else
-                        charSet = content.Headers.ContentEncoding.FirstOrDefault();
-                    
+                    charSet = content.Headers.ContentType != null 
+                        ? content.Headers.ContentType.CharSet 
+                        : content.Headers.ContentEncoding.FirstOrDefault();
                 }
 
                 if (string.IsNullOrWhiteSpace(charSet))

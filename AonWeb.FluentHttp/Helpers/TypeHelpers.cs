@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using AonWeb.FluentHttp.Exceptions;
 
@@ -7,6 +6,12 @@ namespace AonWeb.FluentHttp.Helpers
 {
     public static class TypeHelpers
     {
+        public static TScope As<TScope>(this IBuilderScope scope)
+            where TScope : IBuilderScope
+        {
+            return (TScope)scope;
+        }
+
         public static object GetDefaultValueForType(Type type)
         {
             if (!IsNullable(type))
@@ -26,9 +31,9 @@ namespace AonWeb.FluentHttp.Helpers
             return baseType.GetTypeInfo().IsAssignableFrom(childTypeInfo);
         }
 
-        public static bool IsInstanceOfType(this Type type, object obj)
+        public static bool IsInstanceOfType(this Type baseType, object obj)
         {
-            return obj != null && type.IsAssignableFrom(obj.GetType());
+            return obj != null && baseType.IsAssignableFrom(obj.GetType());
         }
 
         internal static T As<T>(this object @this)

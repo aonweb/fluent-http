@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -20,6 +19,6 @@ namespace AonWeb.FluentHttp.Mocks
         HttpResponseHeaders Headers { get; }
         long RequestCount { get; }
         long RequestCountForThisUrl { get; }
-        HttpResponseMessage ToHttpResponseMessage();
+        HttpResponseMessage ToHttpResponseMessage(HttpRequestMessage request);
     }
 }

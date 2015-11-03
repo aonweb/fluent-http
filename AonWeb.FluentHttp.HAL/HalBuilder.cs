@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.HAL.Serialization;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.HAL
 {
@@ -65,6 +66,13 @@ namespace AonWeb.FluentHttp.HAL
             return this;
         }
 
+        public IAdvancedHalBuilder WithConfiguration(Action<ICacheSettings> configuration)
+        {
+            _innerBuilder.WithConfiguration(configuration);
+
+            return this;
+        }
+
         void IConfigurable<ITypedBuilderSettings>.WithConfiguration(Action<ITypedBuilderSettings> configuration)
         {
             WithConfiguration(configuration);
@@ -78,6 +86,11 @@ namespace AonWeb.FluentHttp.HAL
         void IConfigurable<IHttpBuilderSettings>.WithConfiguration(Action<IHttpBuilderSettings> configuration)
         {
             _innerBuilder.WithConfiguration(configuration);
+        }
+
+        void IConfigurable<ICacheSettings>.WithConfiguration(Action<ICacheSettings> configuration)
+        {
+            WithConfiguration(configuration);
         }
     }
 }

@@ -21,8 +21,12 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public HalDeserializationTests(ITestOutputHelper logger)
         {
             _logger = logger;
+            Cache.Clear();
+        }
 
-            Defaults.Current.GetCachingDefaults().Enabled = false;
+        private static IHalBuilder CreateBuilder()
+        {
+            return new HalBuilderFactory().Create().Advanced.WithCaching(false);
         }
 
         [Fact]
@@ -34,7 +38,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader());
 
-                var result = await new HalBuilderFactory().Create()
+                var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestResource>();
 
                 result.ShouldNotBeNull();
@@ -51,7 +55,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResourceWithLinks.SerializedDefault1).WithPrivateCacheHeader());
 
-                var result = await new HalBuilderFactory().Create()
+                var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestResourceWithLinks>();
 
                 result.ShouldNotBeNull();
@@ -67,7 +71,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
                 var uri = server.ListeningUri;
                 server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithPrivateCacheHeader());
 
-                var result = await new HalBuilderFactory().Create()
+                var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListResource>();
 
                 result.ShouldNotBeNull();
@@ -84,7 +88,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
                 var uri = server.ListeningUri;
                 server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResourceWithLinks.SerializedDefault1).WithPrivateCacheHeader());
 
-                var result = await new HalBuilderFactory().Create()
+                var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListResourceWithLinks>();
 
                 result.ShouldNotBeNull();
@@ -101,7 +105,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
                 var uri = server.ListeningUri;
                 server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListEmbeddedPropertyParentsResource.SerializedDefault1).WithPrivateCacheHeader());
 
-                var result = await new HalBuilderFactory().Create()
+                var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListEmbeddedPropertyParentsResource>();
 
                 result.ShouldNotBeNull();
@@ -118,7 +122,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
                 var uri = server.ListeningUri;
                 server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListEmbeddedArrayParentResource.SerializedDefault1).WithPrivateCacheHeader());
 
-                var result = await new HalBuilderFactory().Create()
+                var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListEmbeddedArrayParentResource>();
 
                 result.ShouldNotBeNull();
@@ -136,7 +140,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotFound).WithContent(TestError.SerializedDefault1).WithPrivateCacheHeader());
 
                 var ex = await Should.ThrowAsync<HttpErrorException<TestError>>(
-                    new HalBuilderFactory().Create()
+                    CreateBuilder()
                         .WithLink(uri)
                         .WithErrorType<TestError>()
                         .SendAsync());

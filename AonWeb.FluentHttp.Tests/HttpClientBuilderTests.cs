@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Settings;
 using Shouldly;
 using Xunit;
 
@@ -255,7 +256,7 @@ namespace AonWeb.FluentHttp.Tests
 
         private IHttpClientBuilder CreateHttpClientBuilder()
         {
-            return new HttpClientBuilder();
+            return new HttpClientBuilder(new HttpClientSettings());
         }
     }
 }

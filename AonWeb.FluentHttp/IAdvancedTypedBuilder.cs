@@ -2,7 +2,8 @@
 {
     public interface IAdvancedTypedBuilder :  ITypedBuilder,
         IAdvancedHttpBuilderCore<IAdvancedTypedBuilder>,
-        IFluentConfigurable<IAdvancedTypedBuilder, IAdvancedHttpBuilder>
+        IFluentConfigurable<IAdvancedTypedBuilder, IAdvancedHttpBuilder>,
+        IAdvancedCacheConfigurable<IAdvancedTypedBuilder>
     {
 
     }

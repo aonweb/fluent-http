@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="HalDefaults.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="Extensions\AdvancedHalBuilderExtensions.cs" />
     <Compile Include="Extensions\HalBuilderExtensions.cs" />
     <Compile Include="HalBuilderFactory.cs" />
@@ -46,7 +46,6 @@
     <Compile Include="IHalBuilderFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\HalResourceConverter.cs" />
-    <Compile Include="Serialization\SerializationErrorHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

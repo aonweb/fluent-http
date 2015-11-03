@@ -95,7 +95,7 @@ namespace AonWeb.FluentHttp.Handlers
             }
         }
 
-        public int Count { get { return Value.Count; } }
-        public bool IsReadOnly { get { return Value.IsReadOnly; } }
+        public int Count => Value.Count;
+        public bool IsReadOnly => Value.IsReadOnly;
     }
 }

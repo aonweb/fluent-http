@@ -88,11 +88,8 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s => s.AutoDecompression = true);
 
-            return builder.WithClientConfiguration(c =>
-                c.WithDecompressionMethods(enabled
-                    ? Defaults.Current.GetClientDefaults().DecompressionMethods.HasValue && !Defaults.Current.GetClientDefaults().DecompressionMethods.Value.HasFlag(DecompressionMethods.None)
-                        ? Defaults.Current.GetClientDefaults().DecompressionMethods.Value
-                        : DecompressionMethods.GZip | DecompressionMethods.Deflate
+            return builder.WithClientConfiguration(c => c.WithDecompressionMethods(enabled
+                    ? DecompressionMethods.GZip | DecompressionMethods.Deflate
                     : DecompressionMethods.None));
         }
 
@@ -106,12 +103,6 @@ namespace AonWeb.FluentHttp
 
         {
             return builder.WithClientConfiguration(c => c.WithNoCache(nocache));
-        }
-
-        public static IAdvancedHttpBuilder WithCacheDuration(this IAdvancedHttpBuilder builder, TimeSpan? duration)
-
-        {
-            return builder.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(h => h.WithCacheDuration(duration));
         }
 
         public static IAdvancedHttpBuilder WithSuppressCancellationExceptions(this IAdvancedHttpBuilder builder, bool suppress = true)
@@ -168,7 +159,7 @@ namespace AonWeb.FluentHttp
             if (validator == null)
                 throw new ArgumentNullException(nameof(validator));
 
-            builder.WithConfiguration(s => s.SuccessfulResponseValidators.Add(validator));
+            builder.WithConfiguration(s => s.ResponseValidator.Add(new ResponseValidatorFunc(validator)));
 
             return builder;
         }
@@ -180,24 +171,11 @@ namespace AonWeb.FluentHttp
             return builder;
         }
 
-        public static IAdvancedHttpBuilder WithCaching(this IAdvancedHttpBuilder builder, bool enabled = true)
-
+        public static IAdvancedHttpBuilder WithContextItem(this IAdvancedHttpBuilder builder, string key, object value)
         {
-            builder.WithConfiguration(s => s.HandlerRegister.WithConfiguration<HttpCacheConfigurationHandler>(handler => handler.WithCaching(enabled), enabled));
+            builder.WithConfiguration(s => s.Items[key] = value);
 
             return builder;
-        }
-
-        public static IAdvancedHttpBuilder WithDependentUri(this IAdvancedHttpBuilder builder, Uri uri)
-
-        {
-            return builder.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(h => h.WithDependentUri(uri));
-        }
-
-        public static IAdvancedHttpBuilder WithDependentUris(this IAdvancedHttpBuilder builder, IEnumerable<Uri> uris)
-
-        {
-            return builder.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(h => h.WithDependentUris(uris));
         }
 
         public static IAdvancedHttpBuilder OnSending(this IAdvancedHttpBuilder builder, Action<HttpSendingContext> handler)
@@ -284,5 +262,172 @@ namespace AonWeb.FluentHttp
 
             return builder;
         }
+
+        #region Caching Events
+
+        #region Hit
+
+        public static IAdvancedHttpBuilder OnCacheHit(this IAdvancedHttpBuilder builder, Action<CacheHitContext<HttpResponseMessage>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithHitHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheHit(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<CacheHitContext<HttpResponseMessage>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithHitHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheHitAsync(this IAdvancedHttpBuilder builder, Func<CacheHitContext<HttpResponseMessage>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncHitHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheHitAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<CacheHitContext<HttpResponseMessage>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncHitHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Miss
+
+
+        public static IAdvancedHttpBuilder OnCacheMiss(this IAdvancedHttpBuilder builder, Action<CacheMissContext<HttpResponseMessage>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithMissHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheMiss(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<CacheMissContext<HttpResponseMessage>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithMissHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheMissAsync(this IAdvancedHttpBuilder builder, Func<CacheMissContext<HttpResponseMessage>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncMissHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheMissAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<CacheMissContext<HttpResponseMessage>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncMissHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Store
+
+
+        public static IAdvancedHttpBuilder OnCacheStore(this IAdvancedHttpBuilder builder, Action<CacheStoreContext<HttpResponseMessage>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithStoreHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheStore(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<CacheStoreContext<HttpResponseMessage>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithStoreHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheStoreAsync(this IAdvancedHttpBuilder builder, Func<CacheStoreContext<HttpResponseMessage>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncStoreHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheStoreAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<CacheStoreContext<HttpResponseMessage>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncStoreHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Expiring
+
+        public static IAdvancedHttpBuilder OnCacheExpiring(this IAdvancedHttpBuilder builder, Action<CacheExpiringContext> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiringHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheExpiring(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<CacheExpiringContext> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiringHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheExpiringAsync(this IAdvancedHttpBuilder builder, Func<CacheExpiringContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiringHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheExpiringAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<CacheExpiringContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiringHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Expired
+
+        public static IAdvancedHttpBuilder OnCacheExpired(this IAdvancedHttpBuilder builder, Action<CacheExpiredContext> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiredHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheExpired(this IAdvancedHttpBuilder builder, HandlerPriority priority, Action<CacheExpiredContext> cacheHandler)
+
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiredHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheExpiredAsync(this IAdvancedHttpBuilder builder, Func<CacheExpiredContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiredHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHttpBuilder OnCacheExpiredAsync(this IAdvancedHttpBuilder builder, HandlerPriority priority, Func<CacheExpiredContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiredHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #endregion
     }
 }

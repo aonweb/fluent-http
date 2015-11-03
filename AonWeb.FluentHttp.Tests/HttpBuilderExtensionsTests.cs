@@ -23,8 +23,16 @@ namespace AonWeb.FluentHttp.Tests
         public HttpBuilderExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
+        }
+
+        private static IMockHttpBuilder CreateBuilder()
+        {
+            var builder = new MockHttpBuilderFactory().Create();
+
+            builder.Advanced.WithCaching(false);
+
+            return builder;
         }
 
         #region Http Methods
@@ -35,7 +43,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var expected = "GET";
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(MockUriString).Advanced;
+            var builder = CreateBuilder().WithUri(MockUriString).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
@@ -52,7 +60,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var expected = "GET";
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(MockUriString).Advanced;
+            var builder = CreateBuilder().WithUri(MockUriString).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
@@ -69,7 +77,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var expected = "PUT";
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(MockUriString).Advanced;
+            var builder = CreateBuilder().WithUri(MockUriString).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
@@ -86,7 +94,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var expected = "POST";
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(MockUriString).Advanced;
+            var builder = CreateBuilder().WithUri(MockUriString).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
@@ -103,7 +111,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var expected = "DELETE";
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(MockUriString).Advanced;
+            var builder = CreateBuilder().WithUri(MockUriString).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
@@ -120,7 +128,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var expected = "PATCH";
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(MockUriString).Advanced;
+            var builder = CreateBuilder().WithUri(MockUriString).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
@@ -137,7 +145,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var expected = "HEAD";
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(MockUriString).Advanced;
+            var builder = CreateBuilder().WithUri(MockUriString).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Method.Method);
 
@@ -158,7 +166,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = MockUriString;
             var expected = "Content";
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
@@ -178,7 +186,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedEncoding = Encoding.UTF8;
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
 
             string actualAcceptHeader = null;
 
@@ -203,7 +211,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedMediaType = "application/json";
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
 
             string actualContentType = null;
             string actualAcceptHeader = null;
@@ -231,7 +239,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedEncoding = Encoding.ASCII;
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             string actualContent = null;
             string actualAcceptHeader = null;
 
@@ -258,7 +266,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedMediaType = "application/json";
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
 
             string actualContentType = null;
             string actualAcceptHeader = null;
@@ -287,7 +295,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = MockUriString;
             var expected = "Content";
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
@@ -306,7 +314,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = MockUriString;
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             bool actual = false;
             builder.OnSending(ctx => actual = ctx.Request.Content == null);
 
@@ -325,7 +333,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = MockUriString;
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             bool actual = false;
             builder.OnSending(ctx => actual = ctx.Request.Content == null);
 
@@ -342,7 +350,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = MockUriString;
             Should.Throw<ArgumentNullException>(() => 
-                new MockHttpBuilderFactory().Create().WithUri(uri).Advanced.AsPost()
+                CreateBuilder().WithUri(uri).Advanced.AsPost()
                     .WithContent((Func<string>) null));
         }
 
@@ -355,7 +363,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedEncoding = Encoding.UTF8;
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
 
             string actualAcceptHeader = null;
 
@@ -380,7 +388,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedMediaType = "application/json";
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
 
             string actualContentType = null;
             string actualAcceptHeader = null;
@@ -408,7 +416,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedEncoding = Encoding.ASCII;
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             string actualContent = null;
             string actualAcceptHeader = null;
 
@@ -435,7 +443,7 @@ namespace AonWeb.FluentHttp.Tests
             var expectedMediaType = "application/json";
 
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
 
             string actualContentType = null;
             string actualAcceptHeader = null;
@@ -461,7 +469,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri = MockUriString;
 
             var content = new StringContent("Content");
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             string actual = null;
             builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
 
@@ -479,7 +487,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri = MockUriString;
 
             Should.Throw<ArgumentNullException>(() => 
-                new MockHttpBuilderFactory().Create().WithUri(uri).Advanced.AsPost()
+                CreateBuilder().WithUri(uri).Advanced.AsPost()
                     .WithContent((Func<IHttpBuilderContext, HttpContent>)null));
         }
 
@@ -495,7 +503,7 @@ namespace AonWeb.FluentHttp.Tests
             {
 
                 var delay = 500;
-                var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced.WithSuppressCancellationExceptions();
+                var builder = CreateBuilder().WithUri(uri).Advanced.WithSuppressCancellationExceptions();
                 server.WithRequestInspector(r => Task.Delay(delay));
 
                 // act

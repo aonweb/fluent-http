@@ -110,7 +110,7 @@ namespace AonWeb.FluentHttp.Handlers
             return handlerContext?.GetHandlerResult();
         }
 
-        public TypedHandlerRegister WithHandler<TResult, TContent, TError>(ITypedHandler handler)
+        public TypedHandlerRegister WithHandler(ITypedHandler handler)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
@@ -120,25 +120,25 @@ namespace AonWeb.FluentHttp.Handlers
 
             _handlerInstances.Add(handler);
 
-            WithAsyncSendingHandler<TResult, TContent>(handler.GetPriority(HandlerType.Sending), async ctx =>
+            WithAsyncSendingHandler<object, object>(handler.GetPriority(HandlerType.Sending), async ctx =>
             {
                 if (handler.Enabled)
                     await handler.OnSending(ctx);
             });
 
-            WithAsyncSentHandler<TResult>(handler.GetPriority(HandlerType.Sent), async ctx =>
+            WithAsyncSentHandler<object>(handler.GetPriority(HandlerType.Sent), async ctx =>
                 {
                     if (handler.Enabled)
                         await handler.OnSent(ctx);
                 });
 
-            WithAsyncResultHandler<TResult>(handler.GetPriority(HandlerType.Result), async ctx =>
+            WithAsyncResultHandler<object>(handler.GetPriority(HandlerType.Result), async ctx =>
                 {
                     if (handler.Enabled)
                         await handler.OnResult(ctx);
                 });
 
-            WithAsyncErrorHandler<TError>(handler.GetPriority(HandlerType.Error), async ctx =>
+            WithAsyncErrorHandler<object>(handler.GetPriority(HandlerType.Error), async ctx =>
                 {
                     if (handler.Enabled)
                         await handler.OnError(ctx);

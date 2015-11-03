@@ -48,7 +48,7 @@ namespace AonWeb.FluentHttp.Helpers
             var resultWithMeta = result as IResultWithWritableMetadata;
             if (resultWithMeta != null)
             {
-                resultWithMeta.Metadata = CachingHelpers.CreateResponseMetadata(result, request, response, context.GetSettings().CacheSettings);
+                resultWithMeta.Metadata = CachingHelpers.CreateResponseMetadata(result, request, response, context.CacheMetadata);
             }
 
             return result;
@@ -89,13 +89,13 @@ namespace AonWeb.FluentHttp.Helpers
 
             if (errorWithMeta != null)
             {
-                errorWithMeta.Metadata = CachingHelpers.CreateResponseMetadata(error, request, response, context.GetSettings().CacheSettings);
+                errorWithMeta.Metadata = CachingHelpers.CreateResponseMetadata(error, request, response, context.CacheMetadata);
             }
 
             return error;
         }
 
-        public static Exception CreateException(ExceptionCreationContext context)
+        public static Exception CreateTypedException(ExceptionCreationContext context)
         {
             var openExType = typeof(HttpErrorException<>);
 
@@ -104,6 +104,13 @@ namespace AonWeb.FluentHttp.Helpers
             var message = context.Error?.ToString() ?? context.InnerException?.Message;
 
             return (Exception)Activator.CreateInstance(exType, context.Error, context.StatusCode, message, context.InnerException);
+        }
+
+        public static Exception CreateHttpException(HttpResponseMessage response)
+        {
+            var statusCode = ((int?)response?.StatusCode).ToString() ?? "<Unknown>";
+            var reasonPhrase = response?.ReasonPhrase ?? "<Unknown>";
+            return new HttpRequestException($"Recieved response {statusCode} - {reasonPhrase}, which did not pass response validation. " + response.DetailsForException());
         }
     }
 }

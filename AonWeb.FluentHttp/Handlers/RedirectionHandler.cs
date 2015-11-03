@@ -10,12 +10,16 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public class RedirectHandler : HttpHandler
     {
-        
         public RedirectHandler()
         {
-            Enabled = Defaults.Current.GetHandlerDefaults().AutoRedirectEnabled;
-            MaxAutoRedirects = Defaults.Current.GetHandlerDefaults().MaxAutoRedirects;
-            RedirectStatusCodes = new HashSet<HttpStatusCode>(Defaults.Current.GetHandlerDefaults().RedirectStatusCodes);
+            MaxAutoRedirects = 2;
+            RedirectStatusCodes = new HashSet<HttpStatusCode>{
+                HttpStatusCode.MultipleChoices,
+                HttpStatusCode.Found,
+                HttpStatusCode.Redirect,
+                HttpStatusCode.MovedPermanently,
+                HttpStatusCode.UseProxy
+            };
 
             RedirectValidtor = ShouldRedirect;
         }

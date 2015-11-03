@@ -11,13 +11,15 @@ namespace AonWeb.FluentHttp.Handlers
     {
         public FollowLocationHandler()
         {
-            Enabled = Defaults.Current.GetHandlerDefaults().AutoFollowLocationEnabled;
-            FollowedStatusCodes = new HashSet<HttpStatusCode>(Defaults.Current.GetHandlerDefaults().FollowedStatusCodes);
+            FollowedStatusCodes = new HashSet<HttpStatusCode>{
+                HttpStatusCode.Created,
+                HttpStatusCode.SeeOther
+            };
             FollowValidtor = ShouldFollow;
         }
 
         private Func<HttpSentContext, bool> FollowValidtor { get; set; }
-        private Action<HttpFollowLocationContext> OnFollow { get; set; }
+        private Action<FollowLocationContext> OnFollow { get; set; }
         private static ISet<HttpStatusCode> FollowedStatusCodes { get; set; }
 
         public FollowLocationHandler WithAutoFollow(bool enabled = true)
@@ -48,9 +50,9 @@ namespace AonWeb.FluentHttp.Handlers
             return this;
         }
 
-        public FollowLocationHandler WithCallback(Action<HttpFollowLocationContext> callback)
+        public FollowLocationHandler WithCallback(Action<FollowLocationContext> callback)
         {
-            OnFollow = (Action<HttpFollowLocationContext>)Delegate.Combine(OnFollow, callback);
+            OnFollow = (Action<FollowLocationContext>)Delegate.Combine(OnFollow, callback);
 
             return this;
         }
@@ -72,7 +74,7 @@ namespace AonWeb.FluentHttp.Handlers
 
             var locationUri = GetLocationUri(uri, context.Result);
 
-            var ctx = new HttpFollowLocationContext
+            var ctx = new FollowLocationContext
             {
                 StatusCode = context.Result.StatusCode,
                 RequestMessage = context.Result.RequestMessage,
@@ -126,19 +128,5 @@ namespace AonWeb.FluentHttp.Handlers
 
             return new Uri(UriHelpers.CombineVirtualPaths(originalUri.GetSchemeHostPath(), locationUri.OriginalString));
         }   
-    }
-
-    public class HttpFollowLocationContext
-    {
-        public HttpFollowLocationContext()
-        {
-            ShouldFollow = true;
-        }
-
-        public HttpStatusCode StatusCode { get; internal set; }
-        public HttpRequestMessage RequestMessage { get; internal set; }
-        public Uri LocationUri { get; set; }
-        public Uri CurrentUri { get; internal set; }
-        public bool ShouldFollow { get; set; }
     }
 }

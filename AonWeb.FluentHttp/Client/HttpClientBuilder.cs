@@ -1,19 +1,17 @@
 using System;
 using System.Net.Http;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Client
 {
     public class HttpClientBuilder : IHttpClientBuilder
     {
-        public HttpClientBuilder()
-            : this(new HttpClientSettings()) { }
-
-        internal HttpClientBuilder(HttpClientSettings settings)
+        public HttpClientBuilder(IHttpClientSettings settings)
         {
             Settings = settings;
         }
 
-        private HttpClientSettings Settings { get; }
+        private IHttpClientSettings Settings { get; }
 
         public IHttpClientBuilder WithConfiguration(Action<IHttpClientSettings> configuration)
         {

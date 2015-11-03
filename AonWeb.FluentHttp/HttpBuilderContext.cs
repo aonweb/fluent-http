@@ -3,51 +3,62 @@ using System.Collections;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Handlers.Caching;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp
 {
     public class HttpBuilderContext : IHttpBuilderContext
     {
-        private readonly IHttpBuilderSettings _settings;
+        public HttpBuilderContext(IHttpBuilderSettings settings)
+            :this((IHttpBuilderContext)settings)
+        {
+            settings.ValidateSettings();
+
+            CacheMetadata = new CacheMetadata(settings.CacheSettings);
+        }
 
         public HttpBuilderContext(IHttpBuilderContext context)
-            : this(context.GetSettings()) { }
-
-        public HttpBuilderContext(IHttpBuilderSettings settings)
         {
-            _settings = settings;
+            Items = context.Items;
+            ResultType = context.ResultType;
+            Builder = context.Builder;
+            SuppressCancellationErrors = context.SuppressCancellationErrors;
+            Uri = context.Uri;
+            Method = context.Method;
+            MediaType = context.MediaType;
+            ContentEncoding = context.ContentEncoding;
+            CompletionOption = context.CompletionOption;
+            AutoDecompression = context.AutoDecompression;
+            ContentFactory = context.ContentFactory;
+            ExceptionFactory = context.ExceptionFactory;
+            HandlerRegister = context.HandlerRegister;
+            Token = context.Token;
+            CacheMetadata = context.CacheMetadata;
+            ResponseValidator = context.ResponseValidator;
         }
 
-        public IDictionary Items => _settings.Items;
-        public Uri Uri => _settings.Uri;
-        public HttpMethod Method => _settings.Method;
-        public string MediaType => _settings.MediaType;
-        public Encoding ContentEncoding => _settings.ContentEncoding;
-        public HttpCompletionOption CompletionOption => _settings.CompletionOption;
-        public bool SuppressCancellationErrors => _settings.SuppressCancellationErrors;
-        public bool AutoDecompression => _settings.AutoDecompression;
-        public Func<IHttpBuilderContext, HttpContent> ContentFactory => _settings.ContentFactory;
-        public Func<HttpResponseMessage, Exception> ExceptionFactory => _settings.ExceptionFactory;
-        public IRecursiveHttpBuilder Builder => _settings.Builder;
-        public Type ResultType => _settings.ResultType;
-        public HttpHandlerRegister HandlerRegister => _settings.HandlerRegister;
-        public CancellationToken Token => _settings.Token;
-
+        public IDictionary Items { get; }
+        public Type ResultType { get; }
+        public IRecursiveHttpBuilder Builder { get; }
+        public bool SuppressCancellationErrors { get; }
+        public Uri Uri { get; }
+        public HttpMethod Method { get; }
+        public string MediaType { get; }
+        public Encoding ContentEncoding { get; }
+        public HttpCompletionOption CompletionOption { get; }
+        public bool AutoDecompression { get; }
+        public Func<IHttpBuilderContext, HttpContent> ContentFactory { get; }
+        public Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
+        public HttpHandlerRegister HandlerRegister { get; }
+        public CancellationToken Token { get; }
+        public ResponseValidatorCollection ResponseValidator { get; }
+        public ICacheMetadata CacheMetadata { get; }
         public bool IsSuccessfulResponse(HttpResponseMessage response)
         {
-            return _settings.IsSuccessfulResponse(response);
-        }
-
-
-        public void ValidateSettings()
-        {
-            _settings.ValidateSettings();
-        }
-
-        public IHttpBuilderSettings GetSettings()
-        {
-            return _settings.GetSettings();
+            return ResponseValidator.IsValid(response);
         }
     }
 }

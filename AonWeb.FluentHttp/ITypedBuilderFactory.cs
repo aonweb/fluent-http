@@ -1,8 +1,6 @@
 ﻿namespace AonWeb.FluentHttp
 {
-    public interface ITypedBuilderFactory
+    public interface ITypedBuilderFactory: IBuilderFactory<ITypedBuilder>, IChildIBuilderFactory<IChildTypedBuilder>
     {
-        ITypedBuilder Create();
-        IChildTypedBuilder CreateAsChild();
     }
 }

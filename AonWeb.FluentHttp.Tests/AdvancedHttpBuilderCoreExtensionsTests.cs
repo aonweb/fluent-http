@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Autofac;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
+using Autofac;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,8 +19,21 @@ namespace AonWeb.FluentHttp.Tests
         public AdvancedHttpBuilderCoreExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
+        }
+
+        private IContainer CreateContainer()
+        {
+            var builder = new ContainerBuilder();
+            Registration.Register(builder, GetType().Assembly);
+            return builder.Build();
+        }
+
+        private IHttpBuilder CreateBuilder()
+        {
+            var container = CreateContainer();
+
+            return container.Resolve<IHttpBuilder>();
         }
 
 
@@ -31,7 +46,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 //arrange
                 var method = HttpMethod.Get;
-                var builder = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method);
+                var builder = CreateBuilder().WithUri(server.ListeningUri).Advanced.WithMethod(method);
 
                 HttpMethod actual = null;
                 server.WithRequestInspector(r => actual = r.Method);
@@ -50,7 +65,7 @@ namespace AonWeb.FluentHttp.Tests
             string method = null;
 
             //act
-            Should.Throw<ArgumentException>(() => new HttpBuilderFactory().Create().Advanced.WithMethod(method));
+            Should.Throw<ArgumentException>(() => CreateBuilder().Advanced.WithMethod(method));
         }
 
         [Fact]
@@ -58,7 +73,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             //arrange
             var method = string.Empty;
-            var builder = new HttpBuilderFactory().Create();
+            var builder = CreateBuilder();
 
             //act
             Should.Throw<ArgumentException>(() => builder.Advanced.WithMethod(method));
@@ -71,7 +86,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 //arrange
                 var method = HttpMethod.Get;
-                var builder = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method);
+                var builder = CreateBuilder().WithUri(server.ListeningUri).Advanced.WithMethod(method);
 
                 HttpMethod actual = null;
                 server.WithRequestInspector(r => actual = r.Method);
@@ -89,7 +104,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             HttpMethod method = null;
 
-            Should.Throw<ArgumentNullException>(() => new HttpBuilderFactory().Create().Advanced.WithMethod(method));
+            Should.Throw<ArgumentNullException>(() => CreateBuilder().Advanced.WithMethod(method));
         }
 
         [Fact]
@@ -100,7 +115,7 @@ namespace AonWeb.FluentHttp.Tests
                 //arrange
                 var method1 = HttpMethod.Post;
                 var method2 = HttpMethod.Get;
-                var builder = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method1).Advanced.WithMethod(method2);
+                var builder = CreateBuilder().WithUri(server.ListeningUri).Advanced.WithMethod(method1).Advanced.WithMethod(method2);
 
                 HttpMethod actual = null;
                 server.WithRequestInspector(r => actual = r.Method);

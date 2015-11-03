@@ -24,8 +24,12 @@ namespace AonWeb.FluentHttp.Tests
         public AdvancedTypedBuilderExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
+        }
+
+        private static ITypedBuilder CreateBuilder()
+        {
+            return new TypedBuilderFactory().Create().Advanced.WithCaching(false);
         }
         #region WithMethod
 
@@ -36,7 +40,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 //arrange
                 var method = HttpMethod.Get;
-                var builder = new TypedBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method);
+                var builder = CreateBuilder().WithUri(server.ListeningUri).Advanced.WithMethod(method);
 
                 HttpMethod actual = null;
                 server.WithRequestInspector(r => actual = r.Method);
@@ -53,7 +57,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             //arrange
             string method = null;
-            var builder = new TypedBuilderFactory().Create();
+            var builder = CreateBuilder();
 
             //act
             Should.Throw<ArgumentException>(() => builder.Advanced.WithMethod(method));
@@ -64,7 +68,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             //arrange
             var method = string.Empty;
-            var builder = new TypedBuilderFactory().Create();
+            var builder = CreateBuilder();
 
             //act
             Should.Throw<ArgumentException>(() => builder.Advanced.WithMethod(method));
@@ -77,7 +81,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 //arrange
                 var method = HttpMethod.Get;
-                var builder = new TypedBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithMethod(method);
+                var builder = CreateBuilder().WithUri(server.ListeningUri).Advanced.WithMethod(method);
 
                 HttpMethod actual = null;
                 server.WithRequestInspector(r => actual = r.Method);
@@ -96,7 +100,7 @@ namespace AonWeb.FluentHttp.Tests
             HttpMethod method = null;
 
             //act
-            Should.Throw<ArgumentException>(() => new TypedBuilderFactory().Create().Advanced.WithMethod(method));
+            Should.Throw<ArgumentException>(() => CreateBuilder().Advanced.WithMethod(method));
         }
 
         [Fact]
@@ -107,7 +111,7 @@ namespace AonWeb.FluentHttp.Tests
                 //arrange
                 var method1 = HttpMethod.Post;
                 var method2 = HttpMethod.Get;
-                var builder = new TypedBuilderFactory().Create()
+                var builder = CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .Advanced
                         .WithMethod(method1)
@@ -137,7 +141,7 @@ namespace AonWeb.FluentHttp.Tests
                 server.WithRequestInspector(r => actual = r.Headers.UserAgent.First().ToString());
 
                 //act
-                await new TypedBuilderFactory().Create().WithUri(server.ListeningUri)
+                await CreateBuilder().WithUri(server.ListeningUri)
                     .Advanced
                     .WithClientConfiguration(b =>
                         b.WithHeadersConfiguration(h =>
@@ -162,7 +166,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 500;
-                var builder = new TypedBuilderFactory().Create().WithUri(uri);
+                var builder = CreateBuilder().WithUri(uri);
                 server.WithRequestInspector(r => Task.Delay(delay));
                 Exception exception = null;
 
@@ -196,7 +200,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 1000;
-                var builder = new TypedBuilderFactory().Create().WithUri(uri);
+                var builder = CreateBuilder().WithUri(uri);
                 server.WithRequestInspector(r => Task.Delay(delay));
 
                 // act
@@ -222,7 +226,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 10000;
-                var builder = new TypedBuilderFactory().Create().WithUri(uri);
+                var builder = CreateBuilder().WithUri(uri);
                 server.WithRequestInspector(r => Task.Delay(delay));
                 Exception exception = null;
 
@@ -252,7 +256,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 1000;
-                var builder = new TypedBuilderFactory().Create().WithUri(uri);
+                var builder = CreateBuilder().WithUri(uri);
                 server.WithRequestInspector(r => Task.Delay(delay));
                 var callbackCalled = false;
                 // act

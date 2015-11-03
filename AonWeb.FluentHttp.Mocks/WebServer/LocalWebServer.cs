@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -12,7 +11,7 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
 {
     public class LocalWebServer : IDisposable, IResponseMocker<LocalWebServer>
     {
-        private static readonly ISet<int> _portsInUse = new HashSet<int>();
+        private static readonly ISet<int> PortsInUse = new HashSet<int>();
         private static int _minPort = 9000;
         private static int _maxPort = 10000;
 
@@ -64,14 +63,14 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
 
         private void GenerateUniquePort()
         {
-            lock (_portsInUse)
+            lock (PortsInUse)
             {
                 for (var port = _minPort; port <= _maxPort; port++)
                 {
-                    if (!_portsInUse.Contains(port))
+                    if (!PortsInUse.Contains(port))
                     {
                         Port = port;
-                        _portsInUse.Add(port);
+                        PortsInUse.Add(port);
                         break;
                     }  
                 }
@@ -129,9 +128,9 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
                 _listener.Close();
             }
 
-            lock (_portsInUse)
+            lock (PortsInUse)
             {
-                _portsInUse.Remove(Port);
+                PortsInUse.Remove(Port);
             }
 
             return this;

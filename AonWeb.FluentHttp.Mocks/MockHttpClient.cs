@@ -65,7 +65,7 @@ namespace AonWeb.FluentHttp.Mocks
             var response = _responses.GetResponse(context);
 
 
-            return Task.FromResult<HttpResponseMessage>(response.ToHttpResponseMessage());
+            return Task.FromResult(response.ToHttpResponseMessage(request));
         }
 
         public void Dispose()

@@ -1,43 +1,29 @@
-using System.Net.Http.Formatting;
+using System.Collections.Generic;
 using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Serialization;
-using Newtonsoft.Json.Serialization;
 
 namespace AonWeb.FluentHttp.Mocks.Hal
 {
-    public class MockHalBuilderFactory : IMockHalBuilderFactory
+    public class MockHalBuilderFactory : HalBuilderFactory, IMockHalBuilderFactory
     {
-        private readonly IMockTypedBuilderFactory _innerBuilderFactory;
-
         public MockHalBuilderFactory()
-            :this(new MockTypedBuilderFactory()) { }
+            : this(new MockTypedBuilderFactory(),
+                new [] { new HalConfiguration() })
+        { }
 
-        public MockHalBuilderFactory(IMockTypedBuilderFactory innerBuilderFactory)
+        public MockHalBuilderFactory(
+            ITypedBuilderFactory typedBuilderFactory,
+            IEnumerable<IBuilderConfiguration<IHalBuilder>> configurations) 
+                : base(typedBuilderFactory, configurations)
+        { }
+
+        protected override IHalBuilder GetBuilder(IChildTypedBuilder innerBuilder)
         {
-            _innerBuilderFactory = innerBuilderFactory;
+            return new MockHalBuilder((IMockTypedBuilder)innerBuilder);
         }
 
-        public IMockHalBuilder Create()
+        public new IMockHalBuilder Create()
         {
-            var child = _innerBuilderFactory.CreateAsChild();
-
-            var builder = new MockHalBuilder(child);
-
-            builder.WithMediaTypeFormatterConfiguration<JsonMediaTypeFormatter>(
-                f =>
-                {
-                    f.SerializerSettings.Converters.Add(new HalResourceConverter());
-                    f.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                });
-
-            Defaults.Current.GetHalBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
-
-            return builder;
-        }
-
-        IHalBuilder IHalBuilderFactory.Create()
-        {
-            return Create();
+            return (IMockHalBuilder)base.Create();
         }
     }
 }

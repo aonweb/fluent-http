@@ -96,7 +96,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             }
             catch (Exception ex)
             {
-                throw SerializationErrorHelper.CreateError(reader, $"Could not create HalResource object. Type: {objectType.Name}", ex);
+                throw CreateError(reader, $"Could not create HalResource object. Type: {objectType.Name}", ex);
             }
 
             serializer.Populate(json.CreateReader(), resource);
@@ -248,13 +248,13 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             var linkProperty = objectType.GetRuntimeProperty("Links");
 
             if (linkProperty == null)
-                throw SerializationErrorHelper.CreateError(reader,
+                throw CreateError(reader,
                     $"Could not create HyperMediaLinks object. Could not find property 'Links' on object of type {objectType.Name}");
 
             var linkListType = linkProperty.PropertyType;
 
             if (!typeof(IList<HyperMediaLink>).IsAssignableFrom(linkListType))
-                throw SerializationErrorHelper.CreateError(reader, $"Could not create HyperMediaLinks object. Links property type '{linkListType.Name}' on type '{objectType.Name}' is not assignable to IList<HyperMediaLink>");
+                throw CreateError(reader, $"Could not create HyperMediaLinks object. Links property type '{linkListType.Name}' on type '{objectType.Name}' is not assignable to IList<HyperMediaLink>");
 
             var list = linkProperty.GetValue(resource) as IList<HyperMediaLink>;
 
@@ -268,7 +268,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 }
                 catch (Exception ex)
                 {
-                    throw SerializationErrorHelper.CreateError(reader, $"Could not create HyperMediaLinks object. Type: {linkListType.Name}", ex);
+                    throw CreateError(reader, $"Could not create HyperMediaLinks object. Type: {linkListType.Name}", ex);
                 }
             }
 
@@ -322,16 +322,14 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             return typeof(IHalResource).IsAssignableFrom(objectType);
         }
 
-        private class SerializationErrorHelper
-        {
-            internal static JsonSerializationException CreateError(JsonReader reader, string message, Exception ex = null)
+            public static JsonSerializationException CreateError(JsonReader reader, string message, Exception ex = null)
             {
                 message = FormatMessage(reader as IJsonLineInfo, reader.Path, message);
 
                 return new JsonSerializationException(message, ex);
             }
 
-            internal static string FormatMessage(IJsonLineInfo lineInfo, string path, string message)
+            private static string FormatMessage(IJsonLineInfo lineInfo, string path, string message)
             {
                 if (!message.EndsWith(Environment.NewLine))
                 {
@@ -349,6 +347,5 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 message = message + ".";
                 return message;
             }
-        }
     }
 }

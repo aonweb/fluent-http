@@ -1,36 +1,38 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp
 {
-
     public class HttpBuilder : IChildHttpBuilder
     {
         private readonly IHttpClientBuilder _clientBuilder;
         private CancellationTokenSource _tokenSource;
 
-        public HttpBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder, IEnumerable<IHttpHandler> defaultHandlers)
+        public HttpBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder)
         {
-            Settings = settings;
             _clientBuilder = clientBuilder;
 
-            if (defaultHandlers != null)
-            {
-                foreach (var handler in defaultHandlers)
-                Settings.HandlerRegister.WithHandler(handler);
-            }
+            Settings = settings;
+
+            Settings.Builder = this;
         }
 
         public IAdvancedHttpBuilder Advanced => this;
 
-        private IHttpBuilderSettings Settings { get; }
+        private IHttpBuilderSettings Settings { get; set; }
+
+        public virtual void WithSettings(IHttpBuilderSettings settings)
+        {
+            Settings = settings;
+        }
 
         public IHttpBuilder WithConfiguration(Action<IHttpBuilderSettings> configuration)
         {
@@ -39,9 +41,12 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        void IConfigurable<IHttpBuilderSettings>.WithConfiguration(Action<IHttpBuilderSettings> configuration)
+        public IAdvancedHttpBuilder WithConfiguration(Action<ICacheSettings> configuration)
         {
-            WithConfiguration(configuration);
+            this.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(
+                h => h.WithConfiguration(configuration));
+
+            return this;
         }
 
         public IAdvancedHttpBuilder WithClientConfiguration(Action<IHttpClientBuilder> configuration)
@@ -49,6 +54,15 @@ namespace AonWeb.FluentHttp
             configuration?.Invoke(_clientBuilder);
 
             return this;
+        }
+
+        void IConfigurable<IHttpBuilderSettings>.WithConfiguration(Action<IHttpBuilderSettings> configuration)
+        {
+            WithConfiguration(configuration);
+        }
+        void IConfigurable<ICacheSettings>.WithConfiguration(Action<ICacheSettings> configuration)
+        {
+            WithConfiguration(configuration);
         }
 
         public virtual Task<HttpResponseMessage> ResultAsync()
@@ -106,8 +120,6 @@ namespace AonWeb.FluentHttp
 
         private HttpRequestMessage CreateRequest(IHttpBuilderContext context)
         {
-            context.ValidateSettings();
-
             var request = new HttpRequestMessage(context.Method, context.Uri);
 
             if (context.ContentFactory != null)
@@ -119,7 +131,6 @@ namespace AonWeb.FluentHttp
             // if we haven't added an accept header, add a default
             if (!string.IsNullOrWhiteSpace(context.MediaType))
                 request.Headers.Accept.AddDistinct(h => h.MediaType, context.MediaType);
-
 
             //if we haven't added a char-set, add a default
             if (context.AutoDecompression)
@@ -165,9 +176,9 @@ namespace AonWeb.FluentHttp
                         response = await client.SendAsync(request, context.CompletionOption, token);
                     }
 
-                    if (!context.IsSuccessfulResponse(response) && Settings.ExceptionFactory != null)
+                    if (!context.IsSuccessfulResponse(response) && context.ExceptionFactory != null)
                     {
-                        var ex = Settings.ExceptionFactory(response);
+                        var ex = context.ExceptionFactory(response);
 
                         if (ex != null)
                             throw ex;
@@ -213,7 +224,7 @@ namespace AonWeb.FluentHttp
                     // if were done, this is disposed and I don't care.
                 }
             }
-            
+
         }
     }
 }

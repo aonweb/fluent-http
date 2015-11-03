@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 
 using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Mocks
 {
@@ -9,7 +10,8 @@ namespace AonWeb.FluentHttp.Mocks
     {
         private readonly MockHttpClient _client;
 
-        public MockHttpClientBuilder()
+        public MockHttpClientBuilder(IHttpClientSettings settings) 
+            : base(settings)
         {
             _client = new MockHttpClient();
         }

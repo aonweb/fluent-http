@@ -20,7 +20,12 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public FollowLocationHandlerTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
+            Cache.Clear();
+        }
+
+        private static IHttpBuilder CreateBuilder()
+        {
+            return new HttpBuilderFactory().Create().Advanced.WithCaching(false);
         }
 
         [Fact]
@@ -52,7 +57,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                         });
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).AsPost().WithContent("POST CONTENT").ResultAsync().ReadContentsAsync();
+                var result = await CreateBuilder().WithUri(server.ListeningUri).AsPost().WithContent("POST CONTENT").ResultAsync().ReadContentsAsync();
 
                 actualUrl.ShouldBe(expected);
                 actualMethod.ShouldBe(HttpMethod.Get);

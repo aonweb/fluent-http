@@ -13,12 +13,19 @@ namespace AonWeb.FluentHttp
 {
     public class Formatter : IFormatter
     {
+        public Formatter()
+        {
+            MediaTypeFormatters = new MediaTypeFormatterCollection().FluentAdd(new StringMediaFormatter());
+        }
+
+        public MediaTypeFormatterCollection MediaTypeFormatters { get; }
+
         public async Task<HttpContent> CreateContent(object value, ITypedBuilderContext context)
         {
             var type = context.ContentType;
             var mediaType = context.MediaType;
             var header = new MediaTypeHeaderValue(mediaType);
-            var formatter = context.MediaTypeFormatters.FindWriter(type, header);
+            var formatter = MediaTypeFormatters.FindWriter(type, header);
 
             if (formatter == null)
                 throw new UnsupportedMediaTypeException(string.Format(SR.NoWriteFormatterForMimeTypeErrorFormat, type.FormattedTypeName(), mediaType), header);
@@ -38,12 +45,12 @@ namespace AonWeb.FluentHttp
 
         public Task<object> DeserializeResult(HttpResponseMessage response, ITypedBuilderContext context)
         {
-            return DeserializeResponse(response, context.ResultType, context.MediaTypeFormatters, context.Token);
+            return DeserializeResponse(response, context.ResultType, MediaTypeFormatters, context.Token);
         }
 
         public Task<object> DeserializeError(HttpResponseMessage response, ITypedBuilderContext context)
         {
-            return DeserializeResponse(response, context.ErrorType, context.MediaTypeFormatters, context.Token);
+            return DeserializeResponse(response, context.ErrorType, MediaTypeFormatters, context.Token);
         }
 
         private static async Task<object> DeserializeResponse(HttpResponseMessage response, Type type, MediaTypeFormatterCollection formatters, CancellationToken token)

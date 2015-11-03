@@ -92,8 +92,10 @@ namespace AonWeb.FluentHttp.Mocks
 
         public bool IsTransient { get; set; }
 
-        public HttpResponseMessage ToHttpResponseMessage()
+        public HttpResponseMessage ToHttpResponseMessage(HttpRequestMessage request)
         {
+            RequestMessage = request;
+
             return this;
         }
 

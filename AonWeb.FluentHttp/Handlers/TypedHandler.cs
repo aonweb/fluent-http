@@ -11,10 +11,10 @@ namespace AonWeb.FluentHttp.Handlers
             return HandlerPriority.Default;
         }
 
-        public virtual Task OnSending(TypedSendingContext context) { return Task.FromResult(true); }
-        public virtual Task OnSent(TypedSentContext context) { return Task.FromResult(true); }
-        public virtual Task OnResult(TypedResultContext context) { return Task.FromResult(true); }
-        public virtual Task OnError(TypedErrorContext context) { return Task.FromResult(true); }
+        public virtual Task OnSending(TypedSendingContext context)     { return Task.FromResult(true); }
+        public virtual Task OnSent(TypedSentContext context)           { return Task.FromResult(true); }
+        public virtual Task OnResult(TypedResultContext context)       { return Task.FromResult(true); }
+        public virtual Task OnError(TypedErrorContext context)         { return Task.FromResult(true); }
         public virtual Task OnException(TypedExceptionContext context) { return Task.FromResult(true); }
     }
 }

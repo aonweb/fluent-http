@@ -1,55 +1,45 @@
+using System.Collections.Generic;
+using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Settings;
+
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockTypedBuilderFactory : IMockTypedBuilderFactory
+    public class MockTypedBuilderFactory : TypedBuilderFactory, IMockTypedBuilderFactory
     {
-        private readonly IMockFormatterFactory _formatterFactory;
-        private readonly IMockHttpBuilderFactory _innerBuilderFactory;
-
         public MockTypedBuilderFactory()
-            :this(new MockHttpBuilderFactory(), new MockFormatterFactory()) { }
+            : this(new MockHttpBuilderFactory(), null) { }
 
-        public MockTypedBuilderFactory(IMockHttpBuilderFactory innerBuilderFactory, IMockFormatterFactory formatterFactory)
+        public MockTypedBuilderFactory(
+            IHttpBuilderFactory httpBuilderFactory,
+            IEnumerable<IBuilderConfiguration<ITypedBuilder>> configurations)
+            : base(httpBuilderFactory, configurations)
         {
-            _innerBuilderFactory = innerBuilderFactory;
-            _formatterFactory = formatterFactory;
         }
 
-        public IMockTypedBuilder Create()
+        protected override IFormatter GetFormatter()
         {
-            var child = _innerBuilderFactory.CreateAsChild();
-            var formatter = _formatterFactory.Create();
-            var settings = new MockTypedBuilderSettings(formatter);
-
-            var builder = new MockTypedBuilder(settings, child, Defaults.Current.GetTypedBuilderDefaults().Handlers.GetHandlers(settings));
-
-            settings.SetBuilder(builder);
-
-            Defaults.Current.GetTypedBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
-
-            return builder;
+            return new MockFormatter();
         }
 
-        public IMockTypedBuilder CreateAsChild()
+        protected override IChildTypedBuilder GetBuilder( ITypedBuilderSettings settings, IChildHttpBuilder innerBuilder)
         {
-            var child = _innerBuilderFactory.CreateAsChild();
-            var formatter = _formatterFactory.Create();
-            var settings = new MockTypedBuilderSettings(formatter);
-
-            var builder = new MockTypedBuilder(settings, child, Defaults.Current.GetTypedBuilderDefaults().ChildHandlers.GetHandlers(settings));
-
-            settings.SetBuilder(builder);
-
-            return builder;
+            return new MockTypedBuilder((IMockTypedBuilderSettings)settings, (IMockHttpBuilder)innerBuilder);
         }
 
-        IChildTypedBuilder ITypedBuilderFactory.CreateAsChild()
+        protected override ITypedBuilderSettings GetSettings( IFormatter formatter, IList<ITypedHandler> handlers,
+            ICacheSettings cacheSettings, IEnumerable<ITypedResponseValidator> validators)
         {
-            return CreateAsChild();
+            return new MockTypedBuilderSettings((IMockFormatter)formatter, cacheSettings, handlers,  validators);
         }
 
-        ITypedBuilder ITypedBuilderFactory.Create()
+        public new IMockTypedBuilder Create()
         {
-            return Create();
+            return (IMockTypedBuilder)base.Create();
+        }
+
+        public new IMockTypedBuilder CreateAsChild()
+        {
+            return (IMockTypedBuilder)base.CreateAsChild();
         }
     }
 }

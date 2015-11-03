@@ -19,9 +19,12 @@ namespace AonWeb.FluentHttp.Tests.Caching
         public TypedCachingTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = true;
-            Defaults.Current.GetCachingDefaults().DefaultDurationForCacheableResults = null;
             Cache.Clear();
+        }
+
+        private static ITypedBuilder CreateBuilder(TimeSpan? duration = null)
+        {
+            return new TypedBuilderFactory().Create().Advanced.WithCaching(true).WithDefaultDurationForCacheableResults(duration);
         }
 
         [Fact]
@@ -34,7 +37,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var builder = new TypedBuilderFactory().Create()
+                var builder = CreateBuilder()
                     .WithUri(server.ListeningUri);
 
                 var result1 = await builder.ResultAsync<TestResult>();
@@ -54,11 +57,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
@@ -77,12 +80,12 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
                 var result1 = await Task.Factory.StartNew(() =>
-                    new TypedBuilderFactory().Create()
+                    CreateBuilder()
                    .WithUri(server.ListeningUri)
                    .ResultAsync<TestResult>().Result);
 
                 var result2 = await Task.Factory.StartNew(() =>
-                    new TypedBuilderFactory().Create()
+                    CreateBuilder()
                    .WithUri(server.ListeningUri)
                    .ResultAsync<TestResult>().Result);
 
@@ -91,7 +94,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenCachingIsOnAndServerDoesntSendCacheHeaders_ExpectContentsNotCached()
+        public async Task WhenCachingIsOnAndServerDoesNotSendCacheHeaders_ExpectContentsNotCached()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -100,11 +103,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2));
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
@@ -113,7 +116,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenCachingIsOnAndServerDoesntSendCacheHeadersButTypeIsCacheable_ExpectContentsCached()
+        public async Task WhenCachingIsOnAndServerDoesNotSendCacheHeadersButTypeIsCacheable_ExpectContentsCached()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
@@ -121,11 +124,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2));
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResult>();
 
@@ -134,7 +137,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenCachingIsOnAndServerDoesntSendNoCacheHeadersAndTypeIsCacheableButDurationZeroOrLess_ExpectContentsNotCached()
+        public async Task WhenCachingIsOnAndServerDoesNotSendNoCacheHeadersAndTypeIsCacheableButDurationZeroOrLess_ExpectContentsNotCached()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -143,11 +146,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2));
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResultWithDurationZero>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResultWithDurationZero>();
 
@@ -158,32 +161,28 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenCachingIsOnAndServerDoesntSendNoCacheHeadersAndTypeIsCacheableButDurationNullAndDefaultIsNotNull_ExpectContentsCached()
+        public async Task WhenCachingIsOnAndServerDoesNotSendNoCacheHeadersAndTypeIsCacheableButDurationNullAndDefaultIsNotNull_ExpectContentsCached()
         {
-            Defaults.Current.GetCachingDefaults().DefaultDurationForCacheableResults = TimeSpan.FromMinutes(5);
-
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2));
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder(TimeSpan.FromMinutes(5))
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResultWithDurationNull>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResultWithDurationNull>();
 
                 result1.ShouldBe(result2);
             }
-
-            Defaults.Current.GetCachingDefaults().DefaultDurationForCacheableResults = null;
         }
 
         [Fact]
-        public async Task WhenCachingIsOnAndServerDoesntSendNoCacheHeadersAndTypeIsCacheableButDurationNullAndDefaultIsNull_ExpectContentsNotCached()
+        public async Task WhenCachingIsOnAndServerDoesNotSendNoCacheHeadersAndTypeIsCacheableButDurationNullAndDefaultIsNull_ExpectContentsNotCached()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -192,11 +191,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2));
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResultWithDurationNull>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResultWithDurationNull>();
 
@@ -216,11 +215,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResult>();
 
@@ -239,12 +238,12 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .Advanced.WithCaching(false)
                     .ResultAsync<TestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .Advanced.WithCaching(false)
                     .ResultAsync<TestResult>();
@@ -264,16 +263,16 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .Advanced.WithNoCache()
                     .ResultAsync<TestResult>();
 
-                var result3 = await new TypedBuilderFactory().Create()
+                var result3 = await CreateBuilder()
                    .WithUri(server.ListeningUri)
                    .Advanced.WithNoCache()
                    .ResultAsync<TestResult>();
@@ -293,11 +292,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
@@ -315,11 +314,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResult>();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<CacheableTestResult>();
 
@@ -338,13 +337,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
 
-                await new TypedBuilderFactory().Create().WithUri(server.ListeningUri).AsPost()
+                await CreateBuilder().WithUri(server.ListeningUri).AsPost()
                         .SendAsync();
 
-                var result2 = await new TypedBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
 
                 result1.ShouldNotBe(result2);
@@ -362,13 +361,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
 
-                await new TypedBuilderFactory().Create().WithUri(server.ListeningUri).AsPut()
+                await CreateBuilder().WithUri(server.ListeningUri).AsPut()
                         .SendAsync();
 
-                var result2 = await new TypedBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
 
                 result1.ShouldNotBe(result2);
@@ -386,13 +385,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
 
-                await new TypedBuilderFactory().Create().WithUri(server.ListeningUri).AsPatch()
+                await CreateBuilder().WithUri(server.ListeningUri).AsPatch()
                         .SendAsync();
 
-                var result2 = await new TypedBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
 
                 result1.ShouldNotBe(result2);
@@ -409,16 +408,16 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
-                await new TypedBuilderFactory().Create()
+                await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .AsDelete()
                     .SendAsync();
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
@@ -436,13 +435,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.InternalServerError).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
                 try
                 {
-                    await new TypedBuilderFactory().Create()
+                    await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .AsPut()
                     .SendAsync();
@@ -452,7 +451,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     // expected
                 }
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
@@ -470,13 +469,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.InternalServerError).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
-                var result1 = await new TypedBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
                 try
                 {
-                    await new TypedBuilderFactory().Create()
+                    await CreateBuilder()
                         .WithUri(server.ListeningUri)
                         .Advanced.WithClientConfiguration(builder =>
                         {
@@ -491,7 +490,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 }
 
 
-                var result2 = await new TypedBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 

@@ -11,44 +11,10 @@ namespace AonWeb.FluentHttp.Handlers.Caching
            return HandlerPriority.Default;
         }
 
-        public virtual Task OnHit<TResult>(CacheHitContext<TResult> context)
-        {
-            return OnHit((CacheHitContext)context);
-        }
-
-        public virtual Task OnHit(CacheHitContext context)
-        {
-            return Task.FromResult(true);
-        }
-
-        public virtual Task OnMiss<TResult>(CacheMissContext<TResult> context)
-        {
-            return OnMiss((CacheMissContext)context);
-        }
-
-        public virtual Task OnMiss(CacheMissContext context)
-        {
-            return Task.FromResult(true);
-        }
-
-        public virtual Task OnStore<TResult>(CacheStoreContext<TResult> context)
-        {
-            return OnStore((CacheStoreContext)context);
-        }
-
-        public virtual Task OnStore(CacheStoreContext context)
-        {
-            return Task.FromResult(true);
-        }
-
-        public virtual Task OnExpiring(CacheExpiringContext context)
-        {
-            return Task.FromResult(true);
-        }
-
-        public virtual Task OnExpired(CacheExpiredContext context)
-        {
-            return Task.FromResult(true);
-        }
+        public virtual Task OnHit(CacheHitContext context)           { return Task.FromResult(true); }
+        public virtual Task OnMiss(CacheMissContext context)         { return Task.FromResult(true); }
+        public virtual Task OnStore(CacheStoreContext context)       { return Task.FromResult(true); }
+        public virtual Task OnExpiring(CacheExpiringContext context) { return Task.FromResult(true); }
+        public virtual Task OnExpired(CacheExpiredContext context)   { return Task.FromResult(true); }
     }
 }

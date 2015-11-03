@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
@@ -16,12 +17,16 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     // but the base logic for cache validation / invalidation was based off CacheCow
     public abstract class CacheConfigurationHandlerCore
     {
-        protected CacheConfigurationHandlerCore(ICacheSettings settings)
+        private readonly ICacheProvider _cacheProvider;
+
+        protected CacheConfigurationHandlerCore(ICacheSettings settings, ICacheProvider cacheProvider)
         {
+            _cacheProvider = cacheProvider;
+
             Settings = settings;
         }
 
-        public ICacheSettings Settings { get; set; }
+        public ICacheSettings Settings { get; private set; }
 
         #region IHandler<HandlerType> Implementation
 
@@ -44,129 +49,136 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         #endregion
 
-        protected ICacheContext CreateCacheContext(IHandlerContext handlerContext)
+        protected ICacheContext GetContext(IHandlerContext handlerContext)
         {
-            return new CacheContext(Settings, handlerContext);
+            var context = handlerContext.Items["CacheContext"] as ICacheContext;
+
+            if (context == null)
+            {
+                context = new CacheContext(Settings, handlerContext);
+                handlerContext.Items["CacheContext"] = context;
+            }
+
+            return context;
         }
 
         protected async Task TryGetFromCache(IHandlerContextWithResult handlerContext)
         {
-            var context = CreateCacheContext(handlerContext);
+            var context = GetContext(handlerContext);
 
-            if (!context.CacheValidator(context))
+            if (!context.RequestValidator(context))
             {
                 await ExpireResult(context);
                 return ;
             }
 
-            context.Result = await Cache.CurrentCacheStore.GetCachedResult(context);
+            var result = await _cacheProvider.Get(context);
+            var validationResult = ResponseValidationResult.NotExist;
 
-            if (context.Result.Found)
+            if (!result.IsEmpty)
             {
-                context.ResultInspector?.Invoke(context.Result);
-                context.ValidationResult = context.ResponseValidator(context, context.Result.ResponseMetadata);
+                context.ResultInspector?.Invoke(result);
+                validationResult = context.ResponseValidator(context, result.Metadata);
             }
 
             // TODO: Determine the need for conditional put - if so, that logic would go here
+            if (validationResult == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, result.Metadata))
+                validationResult = ResponseValidationResult.MustRevalidate;
 
-
-            if (context.ValidationResult == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, context.Result.ResponseMetadata))
-                context.ValidationResult = ResponseValidationResult.MustRevalidate;
-
-            if (context.ValidationResult == ResponseValidationResult.MustRevalidate && context.Request != null)
+            if (validationResult == ResponseValidationResult.MustRevalidate && context.Request != null)
             {
-                if (context.Result.ResponseMetadata.ETag != null)
-                    context.Request.Headers.Add("If-None-Match", context.Result.ResponseMetadata.ETag.ToString());
-                else if (context.Result.ResponseMetadata.LastModified != null)
-                    context.Request.Headers.Add("If-Modified-Since", context.Result.ResponseMetadata.LastModified.Value.ToString("r"));
+                if (result.Metadata.ETag != null)
+                    context.Request.Headers.Add("If-None-Match", result.Metadata.ETag);
+                else if (result.Metadata.LastModified != null)
+                    context.Request.Headers.Add("If-Modified-Since", result.Metadata.LastModified.Value.ToString("r"));
 
                 //hang on to this we are going to need it in a sec. We could try to get it from cache store, but it may have expired by then
-                context.Items["CacheHandlerCachedItem"] = context.Result;
+                context.Items["CacheHandlerCachedItem"] = result;
 
                 return;
             }
 
-            if (!context.Result.Found)
+            if (result.IsEmpty)
             {
-                var missedResult = await context.Handler.OnMiss(context);
+                var missedResult = await context.HandlerRegister.OnMiss(context);
 
                 if (missedResult.IsDirty)
                 {
-                    context.Result = new CacheResult(missedResult.Value, null);
-                    context.ValidationResult = ResponseValidationResult.OK;
+                    result = new CacheEntry(missedResult.Value, null);
                 }
             }
 
-            if (context.Result.Found)
+            if (!result.IsEmpty)
             {
-                var hitResult = await context.Handler.OnHit(context, context.Result.Result);
+                var hitResult = await context.HandlerRegister.OnHit(context, result.Value);
 
                 if (!hitResult.IsDirty || !(bool)hitResult.Value)
-                    handlerContext.Result = context.Result.Result;
+                    handlerContext.Result = result.Value;
             }
+
+            context.Items["CacheHandlerCachedItem"] = result;
         }
 
         protected async Task TryGetRevalidatedResult(IHandlerContextWithResult handlerContext, HttpRequestMessage request, HttpResponseMessage response)
         {
-            var context = CreateCacheContext(handlerContext);
+            var context = GetContext(handlerContext);
 
-            if (!context.RevalidateValidator(context, context.Result.ResponseMetadata))
+            var result = (CacheEntry)context.Items["CacheHandlerCachedItem"];
+
+            if (result == null || !context.RevalidateValidator(context, result.Metadata))
                 return;
 
-            context.Result = (CacheResult)context.Items["CacheHandlerCachedItem"];
-
-            if (context.Result.Found && context.Result.Result != null)
+            if (!result.IsEmpty && result.Value != null)
             {
-                context.Result.UpdateResponseInfo(request, response, context);
+                result.UpdateResponseInfo(request, response, context);
 
-                context.ResultInspector?.Invoke(context.Result);
+                context.ResultInspector?.Invoke(result);
 
                 ObjectHelpers.Dispose(response);
             }
             else
             {
-                context.Result = CacheResult.Empty;
+                result = CacheEntry.Empty;
             }
 
-            if (!context.Result.Found)
+            if (result.IsEmpty)
             {
-                var missedResult = await context.Handler.OnMiss(context);
+                var missedResult = await context.HandlerRegister.OnMiss(context);
 
                 if (missedResult.IsDirty)
                 {
-                    context.Result = new CacheResult(missedResult.Value, null);
-                    context.ValidationResult = ResponseValidationResult.OK;
+                    result = new CacheEntry(missedResult.Value, null);
                 }
             }
 
-            if (context.Result.Found)
+            if (!result.IsEmpty)
             {
-                var hitResult = await context.Handler.OnHit(context, context.Result.Result);
+                var hitResult = await context.HandlerRegister.OnHit(context, result.Value);
 
                 if (hitResult.IsDirty && !(bool)hitResult.Value)
-                    handlerContext.Result = context.Result.Result;
+                    handlerContext.Result = result.Value;
             }
+
+            context.Items["CacheHandlerCachedItem"] = result;
         }
 
         protected async Task TryCacheResult(IHandlerContext handlerContext, object result, HttpRequestMessage request, HttpResponseMessage response)
         {
-            var context = CreateCacheContext(handlerContext);
+            var context = GetContext(handlerContext);
 
-            context.Result = new CacheResult(result, request, response, context);
+            var cacheEntry = new CacheEntry(result, request, response, context);
 
-            if (context.CacheValidator(context))
+            if (context.RequestValidator(context))
             {
-                context.ValidationResult = context.ResponseValidator(context, context.Result.ResponseMetadata);
+                var validationResult = context.ResponseValidator(context, cacheEntry.Metadata);
 
-                if (context.ValidationResult == ResponseValidationResult.OK
-                    || context.ValidationResult == ResponseValidationResult.MustRevalidate)
+                if (validationResult == ResponseValidationResult.OK
+                    || validationResult == ResponseValidationResult.MustRevalidate)
                 {
-                    await Cache.CurrentCacheStore.AddOrUpdate(context);
-
-                    Cache.CurrentVaryByStore.AddOrUpdate(context.Uri, response.Headers.Vary);
+                    await _cacheProvider.Put(context, cacheEntry);
                 }
 
-                await context.Handler.OnStore(context, context.Result.Result);
+                await context.HandlerRegister.OnStore(context, cacheEntry.Value);
             }
             else
             {
@@ -176,23 +188,28 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         protected Task ExpireResult(IHandlerContext handlerContext)
         {
-            var context = CreateCacheContext(handlerContext);
+            var context = GetContext(handlerContext);
 
             return ExpireResult(context);
         }
 
-        private static async Task ExpireResult(ICacheContext context)
+        private async Task ExpireResult(ICacheContext context)
         {
             if ((context.Items["CacheHandler_ItemExpired"] as bool?).GetValueOrDefault())
                 return;
 
-            var expiringResult = await context.Handler.OnExpiring(context);
+            var expiringResult = await context.HandlerRegister.OnExpiring(context);
 
-            var uris = Cache.CurrentCacheStore.TryRemove(context, expiringResult.Value as IEnumerable<Uri>).ToList();
+            var uris = _cacheProvider.Remove(context, expiringResult.Value as IEnumerable<Uri>).ToList();
 
-            await context.Handler.OnExpired(context, uris);
+            await context.HandlerRegister.OnExpired(context, uris);
 
             context.Items["CacheHandler_ItemExpired"] = true;
+        }
+
+        public void WithSettings(ICacheSettings settings)
+        {
+            Settings = settings;
         }
     }
 }

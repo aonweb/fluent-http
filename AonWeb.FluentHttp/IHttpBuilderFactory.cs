@@ -1,8 +1,6 @@
 ﻿namespace AonWeb.FluentHttp
 {
-    public interface IHttpBuilderFactory
+    public interface IHttpBuilderFactory : IBuilderFactory<IHttpBuilder>, IChildIBuilderFactory<IChildHttpBuilder>
     {
-        IHttpBuilder Create();
-        IChildHttpBuilder CreateAsChild();
     }
 }

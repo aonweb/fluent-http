@@ -2,87 +2,37 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Caching;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
-    public class HttpCacheConfigurationHandler : CacheConfigurationHandlerCore, IHttpHandler
+    public class HttpCacheConfigurationHandler : CacheConfigurationHandlerCore, IHttpHandler, IAdvancedCacheConfigurable<HttpCacheConfigurationHandler>
     {
-        public HttpCacheConfigurationHandler(ICacheSettings settings)
-            : base(settings)
+        public HttpCacheConfigurationHandler(ICacheSettings settings, ICacheProvider cacheProvider, IEnumerable<IHttpCacheHandler> handlers)
+            : base(settings, cacheProvider)
         {
-            var handlers = Defaults.Current.GetCachingDefaults().HttpHandlers.GetHandlers(settings);
-
             if (handlers != null)
             {
                 foreach (var handler in handlers)
                 {
-                    WithHandler(handler);
+                    Settings.HandlerRegister.WithHandler(handler);
                 }
             }
         }
 
-        #region Configuration Methods
+        #region IFluentConfigurable implementation
 
-        public HttpCacheConfigurationHandler WithCaching(bool enabled = true)
+        public HttpCacheConfigurationHandler WithConfiguration(Action<ICacheSettings> configuration)
         {
-            Enabled = enabled;
+            configuration?.Invoke(Settings);
 
             return this;
         }
 
-        public HttpCacheConfigurationHandler WithDependentUris(IEnumerable<Uri> uris)
+        void IConfigurable<ICacheSettings>.WithConfiguration(Action<ICacheSettings> configuration)
         {
-            if (uris == null)
-                return this;
-
-            foreach (var uri in uris)
-                WithDependentUri(uri);
-
-            return this;
-        }
-
-        public HttpCacheConfigurationHandler WithDependentUri(Uri uri)
-        {
-            if (uri == null)
-                return this;
-
-            uri = uri.NormalizeUri();
-
-            if (uri != null && !Settings.DependentUris.Contains(uri))
-                Settings.DependentUris.Add(uri);
-
-            return this;
-        }
-
-        public HttpCacheConfigurationHandler WithCacheDuration(TimeSpan? duration)
-        {
-            Settings.CacheDuration = duration;
-
-            return this;
-        }
-
-        public HttpCacheConfigurationHandler WithHandler(IHttpCacheHandler handler)
-        {
-            Settings.Handler.WithHandler(handler);
-
-            return this;
-        }
-
-        public HttpCacheConfigurationHandler WithHandlerConfiguration<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCacheHandler
-        {
-            Settings.Handler.WithHandlerConfiguration(configure);
-
-            return this;
-        }
-
-        public HttpCacheConfigurationHandler WithOptionalHandlerConfiguration<THandler>(Action<THandler> configure)
-            where THandler : class, IHttpCacheHandler
-        {
-            Settings.Handler.WithHandlerConfiguration(configure, false);
-
-            return this;
+            WithConfiguration(configuration);
         }
 
         #endregion
@@ -91,9 +41,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         async Task IHttpHandler.OnSending(HttpSendingContext context)
         {
-            Settings.ResultInspector = cacheResult =>
+            Settings.ResultInspector = cacheEntry =>
             {
-                ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Request;
+                ((HttpResponseMessage)cacheEntry.Value).RequestMessage = context.Request;
             };
 
             await TryGetFromCache(context);
@@ -102,7 +52,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         async Task IHttpHandler.OnSent(HttpSentContext context)
         {
 
-            Settings.ResultInspector = cacheResult => ((HttpResponseMessage)cacheResult.Result).RequestMessage = context.Result.RequestMessage;
+            Settings.ResultInspector = cacheEntry => ((HttpResponseMessage)cacheEntry.Value).RequestMessage = context.Result.RequestMessage;
 
             await TryGetRevalidatedResult(context, context.Request, context.Result);
 

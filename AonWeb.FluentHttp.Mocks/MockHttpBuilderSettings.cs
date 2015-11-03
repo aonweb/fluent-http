@@ -1,10 +1,15 @@
+using System.Collections.Generic;
+using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Settings;
+
 namespace AonWeb.FluentHttp.Mocks
 {
     public class MockHttpBuilderSettings : HttpBuilderSettings
     {
-        internal void SetBuilder(IRecursiveHttpBuilder builder)
+        public MockHttpBuilderSettings(ICacheSettings cacheSettings, IEnumerable<IHttpHandler> handlers, IEnumerable<IHttpResponseValidator> responseValidators) 
+            : base(cacheSettings, handlers, responseValidators)
         {
-            Builder = builder;
+
         }
     }
 }

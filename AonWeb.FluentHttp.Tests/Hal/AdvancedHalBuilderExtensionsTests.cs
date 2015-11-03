@@ -8,24 +8,35 @@ using AonWeb.FluentHttp.Mocks.Hal;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Hal
 {
     public class AdvancedHalBuilderExtensionsTests
     {
         private static readonly Uri MockUri = new Uri("http://testsite.com");
+        private ITestOutputHelper _logger;
 
-        public AdvancedHalBuilderExtensionsTests()
+        public AdvancedHalBuilderExtensionsTests(ITestOutputHelper logger)
         {
-            Defaults.Current.GetCachingDefaults().Enabled = false;
+            _logger = logger;
             Cache.Clear();
+        }
+
+        private static IMockHalBuilder CreateBuilder()
+        {
+            var builder = new MockHalBuilderFactory().Create();
+            
+            builder.Advanced.WithCaching(false);
+
+            return builder;
         }
 
         [Fact]
         public async Task WhenResultAndSendingHandlerTypesMismatch_ExpectException()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithLink(MockUri);
+            var builder = CreateBuilder().WithLink(MockUri);
 
             //act
             await Should.ThrowAsync<TypeMismatchException>(builder.Advanced.OnResult<TestResource>(ctx =>
@@ -38,7 +49,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenResultAndSendingTypesMismatchAndSuppressTypeException_ExpectResult()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithResult(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var actual = await builder.Advanced.WithSuppressTypeMismatchExceptions().OnSendingWithResult<AlternateTestResource>(ctx => { }).ResultAsync<TestResource>();
@@ -50,7 +61,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenContentAndSendingHandlerTypesMismatch_ExpectException()
         {
 
-            var builder = new MockHalBuilderFactory().Create()
+            var builder = CreateBuilder()
                 .VerifyOnSendingWithContent<AlternateTestRequest>(ctx =>
                 {
                     var content = ctx.Content;
@@ -68,7 +79,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenContentAndSendingHandlerTypesMismatchAndSuppressTypeException_ExpectResult()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithResult(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var actual = await builder.WithContent(TestRequest.Default1())
@@ -83,7 +94,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenErrorAndErrorHandlerTypesMismatch_ExpectException()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithError(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithError(TestResource.Default1()).WithLink(MockUri);
 
             // act & assert
             await Should.ThrowAsync<TypeMismatchException>(
@@ -98,7 +109,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenErrorAndErrorHandlerTypesMismatchAndSuppressTypeException_ExpectResult()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithError(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithError(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var actual = await builder
@@ -118,7 +129,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenDefaultResultAndResultTypesMismatch_ExpectException()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithError(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithError(TestResource.Default1()).WithLink(MockUri);
 
             //act
             await Should.ThrowAsync<TypeMismatchException>(
@@ -132,7 +143,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenDefaultResultAndResultTypesMismatchAndSuppressTypeException_ExpectNullResult()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithError(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithError(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var actual = await builder.WithDefaultResult(TestResource.Default1())
@@ -147,7 +158,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenHandlerIsSubTypeOfResult_ExpectSuccess()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithNextResponseOk(TestResource.SerializedDefault1).WithLink(MockUri);
+            var builder = CreateBuilder().WithNextResponseOk(TestResource.SerializedDefault1).WithLink(MockUri);
 
             //act
             var called = false;
@@ -163,7 +174,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         [Fact]
         public async Task WhenHandlerIsSuperTypeOfResult_ExpectException()
         {
-            var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithResult(TestResource.Default1()).WithLink(MockUri);
 
             // act & assert
             await Should.ThrowAsync<TypeMismatchException>(async () =>
@@ -185,7 +196,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenSendingContentHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithResult(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var called = false;
@@ -203,7 +214,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenSendingResultHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithResult(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var called = false;
@@ -221,7 +232,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenSentHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithResult(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var called = false;
@@ -239,7 +250,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenResultHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithResult(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithResult(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var called = false;
@@ -256,7 +267,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenErrorHandlerIsObjectType_ExpectSuccess()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithError(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithError(TestResource.Default1()).WithLink(MockUri);
 
             //act
             var called = false;
@@ -278,7 +289,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public async Task WhenErrorTypeSetMultipleTimes_ExpectLastWins()
         {
 
-            var builder = new MockHalBuilderFactory().Create().WithError(TestResource.Default1()).WithLink(MockUri);
+            var builder = CreateBuilder().WithError(TestResource.Default1()).WithLink(MockUri);
 
             //act
             Type type = null;
@@ -311,7 +322,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var sendingWithResultCalled = false;
 
             var builder =
-                new MockHalBuilderFactory().Create()
+                CreateBuilder()
                 .VerifyOnSending<IHalResource, IHalRequest>(ctx => { })
                     .VerifyOnSendingWithContent<IHalRequest>(ctx => { })
                     .VerifyOnSendingWithResult<IHalResource>(ctx => { })
@@ -339,7 +350,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var sendingWithResultCalled = false;
 
             var builder =
-                new MockHalBuilderFactory().Create()
+                CreateBuilder()
                 .VerifyOnSending<IHalResource, IHalRequest>(ctx => { })
                     .VerifyOnSendingWithContent<IHalRequest>(ctx => { })
                     .VerifyOnSendingWithResult<IHalResource>(ctx => { })

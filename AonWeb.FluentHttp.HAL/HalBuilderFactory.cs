@@ -1,37 +1,55 @@
-﻿using System.Net.Http.Formatting;
-using AonWeb.FluentHttp.HAL.Serialization;
-using Newtonsoft.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace AonWeb.FluentHttp.HAL
 {
     public class HalBuilderFactory : IHalBuilderFactory
     {
-        private readonly ITypedBuilderFactory _innerBuilderFactory;
+        private readonly ITypedBuilderFactory _typedBuilderFactory;
 
         public HalBuilderFactory()
-            :this(new TypedBuilderFactory()) { }
+            : this(new TypedBuilderFactory(), new[] { new HalConfiguration() }) { }
 
-        public HalBuilderFactory(ITypedBuilderFactory httpBuilderFactory)
+        protected HalBuilderFactory(
+            ITypedBuilderFactory typedBuilderFactory,
+            IEnumerable<IBuilderConfiguration<IHalBuilder>> configurations)
         {
-            _innerBuilderFactory = httpBuilderFactory;
+            _typedBuilderFactory = typedBuilderFactory;
+            Configurations = (configurations ?? Enumerable.Empty<IBuilderConfiguration<IHalBuilder>>()).ToList();
         }
+
+        public IList<IBuilderConfiguration<IHalBuilder>> Configurations { get; }
 
         public IHalBuilder Create()
         {
-            var child = _innerBuilderFactory.CreateAsChild();
+            var child = GetChildBuilder();
 
-            var builder = new HalBuilder(child);
+            var builder = GetBuilder( child);
 
-            builder.WithMediaTypeFormatterConfiguration<JsonMediaTypeFormatter>(
-                f =>
-                {
-                    f.SerializerSettings.Converters.Add(new HalResourceConverter());
-                    f.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                });
-
-            Defaults.Current.GetHalBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
+            ApplyConfigurations(Configurations, builder);
 
             return builder;
+        }
+
+        protected virtual IChildTypedBuilder GetChildBuilder()
+        {
+            return _typedBuilderFactory.CreateAsChild();
+        }
+
+        protected virtual IHalBuilder GetBuilder( IChildTypedBuilder innerBuilder)
+        {
+            return new HalBuilder(innerBuilder);
+        }
+
+        private static void ApplyConfigurations(IEnumerable<IBuilderConfiguration<IHalBuilder>> configurations, IHalBuilder builder)
+        {
+            if (configurations == null)
+                return;
+
+            foreach (var configuration in configurations)
+            {
+                configuration.Configure(builder);
+            }
         }
     }
 }

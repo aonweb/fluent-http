@@ -30,11 +30,31 @@ namespace AonWeb.FluentHttp.Helpers
             return headers.AddDistinct(h => string.Equals(prop(h), value, StringComparison.OrdinalIgnoreCase), value);
         }
 
-        public static ISet<T> MergeSet<T>(IEnumerable<T> list1, IEnumerable<T> list2)
+        public static ISet<T> ToSet<T>(this IEnumerable<T> primary, params IEnumerable<T>[] additional)
         {
-            var distinct = (list1 ?? Enumerable.Empty<T>()).Concat(list2 ?? Enumerable.Empty<T>()).Distinct();
+            return primary.ToSet(EqualityComparer<T>.Default, additional);
+        }
+
+        public static ISet<T> ToSet<T>(this IEnumerable<T> primary, IEqualityComparer<T> comparer, params IEnumerable<T>[] additional)
+        {
+            var allItems = primary.Concat((additional ?? Enumerable.Empty<IEnumerable<T>>()).SelectMany(x => x));
+
+            var distinct = allItems.Distinct();
 
             return new HashSet<T>(distinct);
+        }
+
+        public static ISet<T> Merge<T>(this ISet<T> primary, IEnumerable<T> other)
+        {
+            if (other == null)
+                return primary;
+
+            foreach (var item in other.Where(item => !primary.Contains(item)))
+            {
+                primary.Add(item);
+            }
+
+            return primary;
         }
     }
 }

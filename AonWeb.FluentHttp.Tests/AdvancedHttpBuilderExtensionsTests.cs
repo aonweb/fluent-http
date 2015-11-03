@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
+using Autofac;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,10 +21,15 @@ namespace AonWeb.FluentHttp.Tests
         public AdvancedHttpBuilderExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
         }
 
+        private IHttpBuilder CreateBuilder()
+        {
+            var container = RegistrationHelpers.CreateContainer();
+
+            return container.Resolve<IHttpBuilder>();
+        }
 
         #region Client Configuration
 
@@ -38,7 +43,7 @@ namespace AonWeb.FluentHttp.Tests
                 server.WithRequestInspector(r => actual = r.Headers.UserAgent.First().ToString());
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                await CreateBuilder().WithUri(server.ListeningUri)
                     .Advanced
                     .WithClientConfiguration(b =>
                         b.WithHeadersConfiguration(h =>
@@ -63,7 +68,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 500;
-                var builder = new HttpBuilderFactory().Create().WithUri(uri);
+                var builder = CreateBuilder().WithUri(uri);
                 server.WithRequestInspector(r => Task.Delay(delay));
                 Exception exception = null;
 
@@ -97,7 +102,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 1000;
-                var builder = new HttpBuilderFactory().Create().WithUri(uri).Advanced.WithSuppressCancellationExceptions(true);
+                var builder = CreateBuilder().WithUri(uri).Advanced.WithSuppressCancellationExceptions(true);
                 server.WithRequestInspector(r => Task.Delay(delay));
 
                 // act
@@ -122,7 +127,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 10000;
-                var builder = new HttpBuilderFactory().Create().WithUri(uri);
+                var builder = CreateBuilder().WithUri(uri);
                 server.WithRequestInspector(r => Task.Delay(delay));
                 Exception exception = null;
 
@@ -155,7 +160,7 @@ namespace AonWeb.FluentHttp.Tests
             {
                 var uri = server.ListeningUri;
                 var delay = 1000;
-                var builder = new HttpBuilderFactory().Create().WithUri(uri).Advanced.WithSuppressCancellationExceptions(false);
+                var builder = CreateBuilder().WithUri(uri).Advanced.WithSuppressCancellationExceptions(false);
                 server.WithRequestInspector(r => Task.Delay(delay));
                 var callbackCalled = false;
                 Exception exception = null;
@@ -239,7 +244,7 @@ namespace AonWeb.FluentHttp.Tests
         IHttpCallBuilder ConfigureRetries(Action<RetryHandler> configuration);
         IHttpCallBuilder ConfigureRedirect(Action<RedirectHandler> configuration);
 
-        IHttpCallBuilder WithHandler(IHttpCallHandler handler);
+        IHttpCallBuilder WithCacheHandler(IHttpCallHandler handler);
         IHttpCallBuilder WithHandlerConfiguration<THandler>(Action<THandler> configure) 
             where THandler : class, IHttpCallHandler;
         IHttpCallBuilder WithSuccessfulResponseValidator(Func<HttpResponseMessage, bool> validator);

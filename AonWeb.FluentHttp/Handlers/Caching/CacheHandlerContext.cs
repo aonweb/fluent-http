@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
-using AonWeb.FluentHttp.Caching;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
@@ -21,7 +20,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         }
 
         public IDictionary Items => _cacheContext.Items;
-        public ResponseValidationResult ValidationResult => _cacheContext.ValidationResult;
         public bool Enabled => _cacheContext.Enabled;
         
         public Type ResultType => _cacheContext.ResultType;

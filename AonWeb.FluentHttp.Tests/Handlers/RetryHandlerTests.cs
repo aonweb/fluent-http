@@ -19,7 +19,13 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public RetryHandlerTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
+            _logger = logger;
+            Cache.Clear();
+        }
+
+        private static IHttpBuilder CreateBuilder()
+        {
+            return new HttpBuilderFactory().Create().Advanced.WithCaching(false);
         }
 
         [Fact]
@@ -31,7 +37,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                var result = await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RetryHandler>(h => h.WithAutoRetry(1, TimeSpan.FromMilliseconds(2)))
                         .ResultAsync().ReadContentsAsync();
 
@@ -46,12 +52,12 @@ namespace AonWeb.FluentHttp.Tests.Handlers
             {
                 server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.ServiceUnavailable));
 
-                int expected = Defaults.Current.GetHandlerDefaults().MaxAutoRetries;
+                int expected = 2;
                 int actual = 0;
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RetryHandler>(h => h.WithAutoRetry())
                         .ResultAsync().ReadContentsAsync();
 
@@ -69,7 +75,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var calledBack = false;
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithRetryConfiguration(h => h.WithAutoRetry(false).WithCallback(ctx => calledBack = true))
                         .ResultAsync();
 
@@ -93,7 +99,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RetryHandler>(h => h.WithAutoRetry(3, TimeSpan.FromMilliseconds(3)))
                     .ResultAsync();
 
@@ -114,7 +120,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync();
+                var result = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync();
 
                 actual.ShouldBe(expected);
                 result.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
@@ -134,7 +140,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                var result = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced.WithRetryConfiguration(h => h.WithRetryStatusCode(HttpStatusCode.InternalServerError)).ResultAsync().Result;
+                var result = CreateBuilder().WithUri(server.ListeningUri).Advanced.WithRetryConfiguration(h => h.WithRetryStatusCode(HttpStatusCode.InternalServerError)).ResultAsync().Result;
 
                 actual.ShouldBe(expected);
                 result.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
@@ -154,7 +160,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                var result = new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result = CreateBuilder().WithUri(server.ListeningUri)
                     .Advanced.WithRetryConfiguration(h =>
                         h.WithRetryValidator(r => r.Result.StatusCode == HttpStatusCode.InternalServerError))
                     .ResultAsync().Result;
@@ -168,7 +174,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public void WithRetryValidator_WithValidatorIsNull_ExpectException()
         {
             //act
-            Should.Throw<ArgumentNullException>(() => new HttpBuilderFactory().Create().WithUri("http://testsite.com")
+            Should.Throw<ArgumentNullException>(() => CreateBuilder().WithUri("http://testsite.com")
                 .Advanced.WithRetryConfiguration(h =>
                     h.WithRetryValidator(null)));
         }
@@ -189,7 +195,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 server.WithRequestInspector(r => actual++);
 
                 //act
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RetryHandler>(h => h.WithCallback(ctx =>
                     {
                         if (ctx.CurrentRetryCount >= 1)
@@ -215,7 +221,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var actual = TimeSpan.Zero;
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                var result = await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RetryHandler>(h => h.WithCallback(ctx =>
                     {
                         actual = ctx.RetryAfter;
@@ -240,7 +246,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var actual = TimeSpan.Zero;
 
                 //act
-                var result = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                var result = await CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RetryHandler>(h => h.WithCallback(ctx =>
                     { actual = ctx.RetryAfter; }))
                     .ResultAsync().ReadContentsAsync();
@@ -265,7 +271,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var actual = TimeSpan.Zero;
 
                 //act
-                var result = new HttpBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
+                var result = CreateBuilder().WithUri(server.ListeningUri).Advanced
                     .WithHandlerConfiguration<RetryHandler>(
                         h =>
                             {

@@ -11,8 +11,8 @@ namespace AonWeb.FluentHttp.Handlers
             return HandlerPriority.Default;
         }
 
-        public virtual Task OnSending(HttpSendingContext context)     { return Task.Delay(0); }
-        public virtual Task OnSent(HttpSentContext context)           { return Task.Delay(0); }
-        public virtual Task OnException(HttpExceptionContext context) { return Task.Delay(0); }
+        public virtual Task OnSending(HttpSendingContext context)     { return Task.FromResult(true); }
+        public virtual Task OnSent(HttpSentContext context)           { return Task.FromResult(true); }
+        public virtual Task OnException(HttpExceptionContext context) { return Task.FromResult(true); }
     }
 }

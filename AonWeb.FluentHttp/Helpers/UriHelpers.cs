@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Helpers
 {
@@ -46,9 +45,9 @@ namespace AonWeb.FluentHttp.Helpers
         /// <param name="uris"></param>
         /// <returns>A distinct list of canonical uri strings.</returns>
         /// <remarks>Removes duplicates and any items that are not valid uris</remarks>
-        internal static IEnumerable<Uri> NormalizeUris(this IEnumerable<Uri> uris)
+        internal static IEnumerable<Uri> Normalize(this IEnumerable<Uri> uris)
         {
-            return uris.Select(NormalizeUri).Where(u => u != null).Distinct();
+            return uris.Select(Normalize).Where(u => u != null).Distinct();
         }
 
         /// <summary>
@@ -56,7 +55,7 @@ namespace AonWeb.FluentHttp.Helpers
         /// </summary>
         /// <param name="uri"></param>
         /// <returns>A canonical uri string or empty string if url is invalid.</returns>
-        internal static Uri NormalizeUri(this Uri uri)
+        public static Uri Normalize(this Uri uri)
         {
             return new UriBuilder(uri).NormalizeQuery().Uri;
         }
@@ -66,7 +65,7 @@ namespace AonWeb.FluentHttp.Helpers
         /// </summary>
         /// <param name="builder"></param>
         /// <returns>Uri Builder with modified query</returns>
-        internal static UriBuilder NormalizeQuery(this UriBuilder builder)
+        public static UriBuilder NormalizeQuery(this UriBuilder builder)
         {
             var qsCollection = NormalizedUriQueryCollection.FromQueryString(builder.Query);
             builder.Query = qsCollection.ToEncodedString();

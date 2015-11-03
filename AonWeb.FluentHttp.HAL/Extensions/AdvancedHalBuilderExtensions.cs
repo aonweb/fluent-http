@@ -114,16 +114,11 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
-        public static IAdvancedHalBuilder WithHandler<TResult, TContent, TError>(this IAdvancedHalBuilder builder, ITypedHandler handler)
-        {
-            builder.WithConfiguration(b => b.WithHandler<TResult, TContent, TError>(handler));
-
-            return builder;
-        }
-
         public static IAdvancedHalBuilder WithHandler(this IAdvancedHalBuilder builder, ITypedHandler handler)
         {
-            return builder.WithHandler<object, object, object>(handler);
+            builder.WithConfiguration(b => b.WithHandler(handler));
+
+            return builder;
         }
 
         public static IAdvancedHalBuilder WithHandlerConfiguration<THandler>(this IAdvancedHalBuilder builder, Action<THandler> configure)
@@ -197,9 +192,11 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
-        public static IAdvancedHalBuilder WithCaching(this IAdvancedHalBuilder builder, bool enabled = true)
+        public static IAdvancedHalBuilder WithContextItem(this IAdvancedHalBuilder builder, string key, object value)
         {
-            return builder.WithConfiguration(b => b.WithCaching(enabled));
+            builder.WithConfiguration(b => b.WithContextItem(key, value));
+
+            return builder;
         }
 
         public static IAdvancedHalBuilder WithNoCache(this IAdvancedHalBuilder builder, bool nocache = true)
@@ -217,17 +214,7 @@ namespace AonWeb.FluentHttp.HAL
 
             var uris = resources.Select(r => r.Links.Self());
 
-            return builder.WithDependentLinks(uris);
-        }
-
-        public static IAdvancedHalBuilder WithDependentLink(this IAdvancedHalBuilder builder, Uri uri)
-        {
-            return builder.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(h => h.WithDependentUri(uri));
-        }
-
-        public static IAdvancedHalBuilder WithDependentLinks(this IAdvancedHalBuilder builder, IEnumerable<Uri> uris)
-        {
-            return builder.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(h => h.WithDependentUris(uris));
+            return builder.WithDependentUris(uris);
         }
 
         public static IAdvancedHalBuilder WithSuppressTypeMismatchExceptions(this IAdvancedHalBuilder builder, bool suppress = true)
@@ -248,6 +235,38 @@ namespace AonWeb.FluentHttp.HAL
         public static IAdvancedHalBuilder WithTimeout(this IAdvancedHalBuilder builder, TimeSpan? timeout)
         {
             return builder.WithConfiguration(b => b.WithTimeout(timeout));
+        }
+
+        #region Typed Handler Events
+
+        #region OnSending
+
+        public static IAdvancedHalBuilder OnSending(this IAdvancedHalBuilder builder, Action<TypedSendingContext<IHalResource, IHalRequest>> handler)
+        {
+            builder.WithConfiguration(b => b.OnSending(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnSending(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<TypedSendingContext<IHalResource, IHalRequest>> handler)
+        {
+            builder.WithConfiguration(b => b.OnSending(priority, handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnSendingAsync(this IAdvancedHalBuilder builder, Func<TypedSendingContext<IHalResource, IHalRequest>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnSendingAsync(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnSendingAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<TypedSendingContext<IHalResource, IHalRequest>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnSendingAsync(priority, handler));
+
+            return builder;
         }
 
         public static IAdvancedHalBuilder OnSending<TResult, TContent>(this IAdvancedHalBuilder builder, Action<TypedSendingContext<TResult, TContent>> handler)
@@ -350,6 +369,38 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
+        #endregion
+
+        #region OnSent
+
+        public static IAdvancedHalBuilder OnSent(this IAdvancedHalBuilder builder, Action<TypedSentContext<IHalResource>> handler)
+        {
+            builder.WithConfiguration(b => b.OnSent(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnSent(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<TypedSentContext<IHalResource>> handler)
+        {
+            builder.WithConfiguration(b => b.OnSent(priority, handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnSentAsync(this IAdvancedHalBuilder builder, Func<TypedSentContext<IHalResource>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnSentAsync(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnSentAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<TypedSentContext<IHalResource>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnSentAsync(priority, handler));
+
+            return builder;
+        }
+
         public static IAdvancedHalBuilder OnSent<TResult>(this IAdvancedHalBuilder builder, Action<TypedSentContext<TResult>> handler)
             where TResult : IHalResource
         {
@@ -382,7 +433,39 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
-        public static IAdvancedHalBuilder OnResult<TResult>(this IAdvancedHalBuilder builder, Action<TypedResultContext<TResult>> handler) 
+        #endregion
+
+        #region OnResult
+
+        public static IAdvancedHalBuilder OnResult(this IAdvancedHalBuilder builder, Action<TypedResultContext<IHalResource>> handler)
+        {
+            builder.WithConfiguration(b => b.OnResult(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnResult(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<TypedResultContext<IHalResource>> handler)
+        {
+            builder.WithConfiguration(b => b.OnResult(priority, handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnResultAsync(this IAdvancedHalBuilder builder, Func<TypedResultContext<IHalResource>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnResultAsync(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnResultAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<TypedResultContext<IHalResource>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnResultAsync(priority, handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnResult<TResult>(this IAdvancedHalBuilder builder, Action<TypedResultContext<TResult>> handler)
             where TResult : IHalResource
         {
             builder.WithConfiguration(b => b.OnResult(handler));
@@ -410,6 +493,38 @@ namespace AonWeb.FluentHttp.HAL
             where TResult : IHalResource
         {
             builder.WithConfiguration(b => b.OnResultAsync(priority, handler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region OnError
+
+        public static IAdvancedHalBuilder OnError(this IAdvancedHalBuilder builder, Action<TypedErrorContext<object>> handler)
+        {
+            builder.WithConfiguration(b => b.OnError(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnError(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<TypedErrorContext<object>> handler)
+        {
+            builder.WithConfiguration(b => b.OnError(priority, handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnErrorAsync(this IAdvancedHalBuilder builder, Func<TypedErrorContext<object>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnErrorAsync(handler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnErrorAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<TypedErrorContext<object>, Task> handler)
+        {
+            builder.WithConfiguration(b => b.OnErrorAsync(priority, handler));
 
             return builder;
         }
@@ -442,6 +557,10 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
+        #endregion
+
+        #region OnException
+
         public static IAdvancedHalBuilder OnException(this IAdvancedHalBuilder builder, Action<TypedExceptionContext> handler)
         {
             builder.WithConfiguration(b => b.OnException(handler));
@@ -469,5 +588,270 @@ namespace AonWeb.FluentHttp.HAL
 
             return builder;
         }
+
+        #endregion
+
+        #endregion
+
+        #region Caching Events
+
+        #region Hit
+        public static IAdvancedHalBuilder OnCacheHit(this IAdvancedHalBuilder builder, Action<CacheHitContext<IHalResource>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithHitHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheHit(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheHitContext<IHalResource>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithHitHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheHitAsync(this IAdvancedHalBuilder builder, Func<CacheHitContext<IHalResource>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncHitHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheHitAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheHitContext<IHalResource>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncHitHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheHit<TResult>(this IAdvancedHalBuilder builder, Action<CacheHitContext<TResult>> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithHitHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheHit<TResult>(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheHitContext<TResult>> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithHitHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheHitAsync<TResult>(this IAdvancedHalBuilder builder, Func<CacheHitContext<TResult>, Task> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncHitHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheHitAsync<TResult>(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheHitContext<TResult>, Task> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncHitHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Miss
+
+        public static IAdvancedHalBuilder OnCacheMiss(this IAdvancedHalBuilder builder, Action<CacheMissContext<IHalResource>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithMissHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheMiss(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheMissContext<IHalResource>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithMissHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheMissAsync(this IAdvancedHalBuilder builder, Func<CacheMissContext<IHalResource>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncMissHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheMissAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheMissContext<IHalResource>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncMissHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheMiss<TResult>(this IAdvancedHalBuilder builder, Action<CacheMissContext<TResult>> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithMissHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheMiss<TResult>(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheMissContext<TResult>> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithMissHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheMissAsync<TResult>(this IAdvancedHalBuilder builder, Func<CacheMissContext<TResult>, Task> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncMissHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheMissAsync<TResult>(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheMissContext<TResult>, Task> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncMissHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Store
+
+        public static IAdvancedHalBuilder OnCacheStore(this IAdvancedHalBuilder builder, Action<CacheStoreContext<IHalResource>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithStoreHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheStore(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheStoreContext<IHalResource>> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithStoreHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheStoreAsync(this IAdvancedHalBuilder builder, Func<CacheStoreContext<IHalResource>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncStoreHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheStoreAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheStoreContext<IHalResource>, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncStoreHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+
+        public static IAdvancedHalBuilder OnCacheStore<TResult>(this IAdvancedHalBuilder builder, Action<CacheStoreContext<TResult>> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithStoreHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheStore<TResult>(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheStoreContext<TResult>> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithStoreHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheStoreAsync<TResult>(this IAdvancedHalBuilder builder, Func<CacheStoreContext<TResult>, Task> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncStoreHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheStoreAsync<TResult>(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheStoreContext<TResult>, Task> cacheHandler)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncStoreHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Expiring
+
+        public static IAdvancedHalBuilder OnCacheExpiring(this IAdvancedHalBuilder builder, Action<CacheExpiringContext> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiringHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheExpiring(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheExpiringContext> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiringHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheExpiringAsync(this IAdvancedHalBuilder builder, Func<CacheExpiringContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiringHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheExpiringAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheExpiringContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiringHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #region Expired
+
+        public static IAdvancedHalBuilder OnCacheExpired(this IAdvancedHalBuilder builder, Action<CacheExpiredContext> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiredHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheExpired(this IAdvancedHalBuilder builder, HandlerPriority priority, Action<CacheExpiredContext> cacheHandler)
+
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithExpiredHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheExpiredAsync(this IAdvancedHalBuilder builder, Func<CacheExpiredContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiredHandler(cacheHandler));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder OnCacheExpiredAsync(this IAdvancedHalBuilder builder, HandlerPriority priority, Func<CacheExpiredContext, Task> cacheHandler)
+        {
+            builder.WithConfiguration(s => s.HandlerRegister.WithAsyncExpiredHandler(priority, cacheHandler));
+
+            return builder;
+        }
+
+        #endregion
+
+        #endregion
     }
 }

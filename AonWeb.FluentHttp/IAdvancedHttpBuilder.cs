@@ -2,7 +2,8 @@
 {
     public interface IAdvancedHttpBuilder : 
         IHttpBuilder,
-        IAdvancedHttpBuilderCore<IAdvancedHttpBuilder>
+        IAdvancedHttpBuilderCore<IAdvancedHttpBuilder>,
+        IAdvancedCacheConfigurable<IAdvancedHttpBuilder>
     {
 
     }

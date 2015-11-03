@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Mocks
 {
@@ -10,17 +11,14 @@ namespace AonWeb.FluentHttp.Mocks
     {
         private readonly IList<IAssertAction> _asserts;
         private Action _assertFailure;
-        private readonly MockHttpClientBuilder _clientBuilder;
+        private readonly IMockHttpClientBuilder _clientBuilder;
 
-        public MockHttpBuilder(IHttpBuilderSettings settings, MockHttpClientBuilder clientBuilder,
-            IEnumerable<IHttpHandler> defaultHandlers)
-            : base(settings, clientBuilder, defaultHandlers)
+        public MockHttpBuilder(IHttpBuilderSettings settings, IMockHttpClientBuilder clientBuilder) 
+            : base(settings, clientBuilder)
         {
             _clientBuilder = clientBuilder;
             _asserts = new List<IAssertAction>();
             _assertFailure = (() => { throw new Exception("assertion was never called"); });
-
-            ConfigureMock();
         }
 
         public IMockHttpBuilder WithResponse(Predicate<IMockRequestContext> predicate, Func<IMockRequestContext, IMockResponse> responseFactory)
@@ -80,6 +78,13 @@ namespace AonWeb.FluentHttp.Mocks
             {
                 Verify();
             }
+        }
+
+        public override void WithSettings(IHttpBuilderSettings settings)
+        {
+            base.WithSettings(settings);
+
+            ConfigureMock();
         }
 
         private void Verify()

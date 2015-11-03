@@ -1,8 +1,10 @@
-﻿namespace AonWeb.FluentHttp.HAL
+﻿
+namespace AonWeb.FluentHttp.HAL
 {
     public interface IAdvancedHalBuilder :  IHalBuilder,
         IAdvancedHttpBuilderCore<IAdvancedHalBuilder>,
-        IFluentConfigurable<IAdvancedHalBuilder, IAdvancedTypedBuilder>
+        IFluentConfigurable<IAdvancedHalBuilder, IAdvancedTypedBuilder>,
+        IAdvancedCacheConfigurable<IAdvancedHalBuilder>
     {
 
     }

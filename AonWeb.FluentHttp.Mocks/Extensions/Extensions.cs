@@ -27,13 +27,13 @@ namespace AonWeb.FluentHttp.Mocks
         public static TMocker WithResult<TMocker, TResult>(this ITypedResultMocker<TMocker> mock, TResult result)
             where TMocker : ITypedResultMocker<TMocker>
         {
-            return mock.WithResult((r) => true, context => new MockResult<TResult>(result));
+            return mock.WithResult(r => true, context => new MockResult<TResult>(result));
         }
 
         public static TMocker WithError<TMocker, TError>(this ITypedResultMocker<TMocker> mock, TError error)
             where TMocker : ITypedResultMocker<TMocker>
         {
-            return mock.WithError((r) => true, context => new MockResult<TError>(error, new MockHttpResponseMessage(HttpStatusCode.InternalServerError)));
+            return mock.WithError(r => true, context => new MockResult<TError>(error, new MockHttpResponseMessage(HttpStatusCode.InternalServerError)));
         }
 
         #endregion

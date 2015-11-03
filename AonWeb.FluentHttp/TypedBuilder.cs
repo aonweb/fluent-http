@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Client;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Serialization;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp
 {
@@ -16,22 +17,22 @@ namespace AonWeb.FluentHttp
         private readonly IChildHttpBuilder _innerBuilder;
         private CancellationTokenSource _tokenSource;
 
-        public TypedBuilder(ITypedBuilderSettings settings, IChildHttpBuilder builder, IEnumerable<ITypedHandler> defaultHandlers)
+        public TypedBuilder(ITypedBuilderSettings settings, IChildHttpBuilder builder)
         {
             _innerBuilder = builder;
 
             Settings = settings;
-
-            if (defaultHandlers != null)
-            {
-                foreach (var handler in defaultHandlers)
-                    this.WithHandler(handler);
-            }
+            Settings.Builder = this;
         }
 
-        public ITypedBuilderSettings Settings { get; }
+        public ITypedBuilderSettings Settings { get; private set; }
 
         public IAdvancedTypedBuilder Advanced => this;
+
+        public virtual void WithSettings(ITypedBuilderSettings settings)
+        {
+            Settings = settings;
+        }
 
         public ITypedBuilder WithConfiguration(Action<IHttpBuilderSettings> configuration)
         {
@@ -39,21 +40,11 @@ namespace AonWeb.FluentHttp
 
             return this;
         }
-        void IConfigurable<IHttpBuilderSettings>.WithConfiguration(Action<IHttpBuilderSettings> configuration)
-        {
-            WithConfiguration(configuration);
-        }
-
         public IAdvancedTypedBuilder WithConfiguration(Action<IAdvancedHttpBuilder> configuration)
         {
             configuration?.Invoke(_innerBuilder);
 
             return this;
-        }
-
-        void IConfigurable<IAdvancedHttpBuilder>.WithConfiguration(Action<IAdvancedHttpBuilder> configuration)
-        {
-            configuration?.Invoke(_innerBuilder);
         }
 
         public ITypedBuilder WithConfiguration(Action<ITypedBuilderSettings> configuration)
@@ -63,16 +54,37 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        void IConfigurable<ITypedBuilderSettings>.WithConfiguration(Action<ITypedBuilderSettings> configuration)
+        public IAdvancedTypedBuilder WithConfiguration(Action<ICacheSettings> configuration)
         {
-            WithConfiguration(configuration);
-        }
+            this.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(
+                h => h.WithConfiguration(configuration));
 
+            return this;
+        }
         public IAdvancedTypedBuilder WithClientConfiguration(Action<IHttpClientBuilder> configuration)
         {
             _innerBuilder.WithClientConfiguration(configuration);
 
             return this;
+        }
+        void IConfigurable<IHttpBuilderSettings>.WithConfiguration(Action<IHttpBuilderSettings> configuration)
+        {
+            WithConfiguration(configuration);
+        }
+
+        void IConfigurable<IAdvancedHttpBuilder>.WithConfiguration(Action<IAdvancedHttpBuilder> configuration)
+        {
+            configuration?.Invoke(_innerBuilder);
+        }
+
+        void IConfigurable<ITypedBuilderSettings>.WithConfiguration(Action<ITypedBuilderSettings> configuration)
+        {
+            WithConfiguration(configuration);
+        }
+
+        void IConfigurable<ICacheSettings>.WithConfiguration(Action<ICacheSettings> configuration)
+        {
+            WithConfiguration(configuration);
         }
 
         public virtual Task<TResult> ResultAsync<TResult>()
@@ -176,11 +188,7 @@ namespace AonWeb.FluentHttp
                     response = await GetResponse(context, request, token);
 
                     if (!context.IsSuccessfulResponse(response))
-                    {
-                        var statusCode = ((int?)response?.StatusCode).ToString() ?? "<Unknown>";
-                        var reasonPhrase = response?.ReasonPhrase ?? "<Unknown>";
-                        throw new HttpRequestException($"Recieved response {statusCode} - {reasonPhrase}, which did not pass response validation. " + response.DetailsForException());
-                    }
+                        throw ObjectHelpers.CreateHttpException(response);
 
                     var sentResult = await context.HandlerRegister.OnSent(context, request, response);
 

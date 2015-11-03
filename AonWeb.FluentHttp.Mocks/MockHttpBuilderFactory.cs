@@ -1,45 +1,38 @@
+using System.Collections.Generic;
+using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Settings;
+
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockHttpBuilderFactory : IMockHttpBuilderFactory
+    public class MockHttpBuilderFactory : HttpBuilderFactory, IMockHttpBuilderFactory
     {
-        public IMockHttpBuilder Create()
+        public MockHttpBuilderFactory()
+            :base(null) { }
+
+        protected override IHttpClientBuilder GetClientBuilder()
         {
-            var settings = new MockHttpBuilderSettings();
-
-            var builder = new MockHttpBuilder(settings, new MockHttpClientBuilder(), Defaults.Current.GetHttpBuilderDefaults().Handlers.GetHandlers(settings));
-
-            settings.SetBuilder(builder);
-
-            Defaults.Current.GetHttpBuilderDefaults().DefaultBuilderConfiguration?.Invoke(builder);
-
-            return builder;
-
+            return new MockHttpClientBuilder(new HttpClientSettings());
         }
 
-        public IMockHttpBuilder CreateAsChild()
+        protected override IChildHttpBuilder GetBuilder( IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder)
         {
-            var settings = new MockHttpBuilderSettings();
-            var builder = new MockHttpBuilder(
-                settings,
-                new MockHttpClientBuilder(),
-                Defaults.Current.GetHttpBuilderDefaults().ChildHandlers.GetHandlers(settings));
-
-            settings.SetBuilder(builder);
-
-            // allow parent to cache
-            builder.WithCaching(false);
-
-            return builder;
+            return new MockHttpBuilder(settings, (IMockHttpClientBuilder)clientBuilder);
         }
 
-        IChildHttpBuilder IHttpBuilderFactory.CreateAsChild()
+        protected override IHttpBuilderSettings GetSettings( IList<IHttpHandler> handlers, ICacheSettings cacheSettings)
         {
-            return CreateAsChild();
+            return new MockHttpBuilderSettings(cacheSettings, handlers, null);
         }
 
-        IHttpBuilder IHttpBuilderFactory.Create()
+        public new IMockHttpBuilder Create()
         {
-            return Create();
+            return (IMockHttpBuilder)base.Create();
+        }
+
+        public new IMockHttpBuilder CreateAsChild()
+        {
+            return (IMockHttpBuilder)base.CreateAsChild();
         }
     }
 }

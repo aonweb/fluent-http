@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.HAL.Serialization

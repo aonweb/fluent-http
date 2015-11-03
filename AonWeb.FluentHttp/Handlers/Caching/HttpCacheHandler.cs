@@ -1,5 +1,4 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
@@ -12,42 +11,27 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             return HandlerPriority.Default;
         }
 
-        public Task OnHit(CacheHitContext<HttpResponseMessage> context)
-        {
-            return OnHit((CacheHitContext)context);
-        }
-
-        public Task OnHit(CacheHitContext context)
+        public virtual Task OnHit(CacheHitContext context)
         {
             return Task.FromResult(true);
         }
 
-        public Task OnMiss(CacheMissContext<HttpResponseMessage> context)
-        {
-            return OnMiss((CacheMissContext)context);
-        }
-
-        public Task OnMiss(CacheMissContext context)
+        public virtual Task OnMiss(CacheMissContext context)
         {
             return Task.FromResult(true);
         }
 
-        public Task OnStore(CacheStoreContext<HttpResponseMessage> context)
-        {
-            return OnStore((CacheStoreContext)context);
-        }
-
-        public Task OnStore(CacheStoreContext context)
+        public virtual Task OnStore(CacheStoreContext context)
         {
             return Task.FromResult(true);
         }
 
-        public Task OnExpiring(CacheExpiringContext context)
+        public virtual Task OnExpiring(CacheExpiringContext context)
         {
             return Task.FromResult(true);
         }
 
-        public Task OnExpired(CacheExpiredContext context)
+        public virtual Task OnExpired(CacheExpiredContext context)
         {
             return Task.FromResult(true);
         }

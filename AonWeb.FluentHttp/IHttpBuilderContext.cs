@@ -2,12 +2,12 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers;
-using AonWeb.FluentHttp.Handlers.Caching;
 
 namespace AonWeb.FluentHttp
 {
-    public interface IHttpBuilderContext: IBuilderContext<IRecursiveHttpBuilder, IHttpBuilderSettings>
+    public interface IHttpBuilderContext: IBuilderContext<IRecursiveHttpBuilder>
     {
         Uri Uri { get; }
         HttpMethod Method { get;  }
@@ -19,6 +19,7 @@ namespace AonWeb.FluentHttp
         Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
         HttpHandlerRegister HandlerRegister { get; }
         CancellationToken Token { get; }
-        void ValidateSettings();
+        ResponseValidatorCollection ResponseValidator { get; }
+        ICacheMetadata CacheMetadata { get; }
     }
 }

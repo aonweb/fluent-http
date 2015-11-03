@@ -1,7 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Helpers;
@@ -9,65 +7,46 @@ using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
-    public class CacheContext: ICacheContext
+    public class CacheContext: CacheMetadata, ICacheContext
     {
-        private readonly ICacheSettings _settings;
         private readonly IHandlerContext _handlerContext;
-        private readonly Lazy<CacheKey> _cacheKey;
 
         public CacheContext(ICacheContext context)
-            : this(context.GetSettings(), context.GetHandlerContext()) { }
+            : this(context, context.GetHandlerContext()) { }
 
-        public CacheContext(ICacheSettings settings, IHandlerContext handlerContext)
+        public CacheContext(ICacheValidator context, IHandlerContext handlerContext)
+            : base(context)
         {
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
 
             if (handlerContext == null)
                 throw new ArgumentNullException(nameof(handlerContext));
 
-            _settings = settings;
-
             _handlerContext = handlerContext;
 
             Request = handlerContext.Request;
-            Uri = Request?.RequestUri.NormalizeUri();
-            _cacheKey = new Lazy<CacheKey>(() => _settings.CacheKeyBuilder.BuildKey(this));
+            Uri = Request?.RequestUri.Normalize();
+            HandlerRegister = context.HandlerRegister;
+            ResultInspector = context.ResultInspector;
+            RequestValidator = context.RequestValidator;
+            ResponseValidator = context.ResponseValidator;
+            RevalidateValidator = context.AllowStaleResultValidator;
+            AllowStaleResultValidator = context.AllowStaleResultValidator;
         }
 
-        public CacheResult Result { get; set; }
-        
-        public CacheKey CacheKey => _cacheKey.Value;
-        public Func<ICacheContext, bool> CacheValidator => _settings.CacheValidator;
-        public Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator => _settings.RevalidateValidator;
-        public Action<CacheResult> ResultInspector => _settings.ResultInspector;
-        public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator => _settings.ResponseValidator;
-        public Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator => _settings.AllowStaleResultValidator;
-        public CacheHandlerRegister Handler => _settings.Handler;
-
         public IDictionary Items => _handlerContext.Items;
-
-        public ResponseValidationResult ValidationResult { get; set; }
-        public bool Enabled => _settings.Enabled;
-       
         public Type ResultType => _handlerContext.ResultType;
-        public ISet<HttpMethod> CacheableHttpMethods => _settings.CacheableHttpMethods;
-        public ISet<HttpStatusCode> CacheableHttpStatusCodes => _settings.CacheableHttpStatusCodes;
-        public TimeSpan? DefaultDurationForCacheableResults => _settings.DefaultDurationForCacheableResults;
-        public ISet<string> DefaultVaryByHeaders => _settings.DefaultVaryByHeaders;
-        public bool MustRevalidate => _settings.MustRevalidate;
-        public ISet<Uri> DependentUris => _settings.DependentUris;
-        public TimeSpan? CacheDuration => _settings.CacheDuration;
-        public bool SuppressTypeMismatchExceptions => _settings.SuppressTypeMismatchExceptions;
 
         public HttpRequestMessage Request { get; }
 
         public Uri Uri { get; }
-
-        public ICacheSettings GetSettings()
-        {
-            return _settings;
-        }
+        public CacheHandlerRegister HandlerRegister { get; }
+        public Action<CacheEntry> ResultInspector { get; }
+        public Func<ICacheContext, bool> RequestValidator { get; set; }
+        public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; }
+        public Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; }
+        public Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; }
 
         public IHandlerContext GetHandlerContext()
         {

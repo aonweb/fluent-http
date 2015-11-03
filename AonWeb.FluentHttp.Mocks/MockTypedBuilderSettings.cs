@@ -1,19 +1,22 @@
 using System;
+using System.Collections.Generic;
+using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Mocks
 {
     public class MockTypedBuilderSettings : TypedBuilderSettings, IMockTypedBuilderSettings
     {
-        private readonly MockFormatter _formatter;
+        private readonly IMockFormatter _formatter;
 
-        public MockTypedBuilderSettings(MockFormatter formatter): base(formatter)
+        public MockTypedBuilderSettings(
+            IMockFormatter formatter,
+            ICacheSettings cacheSettings,
+            IEnumerable<ITypedHandler> handlers,
+            IEnumerable<ITypedResponseValidator> responseValidators) 
+                : base(formatter, cacheSettings, handlers, responseValidators)
         {
             _formatter = formatter;
-        }
-
-        internal void SetBuilder(IChildTypedBuilder builder)
-        {
-            Builder = builder;
         }
 
         public IMockTypedBuilderSettings WithResult<TResult>(Predicate<IMockTypedRequestContext> predicate, Func<IMockTypedRequestContext, IMockResult<TResult>> resultFactory)

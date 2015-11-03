@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using AonWeb.FluentHttp.HAL.Serialization;
-using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.HAL
 {

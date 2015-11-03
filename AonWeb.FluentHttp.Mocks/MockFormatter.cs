@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Mocks
@@ -30,6 +31,8 @@ namespace AonWeb.FluentHttp.Mocks
 
             return this;
         }
+
+        public MediaTypeFormatterCollection MediaTypeFormatters => _innerFormatter.MediaTypeFormatters;
 
         public Task<HttpContent> CreateContent(object value, ITypedBuilderContext context)
         {

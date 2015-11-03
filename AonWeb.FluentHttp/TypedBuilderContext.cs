@@ -5,56 +5,72 @@ using System.Net.Http.Formatting;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers;
-using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Handlers.Caching;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp
 {
     public class TypedBuilderContext : ITypedBuilderContext
     {
-        private readonly ITypedBuilderSettings _settings;
+        public TypedBuilderContext(ITypedBuilderSettings settings)
+            :this((ITypedBuilderContext)settings)
+        {
+            CacheMetadata = new CacheMetadata(settings.CacheSettings);
+        }
 
         public TypedBuilderContext(ITypedBuilderContext context)
-            : this(context.GetSettings()) { }
-
-        public TypedBuilderContext(ITypedBuilderSettings settings)
         {
-            _settings = settings;
+            Items = context.Items;
+            ResultType = context.ResultType;
+            Builder = context.Builder;
+            SuppressCancellationErrors = context.SuppressCancellationErrors;
+            Formatter = context.Formatter;
+            ContentFactory = context.ContentFactory;
+            HttpContentFactory = context.HttpContentFactory;
+            ResultFactory = context.ResultFactory;
+            ErrorFactory = context.ErrorFactory;
+            ContentType = context.ContentType;
+            ErrorType = context.ErrorType;
+            MediaType = context.MediaType;
+            DefaultResultFactory = context.DefaultResultFactory;
+            DefaultErrorFactory = context.DefaultErrorFactory;
+            HandlerRegister = context.HandlerRegister;
+            SuppressTypeMismatchExceptions = context.SuppressTypeMismatchExceptions;
+            ExceptionFactory = context.ExceptionFactory;
+            DeserializeResult = context.DeserializeResult;
+            Token = context.Token;
+            CacheMetadata = context.CacheMetadata;
+            ResponseValidator = context.ResponseValidator;
         }
-        
-        public IDictionary Items => _settings.Items;
-        public Type ResultType => _settings.ResultType;
-        public IChildTypedBuilder Builder => _settings.Builder;
-        public CancellationToken Token => _settings.Token;
-        public bool SuppressCancellationErrors => _settings.SuppressCancellationErrors;
-        public IFormatter Formatter => _settings.Formatter;
-        public Func<object> ContentFactory => _settings.ContentFactory;
-        public Func<ITypedBuilderContext, object, Task<HttpContent>> HttpContentFactory 
-            => _settings.HttpContentFactory ?? ((ctx,ctn) => Task.FromResult<HttpContent>(null));
-        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<object>> ResultFactory 
-            => _settings.ResultFactory ?? ((ctx, req, res) => Task.FromResult(TypeHelpers.GetDefaultValueForType(ctx.ResultType)));
-        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> ErrorFactory 
-            => _settings.ErrorFactory ?? ((ctx, req, res, ex) => Task.FromResult(TypeHelpers.GetDefaultValueForType(ctx.ErrorType)));
 
-        public Type ContentType => _settings.ContentType;
-        public Type ErrorType => _settings.ErrorType;
-        public string MediaType => _settings.MediaType;
-        public Func<Type, object> DefaultResultFactory => _settings.DefaultResultFactory;
-        public Func<Type, Exception, object> DefaultErrorFactory => _settings.DefaultErrorFactory;
-        public MediaTypeFormatterCollection MediaTypeFormatters => _settings.MediaTypeFormatters;
-        public TypedHandlerRegister HandlerRegister => _settings.HandlerRegister;
-        public bool SuppressTypeMismatchExceptions => _settings.SuppressTypeMismatchExceptions;
-        public Func<ExceptionCreationContext, Exception> ExceptionFactory => _settings.ExceptionFactory;
-        public bool DeserializeResult => _settings.DeserializeResult;
+        public IDictionary Items { get; }
+        public Type ResultType { get; }
+        public ITypedBuilder Builder { get; }
+        public bool SuppressCancellationErrors { get; }
+        public IFormatter Formatter { get; }
+        public Func<object> ContentFactory { get; }
+        public Func<ITypedBuilderContext, object, Task<HttpContent>> HttpContentFactory { get; }
+        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<object>> ResultFactory { get; }
+        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> ErrorFactory { get; }
+        public Type ContentType { get; }
+        public Type ErrorType { get; }
+        public string MediaType { get; }
+        public Func<Type, object> DefaultResultFactory { get; }
+        public Func<Type, Exception, object> DefaultErrorFactory { get; }
+        public MediaTypeFormatterCollection MediaTypeFormatters { get; }
+        public TypedHandlerRegister HandlerRegister { get; }
+        public bool SuppressTypeMismatchExceptions { get; }
+        public Func<ExceptionCreationContext, Exception> ExceptionFactory { get; }
+        public bool DeserializeResult { get; }
+        public CancellationToken Token { get; }
+        public ICacheMetadata CacheMetadata { get; }
+        public ResponseValidatorCollection ResponseValidator { get; }
 
         public bool IsSuccessfulResponse(HttpResponseMessage response)
         {
-            return _settings.IsSuccessfulResponse(response);
-        }
-
-        public ITypedBuilderSettings GetSettings()
-        {
-            return _settings.GetSettings();
+            return ResponseValidator.IsValid(response);
         }
     }
 }

@@ -16,8 +16,16 @@ namespace AonWeb.FluentHttp.Tests
         public HttpBuilderCoreExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Defaults.Current.GetCachingDefaults().Enabled = false;
             Cache.Clear();
+        }
+
+        private static IMockHttpBuilder CreateBuilder()
+        {
+            var builder = new MockHttpBuilderFactory().Create();
+
+            builder.Advanced.WithCaching(false);
+
+            return builder;
         }
 
         #region WithUri
@@ -28,7 +36,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = new Uri(MockUriString);
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -44,7 +52,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             //arrange
             var uri = "blah blah";
-            var builder = new MockHttpBuilderFactory().Create();
+            var builder = CreateBuilder();
 
             //act
             Should.Throw<UriFormatException>(() => builder.WithUri(uri));
@@ -55,7 +63,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             //arrange
             string uri = null;
-            var builder = new MockHttpBuilderFactory().Create();
+            var builder = CreateBuilder();
 
             //act
             Should.Throw<ArgumentException>(() => builder.WithUri(uri));
@@ -66,7 +74,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             //arrange
             var uri = string.Empty;
-            var builder = new MockHttpBuilderFactory().Create();
+            var builder = CreateBuilder();
 
             //act
             Should.Throw<ArgumentException>(() => builder.WithUri(uri));
@@ -78,7 +86,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = new Uri(MockUriString);
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -94,13 +102,13 @@ namespace AonWeb.FluentHttp.Tests
         {
 
             Uri uri = null;
-            Should.Throw<ArgumentNullException>(() => new MockHttpBuilderFactory().Create().WithUri(uri));
+            Should.Throw<ArgumentNullException>(() => CreateBuilder().WithUri(uri));
         }
 
         [Fact]
         public async Task WithUri_WhenNeverSet_ExpectException()
         {
-            await Should.ThrowAsync<InvalidOperationException>(new MockHttpBuilderFactory().Create().ResultAsync());
+            await Should.ThrowAsync<InvalidOperationException>(CreateBuilder().ResultAsync());
         }
 
         [Fact]
@@ -108,7 +116,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             //arrange
             var uri = "somedomain.com/path";
-            var builder = new MockHttpBuilderFactory().Create();
+            var builder = CreateBuilder();
 
             //act
             Should.Throw<UriFormatException>(() => builder.WithUri(uri));
@@ -121,7 +129,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri1 = new Uri("http://yahoo.com");
             var uri2 = new Uri(MockUriString);
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri1).Advanced;
+            var builder = CreateBuilder().WithUri(uri1).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -143,7 +151,7 @@ namespace AonWeb.FluentHttp.Tests
             //arrange
             var uri = new Uri(MockUriString);
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -166,7 +174,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri = new Uri(MockUriString);
             var expected = new Uri(expectedUriString);
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -185,7 +193,7 @@ namespace AonWeb.FluentHttp.Tests
             var values = new Dictionary<string, string> { { "q1", "2" }, { "q2", "1 and 2" }, { "q3", "3" } };
             var expected = new Uri(MockUriString + "?q1=2&q2=1%20and%202&q3=3");
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -200,7 +208,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             var expected = new Uri(MockUriString);
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(expected).Advanced;
+            var builder = CreateBuilder().WithUri(expected).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -216,7 +224,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             var expected = new Uri(MockUriString);
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(expected).Advanced;
+            var builder = CreateBuilder().WithUri(expected).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -232,7 +240,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri = new Uri(MockUriString + "?q=1");
             var expected = new Uri(MockUriString + "?q=2");
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -250,7 +258,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri = new Uri(MockUriString + "?q=1");
             var expected = new Uri(MockUriString + "?q=2");
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -266,7 +274,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri = new Uri(MockUriString + "?q=1");
             var expected = new Uri(MockUriString + "?q=1&q=2");
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -284,7 +292,7 @@ namespace AonWeb.FluentHttp.Tests
             var uri = new Uri(MockUriString + "?q=1");
             var expected = new Uri(MockUriString + "?q=1&q=2");
 
-            var builder = new MockHttpBuilderFactory().Create().WithUri(uri).Advanced;
+            var builder = CreateBuilder().WithUri(uri).Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -299,7 +307,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             var expected = new Uri(MockUriString + "?q=2");
 
-            var builder = new MockHttpBuilderFactory().Create().Advanced;
+            var builder = CreateBuilder().Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 
@@ -315,7 +323,7 @@ namespace AonWeb.FluentHttp.Tests
         {
             var expected = new Uri(MockUriString + "?q=2");
 
-            var builder = new MockHttpBuilderFactory().Create().Advanced;
+            var builder = CreateBuilder().Advanced;
             Uri actual = null;
             builder.OnSending(ctx => actual = ctx.Request.RequestUri);
 

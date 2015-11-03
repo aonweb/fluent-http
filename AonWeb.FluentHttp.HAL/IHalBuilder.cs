@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.HAL.Serialization;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.HAL
 {

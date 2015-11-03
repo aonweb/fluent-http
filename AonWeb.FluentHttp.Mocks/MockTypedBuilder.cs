@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Mocks
 {
     public class MockTypedBuilder : TypedBuilder, IMockTypedBuilder
     {
-        private readonly IMockTypedBuilderSettings _settings;
+        private IMockTypedBuilderSettings _settings;
         private readonly IMockHttpBuilder _innerBuilder;
         private readonly IList<IAssertAction> _asserts;
         private Action _assertFailure;
 
-        public MockTypedBuilder(IMockTypedBuilderSettings settings, IMockHttpBuilder builder, IEnumerable<ITypedHandler> defaultHandlers) 
-            : base(settings, builder, defaultHandlers)
+        public MockTypedBuilder(IMockTypedBuilderSettings settings, IMockHttpBuilder builder) 
+            : base(settings, builder)
         {
             _settings = settings;
             _innerBuilder = builder;
@@ -160,6 +161,13 @@ namespace AonWeb.FluentHttp.Mocks
         {
             foreach (var assert in _asserts)
                 assert.DoAssert();
+        }
+
+        public override void WithSettings(ITypedBuilderSettings settings)
+        {
+            _settings = (IMockTypedBuilderSettings) settings;
+
+            base.WithSettings(settings);
         }
     }
 }

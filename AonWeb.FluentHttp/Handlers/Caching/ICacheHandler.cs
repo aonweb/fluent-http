@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
@@ -12,17 +11,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         Task OnExpired(CacheExpiredContext context);
     }
 
-    public interface ITypedCacheHandler : ICacheHandler
-    {
-        Task OnHit<TResult>(CacheHitContext<TResult> context);
-        Task OnMiss<TResult>(CacheMissContext<TResult> context);
-        Task OnStore<TResult>(CacheStoreContext<TResult> context);
-    }
+    public interface ITypedCacheHandler : ICacheHandler { }
 
-    public interface IHttpCacheHandler : ICacheHandler
-    {
-        Task OnHit(CacheHitContext<HttpResponseMessage> context);
-        Task OnMiss(CacheMissContext<HttpResponseMessage> context);
-        Task OnStore(CacheStoreContext<HttpResponseMessage> context);
-    }
+    public interface IHttpCacheHandler : ICacheHandler { }
 }

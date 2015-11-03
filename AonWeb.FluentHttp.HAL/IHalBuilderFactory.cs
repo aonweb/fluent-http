@@ -1,7 +1,6 @@
 ﻿namespace AonWeb.FluentHttp.HAL
 {
-    public interface IHalBuilderFactory
+    public interface IHalBuilderFactory: IBuilderFactory<IHalBuilder>
     {
-        IHalBuilder Create();
     }
 }
