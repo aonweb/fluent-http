@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp
 {
@@ -10,7 +11,7 @@ namespace AonWeb.FluentHttp
         public static TBuilder WithCaching<TBuilder>(this IAdvancedCacheConfigurable<TBuilder> handler, bool enabled = true)
             where TBuilder : IAdvancedCacheConfigurable<TBuilder>
         {
-            handler.WithConfiguration(s => s.Enabled = enabled);
+            handler.WithConfiguration((ICacheSettings s) => s.Enabled = enabled);
 
             return (TBuilder)handler;
         }

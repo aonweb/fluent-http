@@ -93,6 +93,7 @@
   <ItemGroup>
     <Compile Include="AdvancedHttpBuilderCoreExtensionsTests.cs" />
     <Compile Include="AutofacTests\RegistrationTests.cs" />
+    <Compile Include="Caching\InMemoryCacheProviderTests.cs" />
     <Compile Include="EncodingTests.cs" />
     <Compile Include="Hal\HypermediaLinkHelpersTest.cs" />
     <Compile Include="Helpers\RegistrationHelpers.cs" />

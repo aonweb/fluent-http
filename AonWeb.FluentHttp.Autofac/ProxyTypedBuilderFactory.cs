@@ -10,7 +10,7 @@ namespace AonWeb.FluentHttp.Autofac
 
         public ProxyTypedBuilderFactory(
             ILifetimeScope scope,
-            IEnumerable<IBuilderConfiguration<ITypedBuilder>> configurations) 
+            IEnumerable<IBuilderConfiguration<ITypedBuilder>> configurations)
         {
             _scope = scope;
 
@@ -21,16 +21,24 @@ namespace AonWeb.FluentHttp.Autofac
 
         public ITypedBuilder Create()
         {
-            var builder = CreateAsChild();
+            using (var builderScope = _scope.BeginLifetimeScope(Constants.BuilderScopeTag))
+            {
+                var builder = CreateBuilder(builderScope);
 
-            ApplyConfigurations(Configurations, builder);
+                ApplyConfigurations(Configurations, builder);
 
-            return builder;
+                return builder;
+            }
         }
 
         public IChildTypedBuilder CreateAsChild()
         {
-            return _scope.Resolve<IChildTypedBuilder>();
+            return CreateBuilder(_scope);
+        }
+
+        private static IChildTypedBuilder CreateBuilder(IComponentContext scope)
+        {
+            return scope.Resolve<IChildTypedBuilder>();
         }
 
         private static void ApplyConfigurations(IEnumerable<IBuilderConfiguration<ITypedBuilder>> configurations, ITypedBuilder builder)

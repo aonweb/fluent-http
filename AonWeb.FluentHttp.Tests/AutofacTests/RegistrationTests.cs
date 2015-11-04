@@ -150,7 +150,41 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             }
         }
 
+        [Fact]
+        public async Task HttpBuilderFactory_TwoBuildersDonNotShareSameSettings()
+        {
+            var container = RegistrationHelpers.CreateContainer();
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server
+                    .WithNextResponseOk("Response1")
+                    .WithNextResponseOk("Response2");
 
+                var factory = container.Resolve<IHttpBuilderFactory>();
+                int actual1 = 0;
+                int actual2 = 0;
+                var builder1 = factory.Create().WithUri(server.ListeningUri)
+                    .Advanced.WithCaching(false)
+                    .WithContextItem("Shared", 1)
+                    .OnSending(HandlerPriority.Last, context =>
+                    {
+                        actual1 = (int) context.Items["Shared"];
+                    });
+                var builder2 = factory.Create().WithUri(server.ListeningUri)
+                    .Advanced.WithCaching(false)
+                    .WithContextItem("Shared", 2)
+                    .OnSending(HandlerPriority.Last, context =>
+                    {
+                        actual2 = (int)context.Items["Shared"];
+                    });
+
+                
+                var response1 = await builder1.ResultAsync();
+                var response2 = await builder2.ResultAsync();
+                
+                actual1.ShouldNotBe(actual2);
+            }
+        }
 
         #endregion
 
@@ -277,6 +311,50 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                 actual.ShouldBe("CustomTypedHandler: It Works!");
             }
         }
+
+        [Fact]
+        public async Task TypedBuilderFactory_TwoBuildersDonNotShareSameSettings()
+        {
+            var container = RegistrationHelpers.CreateContainer();
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server
+                    .WithNextResponseOk("Response1")
+                    .WithNextResponseOk("Response2");
+
+                var factory = container.Resolve<ITypedBuilderFactory>();
+                var actual1 = 0;
+                var actual2 = 0;
+                HttpMethod method1 = null;
+                HttpMethod method2 = null;
+                var builder1 = factory.Create().WithUri(server.ListeningUri)
+                    .AsGet()
+                    .Advanced.WithCaching(false)
+                    .WithContextItem("Shared", 1)
+                    .OnSending(HandlerPriority.Last, context =>
+                    {
+                        actual1 = (int)context.Items["Shared"];
+                        method1 = context.Request.Method;
+                    });
+                var builder2 = factory.Create().WithUri(server.ListeningUri)
+                    .AsPut()
+                    .Advanced.WithCaching(false)
+                    .WithContextItem("Shared", 2)
+                    .OnSending(HandlerPriority.Last, context =>
+                    {
+                        actual2 = (int)context.Items["Shared"];
+                        method2 = context.Request.Method;
+                    });
+
+
+                var response1 = await builder1.ResultAsync<string>();
+                var response2 = await builder2.ResultAsync<string>();
+
+                method1.ToString().ShouldNotBe(method2.ToString());
+                actual1.ShouldNotBe(actual2);
+            }
+        }
+
 
         #endregion
 

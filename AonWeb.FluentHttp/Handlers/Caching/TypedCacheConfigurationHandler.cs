@@ -24,7 +24,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         Task ITypedHandler.OnSending(TypedSendingContext context)
         {
-
             return TryGetFromCache(context);
         }
 

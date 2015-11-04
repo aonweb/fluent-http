@@ -22,6 +22,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
             Cache.Clear();
         }
 
+        private static IHttpBuilder CreateBuilder(TimeSpan? duration = null)
+        {
+            return new HttpBuilderFactory().Create().Advanced.WithCaching(true).WithDefaultDurationForCacheableResults(duration);
+        }
+
 
         [Fact]
         public async Task WhenCachingIsOn_ExpectContentsCachedAccrossCallBuilders()
@@ -32,11 +37,36 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response1").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithPrivateCacheHeader());
 
-                var result1 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
 
-                var result2 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
 
                 result1.ShouldBe(result2);
+            }
+        }
+
+        [Fact]
+        public async Task WhenCachingIsOn_ExpectUniqueUrisAreDistinct()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                var baseUri = server.ListeningUri;
+                var firstUri = UriHelpers.CombineVirtualPaths(baseUri, "first");
+                var secondUri = UriHelpers.CombineVirtualPaths(baseUri, "second");
+
+                server
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+
+                var response1 = await CreateBuilder().WithUri(firstUri).ResultAsync();
+                var result1 = await response1.ReadContentsAsync();
+
+                var response2 = await CreateBuilder().WithUri(secondUri).ResultAsync();
+                var result2 = await response2.ReadContentsAsync();
+
+                result1.ShouldNotBe(result2);
+                result1.ShouldBe(TestResult.SerializedDefault1);
+                result2.ShouldBe(TestResult.SerializedDefault2);
             }
         }
 
@@ -50,14 +80,14 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithPrivateCacheHeader());
 
                 var response1 = await Task.Factory.StartNew(() =>
-                    new HttpBuilderFactory().Create()
+                    CreateBuilder()
                    .WithUri(server.ListeningUri)
                    .ResultAsync());
 
                 var result1 = await response1.ReadContentsAsync();
 
                 var response2 = await Task.Factory.StartNew(() =>
-                    new HttpBuilderFactory().Create()
+                    CreateBuilder()
                    .WithUri(server.ListeningUri)
                    .ResultAsync());
 
@@ -77,12 +107,12 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response1").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithPrivateCacheHeader());
 
-                var result1 = await new HttpBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                         .WithUri(server.ListeningUri)
                         .Advanced.WithNoCache()
                         .ResultAsync().ReadContentsAsync();
 
-                var result2 = await new HttpBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                         .WithUri(server.ListeningUri)
                         .Advanced.WithNoCache()
                         .ResultAsync().ReadContentsAsync();
@@ -101,12 +131,12 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response1").WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithNoCacheHeader());
 
-                var result1 = await new HttpBuilderFactory().Create()
+                var result1 = await CreateBuilder()
                        .WithUri(server.ListeningUri)
                        .Advanced.WithNoCache()
                        .ResultAsync().ReadContentsAsync();
 
-                var result2 = await new HttpBuilderFactory().Create()
+                var result2 = await CreateBuilder()
                         .WithUri(server.ListeningUri)
                         .Advanced.WithNoCache()
                         .ResultAsync().ReadContentsAsync();
@@ -126,13 +156,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithPrivateCacheHeader());
 
-                var result1 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync().ReadContentsAsync();
 
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).AsPost()
+                await CreateBuilder().WithUri(server.ListeningUri).AsPost()
                        .ResultAsync();
 
-                var result2 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync().ReadContentsAsync();
 
                 result1.ShouldNotBe(result2);
@@ -164,20 +194,20 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithResponse(ctx => ctx.Method == HttpMethod.Post,
                         new MockHttpResponseMessage().WithNoCacheHeader());
 
-                var parent1 = await new HttpBuilderFactory().Create().WithUri(parentUri).Advanced.WithDependentUri(childUri).ResultAsync().ReadContentsAsync();
-                var child1 = await new HttpBuilderFactory().Create().WithUri(childUri).ResultAsync().ReadContentsAsync();
-                var parent2 = await new HttpBuilderFactory().Create().WithUri(parentUri).ResultAsync().ReadContentsAsync();
-                var child2 = await new HttpBuilderFactory().Create().WithUri(childUri).Advanced.ResultAsync().ReadContentsAsync();
+                var parent1 = await CreateBuilder().WithUri(parentUri).Advanced.WithDependentUri(childUri).ResultAsync().ReadContentsAsync();
+                var child1 = await CreateBuilder().WithUri(childUri).ResultAsync().ReadContentsAsync();
+                var parent2 = await CreateBuilder().WithUri(parentUri).ResultAsync().ReadContentsAsync();
+                var child2 = await CreateBuilder().WithUri(childUri).Advanced.ResultAsync().ReadContentsAsync();
 
                 parent1.ShouldBe(parent2);
                 child1.ShouldBe(child2);
 
-                await new HttpBuilderFactory().Create().WithUri(parentUri).AsPost().ResultAsync();
+                await CreateBuilder().WithUri(parentUri).AsPost().ResultAsync();
 
-                var parent3 = await new HttpBuilderFactory().Create().WithUri(parentUri).ResultAsync().ReadContentsAsync();
+                var parent3 = await CreateBuilder().WithUri(parentUri).ResultAsync().ReadContentsAsync();
                 parent3.ShouldBe("Parent Response3"); // because of the post
 
-                var child3 = await new HttpBuilderFactory().Create().WithUri(childUri).ResultAsync().ReadContentsAsync();
+                var child3 = await CreateBuilder().WithUri(childUri).ResultAsync().ReadContentsAsync();
                 child3.ShouldBe("Child Response2");
             }
         }
@@ -200,15 +230,15 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Child Response2").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Grandchild Response2").WithPrivateCacheHeader());
 
-                var parent1 = await new HttpBuilderFactory().Create().WithUri(parentUri).Advanced.WithDependentUris(new[] { parentUri, grandchildUri }).ResultAsync().ReadContentsAsync();
-                var child1 = await new HttpBuilderFactory().Create().WithUri(childUri).Advanced.WithDependentUris(new[] { childUri, grandchildUri }).ResultAsync().ReadContentsAsync();
-                var grandchild1 = await new HttpBuilderFactory().Create().WithUri(grandchildUri).Advanced.WithDependentUris(new[] { parentUri, childUri }).ResultAsync().ReadContentsAsync();
+                var parent1 = await CreateBuilder().WithUri(parentUri).Advanced.WithDependentUris(new[] { parentUri, grandchildUri }).ResultAsync().ReadContentsAsync();
+                var child1 = await CreateBuilder().WithUri(childUri).Advanced.WithDependentUris(new[] { childUri, grandchildUri }).ResultAsync().ReadContentsAsync();
+                var grandchild1 = await CreateBuilder().WithUri(grandchildUri).Advanced.WithDependentUris(new[] { parentUri, childUri }).ResultAsync().ReadContentsAsync();
 
-                await new HttpBuilderFactory().Create().WithUri(parentUri).AsPost().ResultAsync();
+                await CreateBuilder().WithUri(parentUri).AsPost().ResultAsync();
 
-                var parent2 = await new HttpBuilderFactory().Create().WithUri(parentUri).Advanced.WithDependentUris(new[] { parentUri, grandchildUri }).ResultAsync().ReadContentsAsync();
-                var child2 = await new HttpBuilderFactory().Create().WithUri(childUri).Advanced.WithDependentUris(new[] { childUri, grandchildUri }).ResultAsync().ReadContentsAsync();
-                var grandchild2 = await new HttpBuilderFactory().Create().WithUri(grandchildUri).Advanced.WithDependentUris(new[] { parentUri, childUri }).ResultAsync().ReadContentsAsync();
+                var parent2 = await CreateBuilder().WithUri(parentUri).Advanced.WithDependentUris(new[] { parentUri, grandchildUri }).ResultAsync().ReadContentsAsync();
+                var child2 = await CreateBuilder().WithUri(childUri).Advanced.WithDependentUris(new[] { childUri, grandchildUri }).ResultAsync().ReadContentsAsync();
+                var grandchild2 = await CreateBuilder().WithUri(grandchildUri).Advanced.WithDependentUris(new[] { parentUri, childUri }).ResultAsync().ReadContentsAsync();
 
                 parent1.ShouldNotBe(parent2);
                 child1.ShouldNotBe(child2);
@@ -233,15 +263,15 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Child Response2").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Grandchild Response2").WithPrivateCacheHeader());
 
-                var parent1 = await new HttpBuilderFactory().Create().WithUri(parentUri).Advanced.WithDependentUri(childUri).ResultAsync().ReadContentsAsync();
-                var child1 = await new HttpBuilderFactory().Create().WithUri(childUri).Advanced.WithDependentUri(grandchildUri).ResultAsync().ReadContentsAsync();
-                var grandchild1 = await new HttpBuilderFactory().Create().WithUri(grandchildUri).ResultAsync().ReadContentsAsync();
+                var parent1 = await CreateBuilder().WithUri(parentUri).Advanced.WithDependentUri(childUri).ResultAsync().ReadContentsAsync();
+                var child1 = await CreateBuilder().WithUri(childUri).Advanced.WithDependentUri(grandchildUri).ResultAsync().ReadContentsAsync();
+                var grandchild1 = await CreateBuilder().WithUri(grandchildUri).ResultAsync().ReadContentsAsync();
 
-                await new HttpBuilderFactory().Create().WithUri(parentUri).AsPost().ResultAsync();
+                await CreateBuilder().WithUri(parentUri).AsPost().ResultAsync();
 
-                var parent2 = await new HttpBuilderFactory().Create().WithUri(parentUri).Advanced.WithDependentUri(childUri).ResultAsync().ReadContentsAsync();
-                var child2 = await new HttpBuilderFactory().Create().WithUri(childUri).ResultAsync().ReadContentsAsync();
-                var grandchild2 = await new HttpBuilderFactory().Create().WithUri(childUri).ResultAsync().ReadContentsAsync();
+                var parent2 = await CreateBuilder().WithUri(parentUri).Advanced.WithDependentUri(childUri).ResultAsync().ReadContentsAsync();
+                var child2 = await CreateBuilder().WithUri(childUri).ResultAsync().ReadContentsAsync();
+                var grandchild2 = await CreateBuilder().WithUri(childUri).ResultAsync().ReadContentsAsync();
 
                 parent1.ShouldNotBe(parent2);
                 child1.ShouldNotBe(child2);
@@ -261,13 +291,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithPrivateCacheHeader());
 
-                var result1 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync();
 
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).AsPut()
+                await CreateBuilder().WithUri(server.ListeningUri).AsPut()
                        .ResultAsync();
 
-                var result2 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync();
 
                 result1.ShouldNotBe(result2);
@@ -285,13 +315,13 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithPrivateCacheHeader());
 
-                var result1 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync();
 
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).AsPatch()
+                await CreateBuilder().WithUri(server.ListeningUri).AsPatch()
                        .ResultAsync();
 
-                var result2 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri)
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync();
 
                 result1.ShouldNotBe(result2);
@@ -309,11 +339,11 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Response2").WithPrivateCacheHeader());
 
-                var result1 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
 
-                await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).AsDelete().ResultAsync();
+                await CreateBuilder().WithUri(server.ListeningUri).AsDelete().ResultAsync();
 
-                var result2 = await new HttpBuilderFactory().Create().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
 
                 result1.ShouldNotBe(result2);
             }

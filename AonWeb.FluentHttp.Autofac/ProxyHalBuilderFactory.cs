@@ -11,7 +11,7 @@ namespace AonWeb.FluentHttp.Autofac
 
         public ProxyHalBuilderFactory(
             ILifetimeScope scope,
-            IEnumerable<IBuilderConfiguration<IHalBuilder>> configurations) 
+            IEnumerable<IBuilderConfiguration<IHalBuilder>> configurations)
         {
             _scope = scope;
 
@@ -22,11 +22,19 @@ namespace AonWeb.FluentHttp.Autofac
 
         public IHalBuilder Create()
         {
-            var builder = _scope.Resolve<IAdvancedHalBuilder>();
+            using (var builderScope = _scope.BeginLifetimeScope(Constants.BuilderScopeTag))
+            {
+                var builder = CreateBuilder(builderScope);
 
-            ApplyConfigurations(Configurations, builder);
+                ApplyConfigurations(Configurations, builder);
 
-            return builder;
+                return builder;
+            }
+        }
+
+        private static IHalBuilder CreateBuilder(IComponentContext scope)
+        {
+            return scope.Resolve<IAdvancedHalBuilder>();
         }
 
         private static void ApplyConfigurations(IEnumerable<IBuilderConfiguration<IHalBuilder>> configurations, IHalBuilder builder)

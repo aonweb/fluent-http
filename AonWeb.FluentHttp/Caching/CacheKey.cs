@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.Caching
 
         public CacheKey(string key)
         {
-            if (string.IsNullOrWhiteSpace(key))
+            if (!string.IsNullOrWhiteSpace(key))
             {
                 var hash = DigestHelpers.Sha256Hash(Encoding.UTF8.GetBytes(key));
                 key = Convert.ToBase64String(hash);
@@ -27,12 +27,13 @@ namespace AonWeb.FluentHttp.Caching
             get { return _key ?? string.Empty; }
             private set { _key = string.IsNullOrWhiteSpace(value) ? string.Empty : value; }
         }
+
         public static CacheKey Empty { get; } = new CacheKey();
 
         public override string ToString()
         {
             var key = string.IsNullOrWhiteSpace(Key) ? "none" : Key;
-            return $"DependentKey:{key}";
+            return $"Key:{key}";
         }
 
         #region IEquatable<CacheKey>

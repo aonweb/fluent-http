@@ -4,13 +4,13 @@ using Autofac;
 
 namespace AonWeb.FluentHttp.Autofac
 {
-    public class ProxyHttpBuilderFactory: IHttpBuilderFactory
+    public class ProxyHttpBuilderFactory : IHttpBuilderFactory
     {
         private readonly ILifetimeScope _scope;
 
         public ProxyHttpBuilderFactory(
             ILifetimeScope scope,
-            IEnumerable<IBuilderConfiguration<IHttpBuilder>> configurations) 
+            IEnumerable<IBuilderConfiguration<IHttpBuilder>> configurations)
         {
             _scope = scope;
 
@@ -21,16 +21,24 @@ namespace AonWeb.FluentHttp.Autofac
 
         public IHttpBuilder Create()
         {
-            var builder = CreateAsChild();
+            using (var builderScope = _scope.BeginLifetimeScope(Constants.BuilderScopeTag))
+            {
+                var builder = CreateBuilder(builderScope);
 
-            ApplyConfigurations(Configurations, builder);
+                ApplyConfigurations(Configurations, builder);
 
-            return builder;
+                return builder;
+            }
         }
 
         public IChildHttpBuilder CreateAsChild()
         {
-            return _scope.Resolve<IChildHttpBuilder>();
+            return CreateBuilder(_scope);
+        }
+
+        private static IChildHttpBuilder CreateBuilder(IComponentContext scope)
+        {
+            return scope.Resolve<IChildHttpBuilder>();
         }
 
         private static void ApplyConfigurations(IEnumerable<IBuilderConfiguration<IHttpBuilder>> configurations, IHttpBuilder builder)

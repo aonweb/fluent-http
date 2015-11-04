@@ -42,13 +42,9 @@ namespace AonWeb.FluentHttp.Autofac
             var allAssemblies = _additionalAssemblies.Concat(myAssemblies).ToArray();
 
             //factories
-            builder.RegisterType<BuilderFactoryFactory>();
-            builder.Register(ctx => ctx.Resolve<BuilderFactoryFactory>().CreateHttpBuilderFactory()).As<IHttpBuilderFactory>();
-            builder.Register(ctx => ctx.Resolve<BuilderFactoryFactory>().CreateTypedBuilderFactory()).As<ITypedBuilderFactory>();
-            builder.Register(ctx => ctx.Resolve<BuilderFactoryFactory>().CreateHalBuilderFactory()).As<IHalBuilderFactory>();
-            builder.RegisterType<ProxyHttpBuilderFactory>();
-            builder.RegisterType<ProxyTypedBuilderFactory>();
-            builder.RegisterType<ProxyHalBuilderFactory>();
+            builder.RegisterType<ProxyHttpBuilderFactory>().As<IHttpBuilderFactory>();
+            builder.RegisterType<ProxyTypedBuilderFactory>().As<ITypedBuilderFactory>();
+            builder.RegisterType<ProxyHalBuilderFactory>().As<IHalBuilderFactory>();
             builder.RegisterType<HttpClientBuilder>().As<IHttpClientBuilder>().InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
             builder.RegisterType<Formatter>().As<IFormatter>().InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
 
@@ -115,7 +111,6 @@ namespace AonWeb.FluentHttp.Autofac
                    return ret;
                })
                .AsImplementedInterfaces()
-               .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag)
                .PreserveExistingDefaults();
 
 

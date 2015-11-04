@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
+using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
@@ -49,6 +51,30 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
+        public async Task WhenCachingIsOn_ExpectUniqueUrisAreDistinct()
+        {
+            
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                var baseUri = server.ListeningUri;
+                var firstUri = UriHelpers.CombineVirtualPaths(baseUri, "first");
+                var secondUri = UriHelpers.CombineVirtualPaths(baseUri, "second");
+
+                server
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+
+                var result1 = await CreateBuilder().WithUri(firstUri).ResultAsync<TestResult>();
+
+                var result2 = await CreateBuilder().WithUri(secondUri).ResultAsync<TestResult>();
+
+                result1.ShouldNotBe(result2);
+                result1.ShouldBe(TestResult.Default1());
+                result2.ShouldBe(TestResult.Default2());
+            }
+        }
+
+        [Fact]
         public async Task WhenCachingIsOn_ExpectContentsCachedAccrossCallBuilders()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -78,15 +104,15 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
-
+                var uri = server.ListeningUri;
                 var result1 = await Task.Factory.StartNew(() =>
                     CreateBuilder()
-                   .WithUri(server.ListeningUri)
+                   .WithUri(uri)
                    .ResultAsync<TestResult>().Result);
 
                 var result2 = await Task.Factory.StartNew(() =>
                     CreateBuilder()
-                   .WithUri(server.ListeningUri)
+                   .WithUri(uri)
                    .ResultAsync<TestResult>().Result);
 
                 result1.ShouldBe(result2);
@@ -460,13 +486,49 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
+        public async Task WhenExceptionInHandler_ExpectContentsExpired()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithPrivateCacheHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+
+                var result1 = await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<TestResult>();
+
+                try
+                {
+                    await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .AsPut()
+                    .Advanced
+                    .OnSending(context => { throw new Exception("Boom!"); })
+                    .SendAsync();
+                }
+                catch (Exception)
+                {
+                    // expected
+                }
+
+                var result2 = await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<TestResult>();
+
+                result1.ShouldNotBe(result2);
+            }
+        }
+
+        [Fact]
         public async Task WhenExceptionBeforeCall_ExpectExceptionAndContentsUntouched()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.InternalServerError).WithPrivateCacheHeader())
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
 
                 var result1 = await CreateBuilder()
@@ -477,18 +539,10 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 {
                     await CreateBuilder()
                         .WithUri(server.ListeningUri)
-                        .Advanced.WithClientConfiguration(builder =>
-                        {
-                            throw new TestException();
-                        })
-                        .AsPut()
+                        .Advanced.WithMethod((HttpMethod)null)
                         .SendAsync();
                 }
-                catch (TestException)
-                {
-                    // expected
-                }
-
+                catch (ArgumentNullException) { }
 
                 var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
