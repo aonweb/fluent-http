@@ -47,17 +47,24 @@ namespace AonWeb.FluentHttp.Helpers
             if (context.Uri == null)
                 return false;
 
-            var request = context.Request;
-
-            if (!context.CacheableHttpMethods.Contains(request.Method))
-                return false;
-
-            // client can tell HttpCallCacheHandler not to do caching for a particular request
-            // rather than expiring here and facing a thundering herd, let a success repopulate
-            if (request.Headers.CacheControl?.NoStore ?? false)
+            if (!CanCacheRequest(context.Request, context.CacheableHttpMethods))
                     return false;
 
             if (typeof(IEmptyResult).IsAssignableFrom(context.ResultType))
+                return false;
+
+            return true;
+        }
+
+        public static bool CanCacheRequest(HttpRequestMessage request, ISet<HttpMethod> cacheableHttpMethods)
+        {
+            if (request == null)
+                return false;
+
+            if (!cacheableHttpMethods.Contains(request.Method))
+                return false;
+            
+            if (request.Headers.CacheControl?.NoStore ?? false)
                 return false;
 
             return true;
@@ -76,7 +83,7 @@ namespace AonWeb.FluentHttp.Helpers
 
         public static ResponseValidationResult ValidateResponse(IResponseMetadata responseMetadata, ISet<HttpStatusCode> cacheableHttpStatusCodes)
         {
-            //This is almost verbatim from the CacheCow HttpCallCacheHandler's ResponseValidator func
+            //This is almost verbatim from the CacheCow HttpCacheHandler's ResponseValidator func
 
             // 13.4
             //Unless specifically constrained by a cache-control (section 14.9) directive, a caching system MAY always store 
