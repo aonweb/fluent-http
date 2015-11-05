@@ -23,6 +23,8 @@ namespace AonWeb.FluentHttp
 
             Settings = settings;
             Settings.Builder = this;
+
+            _innerBuilder.WithCaching(false);
         }
 
         public ITypedBuilderSettings Settings { get; private set; }

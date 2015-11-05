@@ -44,9 +44,6 @@ namespace AonWeb.FluentHttp.Helpers
 
         public static bool CanCacheRequest(ICacheContext context)
         {
-            if (!context.Enabled)
-                return false;
-
             if (context.Uri == null)
                 return false;
 
@@ -66,15 +63,12 @@ namespace AonWeb.FluentHttp.Helpers
             return true;
         }
 
-        public static bool ShouldRevalidate(ICacheMetadata context, HttpRequestMessage request, IResponseMetadata responseMetadata)
+        public static bool ShouldRevalidate(HttpRequestMessage request, IResponseMetadata responseMetadata, ISet<HttpMethod> cacheableHttpMethods)
         {
-            if (!context.Enabled)
-                return false;
-
             if (request == null)
                 return false;
 
-            if (!context.CacheableHttpMethods.Contains(request.Method))
+            if (!cacheableHttpMethods.Contains(request.Method))
                 return false;
 
             return responseMetadata != null && responseMetadata.StatusCode == HttpStatusCode.NotModified;

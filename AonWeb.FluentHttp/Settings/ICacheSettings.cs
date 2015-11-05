@@ -7,7 +7,6 @@ namespace AonWeb.FluentHttp.Settings
 {
     public interface ICacheSettings: ICacheValidator
     {
-        new bool Enabled { get; set; }
         new TimeSpan? CacheDuration { get; set; }
         new TimeSpan? DefaultDurationForCacheableResults { get; set; }
         new bool MustRevalidate { get; set; }

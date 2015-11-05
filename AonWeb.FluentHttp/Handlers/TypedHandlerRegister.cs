@@ -186,7 +186,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncSendingHandler<TResult, TContent>(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncSendingHandler<TResult, TContent>(priority, handler.ToTask);
         }
 
         public TypedHandlerRegister WithAsyncSendingHandler<TResult, TContent>(Func<TypedSendingContext<TResult, TContent>, Task> handler)
@@ -231,7 +231,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncSentHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncSentHandler<TResult>(priority, handler.ToTask);
         }
 
         public TypedHandlerRegister WithAsyncSentHandler<TResult>(Func<TypedSentContext<TResult>, Task> handler)
@@ -270,7 +270,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncResultHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncResultHandler<TResult>(priority, handler.ToTask);
         }
 
         public TypedHandlerRegister WithAsyncResultHandler<TResult>(Func<TypedResultContext<TResult>, Task> handler)
@@ -309,7 +309,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncErrorHandler<TError>(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncErrorHandler<TError>(priority, handler.ToTask);
         }
 
         public TypedHandlerRegister WithAsyncErrorHandler<TError>(Func<TypedErrorContext<TError>, Task> handler)
@@ -348,7 +348,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncExceptionHandler(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncExceptionHandler(priority, handler.ToTask);
         }
 
         public TypedHandlerRegister WithAsyncExceptionHandler(Func<TypedExceptionContext, Task> handler)

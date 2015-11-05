@@ -105,6 +105,11 @@ namespace AonWeb.FluentHttp
             return builder.WithClientConfiguration(c => c.WithNoCache(nocache));
         }
 
+        public static IAdvancedHttpBuilder WithCaching(this IAdvancedHttpBuilder builder, bool enabled = true)
+        {
+            return builder.WithOptionalHandlerConfiguration<HttpCacheConfigurationHandler>(c => c.Enabled = enabled);
+        }
+
         public static IAdvancedHttpBuilder WithSuppressCancellationExceptions(this IAdvancedHttpBuilder builder, bool suppress = true)
 
         {

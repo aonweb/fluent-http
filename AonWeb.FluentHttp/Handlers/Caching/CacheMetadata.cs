@@ -28,7 +28,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            Enabled = context.Enabled;
             DependentUris.Merge(context.DependentUris);
             CacheDuration = context.CacheDuration;
             CacheableHttpMethods.Merge(context.CacheableHttpMethods);

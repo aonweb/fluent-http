@@ -20,7 +20,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         }
 
         public IDictionary Items => _cacheContext.Items;
-        public bool Enabled => _cacheContext.Enabled;
         
         public Type ResultType => _cacheContext.ResultType;
         public IEnumerable<Uri> DependentUris => _cacheContext.DependentUris;

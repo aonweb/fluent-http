@@ -34,9 +34,6 @@ namespace AonWeb.FluentHttp
 
             var child = GetChildBuilder();
 
-            // allow parent to cache
-            child.WithCaching(false);
-
             var cacheHandlers = GetCacheHandlers();
             var cacheSettings = GetCacheSettings();
             var handlers = GetHandlers(cacheSettings, cacheHandlers);

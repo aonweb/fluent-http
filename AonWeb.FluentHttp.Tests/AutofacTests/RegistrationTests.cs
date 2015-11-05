@@ -2,16 +2,19 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web.Http;
 using AonWeb.FluentHttp.Autofac;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.HAL;
+using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Autofac;
+using Autofac.Integration.WebApi;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -98,7 +101,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
 
                 var builder = factory.Create();
 
-               await Should.ThrowAsync<HttpRequestException>(builder.WithUri(server.ListeningUri).Advanced.WithCaching(false).ResultAsync());
+                await Should.ThrowAsync<HttpRequestException>(builder.WithUri(server.ListeningUri).Advanced.WithCaching(false).ResultAsync());
             }
         }
 
@@ -168,7 +171,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                     .WithContextItem("Shared", 1)
                     .OnSending(HandlerPriority.Last, context =>
                     {
-                        actual1 = (int) context.Items["Shared"];
+                        actual1 = (int)context.Items["Shared"];
                     });
                 var builder2 = factory.Create().WithUri(server.ListeningUri)
                     .Advanced.WithCaching(false)
@@ -178,10 +181,10 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                         actual2 = (int)context.Items["Shared"];
                     });
 
-                
+
                 var response1 = await builder1.ResultAsync();
                 var response2 = await builder2.ResultAsync();
-                
+
                 actual1.ShouldNotBe(actual2);
             }
         }
@@ -218,7 +221,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                 var builder = container.Resolve<ITypedBuilder>();
 
                 var response = await builder.WithUri(server.ListeningUri).Advanced.WithCaching(false).ResultAsync<string>();
-            
+
                 response.ShouldBe("Typed Result");
             }
         }
@@ -284,6 +287,78 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
 
                 result.ShouldBe("Typed Result");
                 actual.ShouldBe("CustomTypedCacheHandler: It Works!");
+            }
+        }
+
+        [Fact]
+        public async Task TypedBuilderFactory_ResolvesCustomCacheHandlersWithDifferentScope()
+        {
+            var containerBuilder = new ContainerBuilder();
+
+            containerBuilder.RegisterType<CustomScopeTypedCacheHandler>()
+                .As<ITypedCacheHandler>()
+                .InstancePerRequest();
+
+            Registration.Register(containerBuilder, new[] { typeof(RegistrationHelpers).Assembly }, new[] { typeof(CustomScopeTypedCacheHandler) });
+
+            using (var container = containerBuilder.Build())
+            {
+                using (var configuration = new HttpConfiguration
+                {
+                    DependencyResolver = new AutofacWebApiDependencyResolver(container)
+                })
+                {
+                    using (var message = new HttpRequestMessage())
+                    {
+                        message.SetConfiguration(configuration);
+
+                        using (var scope = message.GetDependencyScope().GetRequestLifetimeScope())
+                        {
+                            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+                            {
+                                server.WithNextResponse(new MockHttpResponseMessage().WithContent("Typed Result").WithNoCacheHeader());
+                                server.WithNextResponse(new MockHttpResponseMessage().WithContent("Typed Result").WithNoCacheHeader());
+
+                                var factory = scope.Resolve<ITypedBuilderFactory>();
+                                Guid? actualGuid1 = null;
+                                Guid? actualGuid2 = null;
+                                int? actualInt1 = null;
+                                int? actualInt2 = null;
+                                var uri1 = UriHelpers.CombineVirtualPaths(server.ListeningUri, "first");
+                                var uri2 = UriHelpers.CombineVirtualPaths(server.ListeningUri, "second");
+
+                                var builder1 = factory.Create().WithUri(uri1)
+                                    .Advanced.WithContextItem("CustomValue", 1).WithCaching()
+                                    .OnCacheMiss(HandlerPriority.Last, context =>
+                                    {
+                                        actualInt1 = context.Items["CustomValue"] as int?;
+                                        actualGuid1 = context.Items["CustomScopeTypedCacheHandler"] as Guid?;
+                                    });
+
+                                var builder2 = factory.Create().WithUri(uri2)
+                                    .Advanced.WithContextItem("CustomValue", 2).WithCaching()
+                                    .OnCacheMiss(HandlerPriority.Last, context =>
+                                    {
+                                        actualInt2 = context.Items["CustomValue"] as int?;
+                                        actualGuid2 = context.Items["CustomScopeTypedCacheHandler"] as Guid?;
+                                    });
+
+                                var result1 = await builder1.ResultAsync<string>();
+                                var result2 = await builder2.ResultAsync<string>();
+
+
+                                actualInt1.ShouldNotBeNull();
+                                actualInt2.ShouldNotBeNull();
+                                actualGuid1.ShouldNotBeNull();
+                                actualGuid2.ShouldNotBeNull();
+
+                                actualInt1.ShouldNotBe(actualInt2);
+                                actualGuid1.ShouldBe(actualGuid2);
+                            }
+                        }
+
+                    }
+                }
             }
         }
 
@@ -505,7 +580,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
 
     #region Custom Http Classes
 
-    public class CustomHttpConfiguration: IBuilderConfiguration<IHttpBuilder>
+    public class CustomHttpConfiguration : IBuilderConfiguration<IHttpBuilder>
     {
         public void Configure(IHttpBuilder builder)
         {
@@ -581,6 +656,23 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
         public override Task OnMiss(CacheMissContext context)
         {
             context.Items["CustomTypedCacheHandler"] = "CustomTypedCacheHandler: It Works!";
+
+            return base.OnMiss(context);
+        }
+    }
+
+    public class CustomScopeTypedCacheHandler : TypedCacheHandler
+    {
+        private Guid _id = Guid.NewGuid();
+
+        public override HandlerPriority GetPriority(CacheHandlerType type)
+        {
+            return HandlerPriority.First;
+        }
+
+        public override Task OnMiss(CacheMissContext context)
+        {
+            context.Items["CustomScopeTypedCacheHandler"] = _id;
 
             return base.OnMiss(context);
         }

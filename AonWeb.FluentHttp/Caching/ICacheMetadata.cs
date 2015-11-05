@@ -7,7 +7,6 @@ namespace AonWeb.FluentHttp.Caching
 {
     public interface ICacheMetadata
     {
-        bool Enabled { get; }
         ISet<Uri> DependentUris { get; }
         TimeSpan? CacheDuration { get;  }
         ISet<HttpMethod> CacheableHttpMethods { get; }

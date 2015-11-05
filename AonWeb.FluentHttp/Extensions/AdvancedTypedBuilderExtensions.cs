@@ -94,6 +94,11 @@ namespace AonWeb.FluentHttp
             return builder;
         }
 
+        public static IAdvancedTypedBuilder WithCaching(this IAdvancedTypedBuilder builder, bool enabled = true)
+        {
+            return builder.WithOptionalHandlerConfiguration<TypedCacheConfigurationHandler>(c => c.Enabled = enabled);
+        }
+
         public static IAdvancedTypedBuilder WithMediaType(this IAdvancedTypedBuilder builder, string mediaType)
         {
             if (mediaType == null)

@@ -17,66 +17,66 @@ namespace AonWeb.FluentHttp.HAL
         public static IAdvancedHalBuilder WithContentEncoding(this IAdvancedHalBuilder builder, Encoding encoding)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithContentEncoding(encoding));
+            return builder.WithConfiguration(b => b.WithContentEncoding(encoding));
         }
 
         public static IAdvancedHalBuilder WithHeadersConfiguration(this IAdvancedHalBuilder builder, Action<HttpRequestHeaders> configuration)
         {
-            return builder.Advanced.WithConfiguration(b => b.WithHeadersConfiguration(configuration));
+            return builder.WithConfiguration(b => b.WithHeadersConfiguration(configuration));
         }
 
         public static IAdvancedHalBuilder WithHeader(this IAdvancedHalBuilder builder, string name, string value)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithHeader(name, value));
+            return builder.WithConfiguration(b => b.WithHeader(name, value));
         }
 
         public static IAdvancedHalBuilder WithHeader(this IAdvancedHalBuilder builder, string name, IEnumerable<string> values)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithHeader(name, values));
+            return builder.WithConfiguration(b => b.WithHeader(name, values));
         }
 
         public static IAdvancedHalBuilder WithAppendHeader(this IAdvancedHalBuilder builder, string name, string value)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithAppendHeader(name, value));
+            return builder.WithConfiguration(b => b.WithAppendHeader(name, value));
         }
 
         public static IAdvancedHalBuilder WithAppendHeader(this IAdvancedHalBuilder builder, string name, IEnumerable<string> values)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithAppendHeader(name, values));
+            return builder.WithConfiguration(b => b.WithAppendHeader(name, values));
         }
 
         public static IAdvancedHalBuilder WithAcceptHeaderValue(this IAdvancedHalBuilder builder, string mediaType)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithAcceptHeaderValue(mediaType));
+            return builder.WithConfiguration(b => b.WithAcceptHeaderValue(mediaType));
         }
 
         public static IAdvancedHalBuilder WithAcceptCharSet(this IAdvancedHalBuilder builder, Encoding encoding)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithAcceptCharSet(encoding));
+            return builder.WithConfiguration(b => b.WithAcceptCharSet(encoding));
         }
 
         public static IAdvancedHalBuilder WithAcceptCharSet(this IAdvancedHalBuilder builder, string charSet)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithAcceptCharSet(charSet));
+            return builder.WithConfiguration(b => b.WithAcceptCharSet(charSet));
         }
 
         public static IAdvancedHalBuilder WithAutoDecompression(this IAdvancedHalBuilder builder, bool enabled = true)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithAutoDecompression(enabled));
+            return builder.WithConfiguration(b => b.WithAutoDecompression(enabled));
         }
 
         public static IAdvancedHalBuilder WithSuppressCancellationExceptions(this IAdvancedHalBuilder builder, bool suppress = true)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithSuppressCancellationExceptions(suppress));
+            return builder.WithConfiguration(b => b.WithSuppressCancellationExceptions(suppress));
         }
 
         public static IAdvancedHalBuilder WithMethod(this IAdvancedHalBuilder builder, string method)
@@ -202,9 +202,14 @@ namespace AonWeb.FluentHttp.HAL
         public static IAdvancedHalBuilder WithNoCache(this IAdvancedHalBuilder builder, bool nocache = true)
         {
 
-            builder.Advanced.WithConfiguration(b => b.WithNoCache(nocache));
+            builder.WithConfiguration(b => b.WithNoCache(nocache));
 
             return builder;
+        }
+
+        public static IAdvancedHalBuilder WithCaching(this IAdvancedHalBuilder builder, bool enabled = true)
+        {
+            return builder.WithConfiguration(b => b.WithCaching(enabled));
         }
 
         public static IAdvancedHalBuilder WithDependentResources(this IAdvancedHalBuilder builder, params IHalResource[] resources)

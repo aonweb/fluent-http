@@ -11,6 +11,13 @@ namespace AonWeb.FluentHttp.Helpers
 {
     internal static class ObjectHelpers
     {
+        public static Task ToTask<T>(this Action<T> action, T arg)
+        {
+            action?.Invoke(arg);
+
+            return Task.FromResult(true);
+        }
+
         public static void Dispose(IDisposable disposable)
         {
             try

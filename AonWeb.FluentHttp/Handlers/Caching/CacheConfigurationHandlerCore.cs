@@ -21,20 +21,18 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         protected CacheConfigurationHandlerCore(ICacheSettings settings, ICacheProvider cacheProvider)
         {
+            Enabled = true;
+
             _cacheProvider = cacheProvider;
 
             Settings = settings;
         }
 
-        public ICacheSettings Settings { get; private set; }
+        public ICacheSettings Settings { get; }
 
         #region IHandler<HandlerType> Implementation
 
-        public bool Enabled
-        {
-            get { return Settings.Enabled; }
-            protected set { Settings.Enabled = value;}
-        } 
+        public bool Enabled { get; set; } 
 
         public HandlerPriority GetPriority(HandlerType type)
         {
@@ -64,6 +62,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         protected async Task TryGetFromCache(IHandlerContextWithResult handlerContext)
         {
+            if (!Enabled)
+                return;
+
             var context = GetContext(handlerContext);
 
             if (!context.RequestValidator(context))
@@ -121,6 +122,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         protected async Task TryGetRevalidatedResult(IHandlerContextWithResult handlerContext, HttpRequestMessage request, HttpResponseMessage response)
         {
+            if (!Enabled)
+                return;
+
             var context = GetContext(handlerContext);
 
             var result = (CacheEntry)context.Items["CacheHandlerCachedItem"];
@@ -164,6 +168,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         protected async Task TryCacheResult(IHandlerContext handlerContext, object result, HttpRequestMessage request, HttpResponseMessage response)
         {
+            if (!Enabled)
+                return;
+
             var context = GetContext(handlerContext);
 
             var cacheEntry = new CacheEntry(result, request, response, context);
@@ -195,6 +202,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         private async Task ExpireResult(ICacheContext context)
         {
+            if (!Enabled)
+                return;
+
             if ((context.Items["CacheHandler_ItemExpired"] as bool?).GetValueOrDefault())
                 return;
 
@@ -205,11 +215,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             await context.HandlerRegister.OnExpired(context, uris);
 
             context.Items["CacheHandler_ItemExpired"] = true;
-        }
-
-        public void WithSettings(ICacheSettings settings)
-        {
-            Settings = settings;
         }
     }
 }

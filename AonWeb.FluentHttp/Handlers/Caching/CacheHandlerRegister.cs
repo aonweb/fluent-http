@@ -184,7 +184,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncHitHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncHitHandler<TResult>(priority, handler.ToTask);
         }
 
         public CacheHandlerRegister WithAsyncHitHandler<TResult>(Func<CacheHitContext<TResult>, Task> handler)
@@ -213,6 +213,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         #region Miss
 
+        
+
         public CacheHandlerRegister WithMissHandler<TResult>(Action<CacheMissContext<TResult>> handler)
         {
             return WithMissHandler(HandlerPriority.Default, handler);
@@ -223,7 +225,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncMissHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncMissHandler<TResult>(priority, handler.ToTask);
         }
 
         public CacheHandlerRegister WithAsyncMissHandler<TResult>(Func<CacheMissContext<TResult>, Task> handler)
@@ -262,7 +264,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncStoreHandler<TResult>(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncStoreHandler<TResult>(priority, handler.ToTask);
         }
 
         public CacheHandlerRegister WithAsyncStoreHandler<TResult>(Func<CacheStoreContext<TResult>, Task> handler)
@@ -301,7 +303,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncExpiringHandler(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncExpiringHandler(priority, handler.ToTask);
         }
 
         public CacheHandlerRegister WithAsyncExpiringHandler(Func<CacheExpiringContext, Task> handler)
@@ -340,7 +342,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncExpiredHandler(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncExpiredHandler(priority, handler.ToTask);
         }
 
         public CacheHandlerRegister WithAsyncExpiredHandler(Func<CacheExpiredContext, Task> handler)

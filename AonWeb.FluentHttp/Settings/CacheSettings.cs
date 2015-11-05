@@ -14,7 +14,6 @@ namespace AonWeb.FluentHttp.Settings
         public CacheSettings()
         {
             HandlerRegister = new CacheHandlerRegister();
-            Enabled = true;
             MustRevalidate = false;
             SuppressTypeMismatchExceptions = false;
             CacheableHttpMethods = new HashSet<HttpMethod> { HttpMethod.Get };
@@ -23,7 +22,7 @@ namespace AonWeb.FluentHttp.Settings
             DefaultDurationForCacheableResults = TimeSpan.FromMinutes(15);
             ResponseValidator = (ctx, res) => CachingHelpers.ValidateResponse(res, ctx.CacheableHttpStatusCodes);
             RequestValidator = CachingHelpers.CanCacheRequest;
-            RevalidateValidator = (ctx, res) => CachingHelpers.ShouldRevalidate(ctx, ctx.Request, res);
+            RevalidateValidator = (ctx, res) => CachingHelpers.ShouldRevalidate(ctx.Request, res, ctx.CacheableHttpMethods);
             AllowStaleResultValidator = (ctx, res) => CachingHelpers.AllowStale(ctx.Request, res);
             DependentUris = new HashSet<Uri>();
         }
@@ -34,7 +33,6 @@ namespace AonWeb.FluentHttp.Settings
         public ISet<Uri> DependentUris { get; }
         public CacheHandlerRegister HandlerRegister { get; }
         public bool SuppressTypeMismatchExceptions { get; }
-        public bool Enabled { get; set; }
         public Action<CacheEntry> ResultInspector { get; set; }
         public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; set; }
         public Func<ICacheContext, bool> RequestValidator { get; set; }

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Autofac;
 using AonWeb.FluentHttp.Mocks.WebServer;
+using AonWeb.FluentHttp.Tests.AutofacTests;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Autofac;
 using Shouldly;
@@ -25,7 +26,7 @@ namespace AonWeb.FluentHttp.Tests
         private IContainer CreateContainer()
         {
             var builder = new ContainerBuilder();
-            Registration.Register(builder, GetType().Assembly);
+            Registration.Register(builder, new[] { GetType().Assembly }, new[] { typeof(CustomScopeTypedCacheHandler) });
             return builder.Build();
         }
 

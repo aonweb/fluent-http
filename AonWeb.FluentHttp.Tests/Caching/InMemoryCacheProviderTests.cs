@@ -152,31 +152,31 @@ namespace AonWeb.FluentHttp.Tests.Caching
             actualResult2.ShouldBe(result2);
         }
 
-        [Fact]
-        public async Task WhenMultipleTypedItemsAreCached_WithDifferentTypes_CorrectValuesCanBeRetrieved()
-        {
-            var provider = CreateProvider();
-            var uri = new Uri("http://somedomain.com/resource1");
-            long result1 = 3;
-            short result2 = 5;
-            var response1 = CreateResponse(result1.ToString());
-            var context1 = CreateContextForTypedResult(uri, result1, response1);
-            var cacheEntry1 = new CacheEntry(result1, response1.RequestMessage, response1, context1);
-            var response2 = CreateResponse(result2.ToString());
-            var context2 = CreateContextForTypedResult(uri, result2, response2);
-            var cacheEntry2 = new CacheEntry(result2, response2.RequestMessage, response2, context2);
+        //[Fact]
+        //public async Task WhenMultipleTypedItemsAreCached_WithDifferentTypes_CorrectValuesCanBeRetrieved()
+        //{
+        //    var provider = CreateProvider();
+        //    var uri = new Uri("http://somedomain.com/resource1");
+        //    long result1 = 3;
+        //    short result2 = 5;
+        //    var response1 = CreateResponse(result1.ToString());
+        //    var context1 = CreateContextForTypedResult(uri, result1, response1);
+        //    var cacheEntry1 = new CacheEntry(result1, response1.RequestMessage, response1, context1);
+        //    var response2 = CreateResponse(result2.ToString());
+        //    var context2 = CreateContextForTypedResult(uri, result2, response2);
+        //    var cacheEntry2 = new CacheEntry(result2, response2.RequestMessage, response2, context2);
 
-            await provider.Put(context1, cacheEntry1);
-            await provider.Put(context2, cacheEntry2);
+        //    await provider.Put(context1, cacheEntry1);
+        //    await provider.Put(context2, cacheEntry2);
 
-            var entry1 = await provider.Get(context1);
-            var entry2 = await provider.Get(context2);
+        //    var entry1 = await provider.Get(context1);
+        //    var entry2 = await provider.Get(context2);
 
-            entry1.Value.ShouldBeOfType<long>();
-            entry2.Value.ShouldBeOfType<short>();
-            entry1.Value.ShouldBe(result1);
-            entry2.Value.ShouldBe(result2);
-        }
+        //    entry1.Value.ShouldBeOfType<long>();
+        //    entry2.Value.ShouldBeOfType<short>();
+        //    entry1.Value.ShouldBe(result1);
+        //    entry2.Value.ShouldBe(result2);
+        //}
 
         [Fact]
         public async Task WhenMultipleHttpItemsAreCached_WithVaryBy_CorrectValuesCanBeRetrieved()

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
@@ -101,7 +102,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncSendingHandler(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncSendingHandler(priority, handler.ToTask);
         }
 
         public HttpHandlerRegister WithAsyncSendingHandler(Func<HttpSendingContext, Task> handler)
@@ -133,7 +134,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncSentHandler(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncSentHandler(priority, handler.ToTask);
         }
 
         public HttpHandlerRegister WithAsyncSentHandler(Func<HttpSentContext, Task> handler)
@@ -165,7 +166,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            return WithAsyncExceptionHandler(priority, ctx => Task.Run(() => handler(ctx)));
+            return WithAsyncExceptionHandler(priority, handler.ToTask);
         }
 
         public HttpHandlerRegister WithAsyncExceptionHandler(Func<HttpExceptionContext, Task> handler)

@@ -8,14 +8,6 @@ namespace AonWeb.FluentHttp
 {
     public static class CachingExtensions
     {
-        public static TBuilder WithCaching<TBuilder>(this IAdvancedCacheConfigurable<TBuilder> handler, bool enabled = true)
-            where TBuilder : IAdvancedCacheConfigurable<TBuilder>
-        {
-            handler.WithConfiguration((ICacheSettings s) => s.Enabled = enabled);
-
-            return (TBuilder)handler;
-        }
-
         public static TBuilder WithDependentUris<TBuilder>(this IAdvancedCacheConfigurable<TBuilder> handler, IEnumerable<Uri> uris)
             where TBuilder : IAdvancedCacheConfigurable<TBuilder>
         {
