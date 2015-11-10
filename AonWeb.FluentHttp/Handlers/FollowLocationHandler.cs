@@ -123,10 +123,10 @@ namespace AonWeb.FluentHttp.Handlers
             if (locationUri.IsAbsoluteUri)
                 return locationUri;
 
-            if (UriHelpers.IsAbsolutePath(locationUri.OriginalString))
+            if (locationUri.IsRelativeUriWithAbsolutePath())
                 return new Uri(originalUri, locationUri);
 
-            return new Uri(UriHelpers.CombineVirtualPaths(originalUri.GetSchemeHostPath(), locationUri.OriginalString));
+            return originalUri.AppendPath(locationUri);
         }   
     }
 }

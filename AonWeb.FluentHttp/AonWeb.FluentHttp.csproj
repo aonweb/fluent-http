@@ -125,7 +125,6 @@
     <Compile Include="Handlers\HttpSentContext.cs" />
     <Compile Include="Handlers\IHttpHandler.cs" />
     <Compile Include="Extensions\HttpBuilderExtensions.cs" />
-    <Compile Include="HttpUriBuilder.cs" />
     <Compile Include="IAdvancedFluentConfigurable.cs" />
     <Compile Include="IAdvancedHttpBuilder.cs" />
     <Compile Include="IAdvancedHttpBuilderCore.cs" />
@@ -141,15 +140,12 @@
     <Compile Include="IHttpBuilderCore.cs" />
     <Compile Include="IHttpBuilderFactory.cs" />
     <Compile Include="Settings\IHttpBuilderSettings.cs" />
-    <Compile Include="IReadonlyUriQueryCollection.cs" />
     <Compile Include="IRecursiveHttpBuilder.cs" />
     <Compile Include="ITypedBuilder.cs" />
     <Compile Include="ITypedBuilderContext.cs" />
     <Compile Include="ITypedBuilderFactory.cs" />
     <Compile Include="Settings\ITypedBuilderSettings.cs" />
-    <Compile Include="IUriQueryCollection.cs" />
     <Compile Include="Caching\ResponseSerializer.cs" />
-    <Compile Include="NormalizedUriQueryCollection.cs" />
     <Compile Include="Formatter.cs" />
     <Compile Include="IContext.cs" />
     <Compile Include="Handlers\Modifiable.cs" />
@@ -174,7 +170,6 @@
     </Compile>
     <Compile Include="TypedBuilder.cs" />
     <Compile Include="Settings\TypedBuilderSettings.cs" />
-    <Compile Include="UriQueryCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

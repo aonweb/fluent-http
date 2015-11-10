@@ -324,8 +324,8 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                                 Guid? actualGuid2 = null;
                                 int? actualInt1 = null;
                                 int? actualInt2 = null;
-                                var uri1 = UriHelpers.CombineVirtualPaths(server.ListeningUri, "first");
-                                var uri2 = UriHelpers.CombineVirtualPaths(server.ListeningUri, "second");
+                                var uri1 = server.ListeningUri.AppendPath("first");
+                                var uri2 = server.ListeningUri.AppendPath("second");
 
                                 var builder1 = factory.Create().WithUri(uri1)
                                     .Advanced.WithContextItem("CustomValue", 1).WithCaching()

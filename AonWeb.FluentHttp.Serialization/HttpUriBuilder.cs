@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using AonWeb.FluentHttp.Helpers;
 
-namespace AonWeb.FluentHttp
+namespace AonWeb.FluentHttp.Serialization
 {
     public class HttpUriBuilder
     {
@@ -122,31 +121,12 @@ namespace AonWeb.FluentHttp
             }
         }
 
-        public HttpUriBuilder WithQueryString(string name, string value)
-        {
-            _query.Set(name, value);
-            IsSet = true;
-            return this;
-        }
 
-        public HttpUriBuilder WithQueryString(IEnumerable<KeyValuePair<string, string>> values)
+        public HttpUriBuilder WithQueryConfiguration(Action<IUriQueryCollection> configuration)
         {
-            _query.Set(values);
-            IsSet = true;
-            return this;
-        }
+            configuration?.Invoke(_query);
 
-        public HttpUriBuilder WithAppendQueryString(string name, string value)
-        {
-            _query.Add(name, value);
-            IsSet = true;
-            return this;
-        }
-
-        public HttpUriBuilder WithAppendQueryString(IEnumerable<KeyValuePair<string, string>> values)
-        {
-            _query.Add(values);
-            IsSet = true;
+            IsSet = configuration != null;
             return this;
         }
 
@@ -157,11 +137,11 @@ namespace AonWeb.FluentHttp
                 pathAndQuery = "/";
             }
 
-            if (!UriHelpers.IsAbsolutePath(pathAndQuery))
-                pathAndQuery = UriHelpers.CombineVirtualPaths(_builder.Path, pathAndQuery);
+            if (!UriStringHelpers.IsAbsolutePath(pathAndQuery))
+                pathAndQuery = UriStringHelpers.CombineVirtualPaths(_builder.Path, pathAndQuery);
 
-            if (!UriHelpers.IsAbsolutePath(pathAndQuery))
-                throw new ArgumentException(SR.ArgumentPathMustBeAbsoluteError, nameof(pathAndQuery));
+            if (!UriStringHelpers.IsAbsolutePath(pathAndQuery))
+                throw new ArgumentException("Path must be absolute and begin with a \"/\".", nameof(pathAndQuery));
 
             var index = pathAndQuery.IndexOf("?", StringComparison.Ordinal);
 

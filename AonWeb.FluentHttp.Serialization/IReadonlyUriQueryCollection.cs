@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AonWeb.FluentHttp
+namespace AonWeb.FluentHttp.Serialization
 {
     public interface IReadonlyUriQueryCollection : IEnumerable<KeyValuePair<string, string>>
     {

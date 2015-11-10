@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AonWeb.FluentHttp
+namespace AonWeb.FluentHttp.Serialization
 {
     public class UriQueryCollection : IUriQueryCollection
     {
@@ -18,11 +18,13 @@ namespace AonWeb.FluentHttp
         }
 
         public UriQueryCollection()
-            :this(new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)) { }
+            : this(new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase))
+        { }
 
         public UriQueryCollection(IReadonlyUriQueryCollection collection)
-            : this(new Dictionary<string, ISet<string>>(collection.ToDictionary(), StringComparer.OrdinalIgnoreCase)) { }
-        
+            : this(new Dictionary<string, ISet<string>>(collection.ToDictionary(), StringComparer.OrdinalIgnoreCase))
+        { }
+
 
         public IEnumerable<string> this[string name]
         {
@@ -34,11 +36,6 @@ namespace AonWeb.FluentHttp
                 return Enumerable.Empty<string>();
             }
             set { Set(name, value); }
-        }
-
-        public IUriQueryCollection Set(string name, string value)
-        {
-            return Set(name, new[] { value });
         }
 
         public IUriQueryCollection Set(string name, IEnumerable<string> values)
@@ -55,19 +52,6 @@ namespace AonWeb.FluentHttp
             return this;
         }
 
-        public IUriQueryCollection Set(IEnumerable<KeyValuePair<string, string>> values)
-        {
-            if (values == null)
-                return this;
-
-            var lookup = values.ToLookup(p => p.Key, p => p.Value);
-
-            foreach (var group in lookup)
-                Set(group.Key, group.ToList());
-
-            return this;
-        }
-
         public IUriQueryCollection Add(string name, string value)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -75,41 +59,14 @@ namespace AonWeb.FluentHttp
 
             AddIfNeeded(name);
 
-            if (!_inner[name].Contains(value))
+            lock (_inner[name])
             {
-                lock (_inner[name])
+                if (!_inner[name].Contains(value))
                 {
-                    if (!_inner[name].Contains(value))
-                    {
-                        _inner[name].Add(value);
-                        _isCacheValid = false;
-                    }
+                    _inner[name].Add(value);
+                    _isCacheValid = false;
                 }
             }
-
-            return this;
-        }
-
-        public IUriQueryCollection Add(string name, IEnumerable<string> values)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return this;
-
-            AddIfNeeded(name);
-
-            foreach (var value in values)
-                Add(name, value);
-
-            return this;
-        }
-
-        public IUriQueryCollection Add(IEnumerable<KeyValuePair<string, string>> values)
-        {
-            if (values == null)
-                return this;
-
-            foreach (var pair in values)
-                Add(pair.Key, pair.Value);
 
             return this;
         }

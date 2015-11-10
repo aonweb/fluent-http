@@ -38,15 +38,23 @@
     <Compile Include="EmptyRequest.cs" />
     <Compile Include="EmptyResult.cs" />
     <Compile Include="FormattingHelpers.cs" />
+    <Compile Include="HttpUriBuilder.cs" />
+    <Compile Include="HttpUriBuilderExtensions.cs" />
     <Compile Include="ICacheableHttpResult.cs" />
     <Compile Include="IEmptyError.cs" />
     <Compile Include="IEmptyRequest.cs" />
     <Compile Include="IEmptyResult.cs" />
+    <Compile Include="IReadonlyUriQueryCollection.cs" />
     <Compile Include="IResponseMetadata.cs" />
+    <Compile Include="IUriQueryCollection.cs" />
     <Compile Include="IWritableResponseMetadata.cs" />
+    <Compile Include="NormalizedUriQueryCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseMetadata.cs" />
     <Compile Include="ResultWithResponseMetadata.cs" />
+    <Compile Include="UriQueryCollectionExtensions.cs" />
+    <Compile Include="UriStringHelpers.cs" />
+    <Compile Include="UriQueryCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

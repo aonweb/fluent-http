@@ -40,7 +40,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
             
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage { StatusCode = statusCode }.WithHeader("Location", expected.ToString()))
@@ -65,7 +65,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
             
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", expected.ToString()))
@@ -94,8 +94,8 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var uri = UriHelpers.CombineVirtualPaths(server.ListeningUri, uriData);
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, expectedData);
+                var uri = server.ListeningUri.AppendPath(uriData);
+                var expected = server.ListeningUri.AppendPath(expectedData);
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", path))
@@ -119,7 +119,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var redirectUrl = server.ListeningUri.AppendPath("redirect");
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()));
 
@@ -140,7 +140,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
             
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
                 server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", expected.ToString()))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
@@ -161,7 +161,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
             
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var redirectUrl = server.ListeningUri.AppendPath("redirect");
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()))
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()))
@@ -207,7 +207,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
                 server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.MultipleChoices).WithHeader("Location", expected.ToString()))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
@@ -228,7 +228,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
                 server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.MultipleChoices).WithHeader("Location", expected.ToString()))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
 
@@ -261,7 +261,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
             {
                 using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
                 {
-                    var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                    var redirectUrl = server.ListeningUri.AppendPath("redirect");
                     server.WithAllResponses(new MockHttpResponseMessage(HttpStatusCode.Redirect)
                             .WithHeader("Location", redirectUrl.ToString()));
 
@@ -285,7 +285,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
            
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
                 server
                     .WithNextResponse(new MockHttpResponseMessage { StatusCode = statusCode }.WithHeader("Location", expected.ToString()))
                     .WithNextResponse(new MockHttpResponseMessage
@@ -312,7 +312,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var redirectUrl = server.ListeningUri.AppendPath("redirect");
                 server.WithAllResponses(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", redirectUrl.ToString()));
 
                 var calledBack = false;

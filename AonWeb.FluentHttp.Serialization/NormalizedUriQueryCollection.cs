@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AonWeb.FluentHttp
+namespace AonWeb.FluentHttp.Serialization
 {
     public class NormalizedUriQueryCollection : UriQueryCollection
     {

@@ -51,8 +51,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var baseUri = server.ListeningUri;
-                var firstUri = UriHelpers.CombineVirtualPaths(baseUri, "first");
-                var secondUri = UriHelpers.CombineVirtualPaths(baseUri, "second");
+                var firstUri = baseUri.AppendPath("first");
+                var secondUri = baseUri.AppendPath("second");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
@@ -177,7 +177,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var parentUri = server.ListeningUri;
-                var childUri = UriHelpers.CombineVirtualPaths(parentUri, "child");
+                var childUri = parentUri.AppendPath("child");
                 server
                     .WithResponse(
                         ctx => ctx.RequestUri == parentUri && ctx.Method == HttpMethod.Get,
@@ -220,8 +220,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var parentUri = server.ListeningUri;
-                var childUri = UriHelpers.CombineVirtualPaths(parentUri, "child");
-                var grandchildUri = UriHelpers.CombineVirtualPaths(parentUri, "grandchild");
+                var childUri = parentUri.AppendPath("child");
+                var grandchildUri = parentUri.AppendPath("grandchild");
                 server.WithNextResponse(new MockHttpResponseMessage().WithContent("Parent Response1").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Child Response1").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Grandchild Response1").WithPrivateCacheHeader())
@@ -253,8 +253,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var parentUri = server.ListeningUri;
-                var childUri = new Uri(UriHelpers.CombineVirtualPaths(parentUri.ToString(), "child"));
-                var grandchildUri = new Uri(UriHelpers.CombineVirtualPaths(parentUri.ToString(), "grandchild"));
+                var childUri = parentUri.AppendPath("child");
+                var grandchildUri = parentUri.AppendPath("grandchild");
                 server.WithNextResponse(new MockHttpResponseMessage().WithContent("Parent Response1").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Child Response1").WithPrivateCacheHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Grandchild Response1").WithPrivateCacheHeader())

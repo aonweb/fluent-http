@@ -34,8 +34,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var nonCanonicalUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/noncanonical/1");
-                var canonicalUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/canonical/1");
+                var nonCanonicalUri = server.ListeningUri.AppendPath("/noncanonical/1");
+                var canonicalUri = server.ListeningUri.AppendPath("/canonical/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader())
@@ -64,8 +64,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
-                var canonicalUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/canonical/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
+                var canonicalUri = server.ListeningUri.AppendPath("/canonical/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithPrivateCacheHeader())
@@ -89,7 +89,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
@@ -123,7 +123,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
@@ -158,7 +158,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
@@ -193,7 +193,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
@@ -227,7 +227,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
@@ -275,7 +275,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithCacheHeader(expires: DateTime.Now.AddHours(1)));
@@ -328,7 +328,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var listUri = UriHelpers.CombineVirtualPaths(server.ListeningUri, "/list/1");
+                var listUri = server.ListeningUri.AppendPath("/list/1");
 
                 server
                     .WithNextResponse(

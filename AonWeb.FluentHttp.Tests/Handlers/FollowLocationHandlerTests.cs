@@ -33,7 +33,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Created).WithHeader("Location", expected.ToString()))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
@@ -71,7 +71,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var expected = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var expected = server.ListeningUri.AppendPath("redirect");
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Created).WithHeader("Location", expected.ToString()))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
@@ -108,7 +108,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var redirectUrl = UriHelpers.CombineVirtualPaths(server.ListeningUri, "redirect");
+                var redirectUrl = server.ListeningUri.AppendPath("redirect");
                 server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Created).WithHeader("Location", redirectUrl.ToString()));
 
                 var calledBack = false;

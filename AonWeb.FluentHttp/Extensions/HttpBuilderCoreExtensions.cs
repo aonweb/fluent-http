@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp
 {
@@ -8,21 +9,20 @@ namespace AonWeb.FluentHttp
         public static TBuilder WithUri<TBuilder>(this IHttpBuilderCore<TBuilder> builder, string uri)
             where TBuilder : IHttpBuilderCore<TBuilder>
         {
-            if (string.IsNullOrEmpty(uri))
-                throw new ArgumentException(SR.ArgumentUriNullOrEmptyError, nameof(uri));
+            builder.WithConfiguration(s =>
+            {
+                s.UriBuilder.WithUri(uri);
+            });
 
-            return builder.WithUri(new Uri(uri));
+            return (TBuilder)builder;
         }
 
         public static TBuilder WithUri<TBuilder>(this IHttpBuilderCore<TBuilder> builder, Uri uri)
             where TBuilder : IHttpBuilderCore<TBuilder>
         {
-            if (uri == null)
-                throw new ArgumentNullException(nameof(uri));
-
             builder.WithConfiguration(s =>
             {
-                s.UriBuilder.Uri = uri;
+                s.UriBuilder.WithUri(uri);
             });
 
             return (TBuilder)builder;
@@ -45,7 +45,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s =>
             {
-                s.UriBuilder.Path = pathAndQuery;
+                s.UriBuilder.WithPath(pathAndQuery);
             });
 
             return (TBuilder)builder;
@@ -100,16 +100,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s =>
             {
-                if (nullCheck == null)
-                    nullCheck = v => value == null;
-
-                if (toString == null)
-                    toString = v => v.ToString();
-
-                if (nullCheck(value))
-                    return;
-
-                s.UriBuilder.WithQueryString(name, toString(value));
+                s.UriBuilder.WithOptionalQueryString(name, value, nullCheck, toString);
             });
 
             return (TBuilder)builder;
@@ -120,16 +111,7 @@ namespace AonWeb.FluentHttp
         {
             builder.WithConfiguration(s =>
             {
-                if (nullCheck == null)
-                    nullCheck = v => value == null;
-
-                if (toString == null)
-                    toString = v => v.ToString();
-
-                if (nullCheck(value))
-                    return;
-
-                s.UriBuilder.WithAppendQueryString(name, toString(value));
+                s.UriBuilder.WithAppendOptionalQueryString(name, value, nullCheck, toString);
             });
 
             return (TBuilder)builder;

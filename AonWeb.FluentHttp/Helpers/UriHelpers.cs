@@ -1,22 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Helpers
 {
     public static class UriHelpers
     {
-        public static string CombineVirtualPaths(string basePath, string relativePath)
+        internal static bool IsRelativeUriWithAbsolutePath(this Uri uri)
         {
-            return string.Concat(basePath.TrimEnd('/'), "/", relativePath.TrimStart('/'));
-        }
+            if (uri?.IsAbsoluteUri ?? true)
+                return false;
 
-        internal static bool IsAbsolutePath(string pathAndQuery)
-        {
-            if (string.IsNullOrWhiteSpace(pathAndQuery))
+            if (string.IsNullOrWhiteSpace(uri.OriginalString))
                 return true;
 
-            return pathAndQuery.StartsWith("/");
+            return uri.OriginalString.StartsWith("/");
+        }
+
+        public static Uri AppendPath(this Uri baseUri, Uri relativeUri)
+        {
+            return new Uri(UriStringHelpers.CombineVirtualPaths(baseUri.GetSchemeHostPath(), relativeUri.OriginalString));
+        }
+
+        public static Uri AppendPath(this Uri uri, string path)
+        {
+            return new Uri(UriStringHelpers.CombineVirtualPaths(uri.ToString(), path));
         }
 
         internal static string GetSchemeHostPath(this Uri uri)
@@ -34,10 +43,7 @@ namespace AonWeb.FluentHttp.Helpers
             return $"{scheme}://{authority}{path}";
         }
 
-        public static Uri CombineVirtualPaths(Uri uri, string path)
-        {
-            return new Uri(CombineVirtualPaths(uri.ToString(), path));
-        }
+
 
         /// <summary>
         /// Converts a list string uris into a list of distinct canonical uri strings

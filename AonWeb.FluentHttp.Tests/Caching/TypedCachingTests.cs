@@ -57,8 +57,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var baseUri = server.ListeningUri;
-                var firstUri = UriHelpers.CombineVirtualPaths(baseUri, "first");
-                var secondUri = UriHelpers.CombineVirtualPaths(baseUri, "second");
+                var firstUri = baseUri.AppendPath("first");
+                var secondUri = baseUri.AppendPath("second");
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
