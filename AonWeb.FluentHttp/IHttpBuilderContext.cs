@@ -18,7 +18,6 @@ namespace AonWeb.FluentHttp
         Func<IHttpBuilderContext, HttpContent> ContentFactory { get; }
         Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
         HttpHandlerRegister HandlerRegister { get; }
-        CancellationToken Token { get; }
         ResponseValidatorCollection ResponseValidator { get; }
         ICacheMetadata CacheMetadata { get; }
     }

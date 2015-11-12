@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Net.Http;
+using System.Threading;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Serialization;
@@ -27,6 +28,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             Request = handlerContext.Request;
             Uri = Request?.RequestUri.Normalize();
+            Token = handlerContext.Token;
+
             HandlerRegister = context.HandlerRegister;
             ResultInspector = context.ResultInspector;
             RequestValidator = context.RequestValidator;
@@ -47,6 +50,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; }
         public Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; }
         public Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; }
+        public CancellationToken Token { get; }
 
         public IHandlerContext GetHandlerContext()
         {

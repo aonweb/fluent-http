@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using AonWeb.FluentHttp.Helpers;
@@ -8,8 +7,7 @@ namespace AonWeb.FluentHttp.Caching
 {
     public class InMemoryVaryByProvider : IVaryByProvider
     {
-        private readonly object _lock = new object();
-        private readonly ConcurrentDictionary<string, ISet<string>> _cache = new ConcurrentDictionary<string, ISet<string>>();
+        private readonly IDictionary<string, ISet<string>> _cache = new Dictionary<string, ISet<string>>();
 
         public IEnumerable<string> Get(Uri uri)
         {
@@ -17,8 +15,11 @@ namespace AonWeb.FluentHttp.Caching
 
             ISet<string> headers;
 
-            if (!_cache.TryGetValue(key, out headers))
-                return Enumerable.Empty<string>();
+            lock (_cache)
+            {
+                if (!_cache.TryGetValue(key, out headers))
+                    return Enumerable.Empty<string>();
+            }
 
             return headers;
         }
@@ -27,31 +28,35 @@ namespace AonWeb.FluentHttp.Caching
         {
             var key = uri.ToString();
 
-            ISet<string> headers;
+            lock (_cache)
+            {
+                ISet<string> headers;
+                if (!_cache.TryGetValue(key, out headers))
+                    headers = new HashSet<string>();
 
-            if (!_cache.TryGetValue(key, out headers))
-                headers = new HashSet<string>();
-
-            lock (_lock)
-                headers = headers.ToSet(newHeaders.Select(UriHelpers.NormalizeHeader));
-
-            _cache[key] = headers;
+                _cache[key] = headers.ToSet(newHeaders.Select(UriHelpers.NormalizeHeader));
+            }
 
             return true;
         }
 
         public void Clear()
         {
-            _cache.Clear();
+            lock (_cache)
+                _cache.Clear();
         }
 
         public bool Remove(Uri uri)
         {
             var key = uri.ToString();
 
-            ISet<string> headers;
+            lock (_cache)
+            {
+                if (!_cache.ContainsKey(key))
+                    return false;
 
-            return _cache.TryRemove(key, out headers);
+                return _cache.Remove(key);
+            }
         }
     }
 }

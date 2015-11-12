@@ -24,7 +24,6 @@ namespace AonWeb.FluentHttp
         bool SuppressTypeMismatchExceptions { get; }
         Func<ExceptionCreationContext, Exception> ExceptionFactory { get; }
         bool DeserializeResult { get; }
-        CancellationToken Token { get; }
         ICacheMetadata CacheMetadata { get; }
         ResponseValidatorCollection ResponseValidator { get; }
     }

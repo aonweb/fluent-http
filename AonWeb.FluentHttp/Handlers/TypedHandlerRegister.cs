@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -13,15 +12,15 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private delegate Task TypedHandlerDelegate(TypedHandlerContext context);
         private readonly ISet<ITypedHandler> _handlerInstances;
-        private readonly ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<TypedHandlerInfo>>> _handlers;
-        private readonly ConcurrentDictionary<string, object> _contextConstructorCache;
+        private readonly IDictionary<HandlerType, IDictionary<HandlerPriority, ICollection<TypedHandlerInfo>>> _handlers;
+        private readonly IDictionary<string, object> _contextConstructorCache;
 
         public TypedHandlerRegister()
         {
             _handlerInstances = new HashSet<ITypedHandler>();
 
-            _handlers = new ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<TypedHandlerInfo>>>();
-            _contextConstructorCache = new ConcurrentDictionary<string, object>();
+            _handlers = new Dictionary<HandlerType, IDictionary<HandlerPriority, ICollection<TypedHandlerInfo>>>();
+            _contextConstructorCache = new Dictionary<string, object>();
 
         }
 
@@ -377,23 +376,26 @@ namespace AonWeb.FluentHttp.Handlers
 
         private IEnumerable<TypedHandlerInfo> GetHandlerInfo(HandlerType type)
         {
-            ConcurrentDictionary<HandlerPriority, ICollection<TypedHandlerInfo>> handlers;
+            IDictionary<HandlerPriority, ICollection<TypedHandlerInfo>> handlers;
 
-            if (!_handlers.TryGetValue(type, out handlers))
+            lock (_handlers)
             {
-                return Enumerable.Empty<TypedHandlerInfo>();
-            }
-
-            return handlers.Keys.OrderBy(k => k).SelectMany(k =>
-            {
-                ICollection<TypedHandlerInfo> col;
-                if (!handlers.TryGetValue(k, out col))
+                if (!_handlers.TryGetValue(type, out handlers))
                 {
                     return Enumerable.Empty<TypedHandlerInfo>();
                 }
 
-                return col;
-            });
+                return handlers.Keys.OrderBy(k => k).SelectMany(k =>
+                {
+                    ICollection<TypedHandlerInfo> col;
+                    if (!handlers.TryGetValue(k, out col))
+                    {
+                        return Enumerable.Empty<TypedHandlerInfo>();
+                    }
+
+                    return col;
+                });
+            }
         }
 
         private void WithHandler(HandlerType type, HandlerPriority priority, TypedHandlerInfo handler)
@@ -401,25 +403,29 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            _handlers.AddOrUpdate(type, t => // Add dict of priority, handlers by type
+            lock (_handlers)
             {
-                var d = new ConcurrentDictionary<HandlerPriority, ICollection<TypedHandlerInfo>>();
-                d.TryAdd(priority, new List<TypedHandlerInfo> { handler });
-                return d;
-
-            }, (t, priorityHandlers) => // Update dict of priority, handlers by type
-            {
-                priorityHandlers.AddOrUpdate(priority,
-                    p => new List<TypedHandlerInfo> { handler }, // Add
-                    (key, handlers) => // Update
+                if (!_handlers.ContainsKey(type))
+                {
+                    _handlers[type] = new Dictionary<HandlerPriority, ICollection<TypedHandlerInfo>>()
                     {
-                        handlers.Add(handler);
-                        return handlers;
+                        {priority, new List<TypedHandlerInfo> {handler}}
+                    };
+                }
+                else
+                {
+                    var handlersForType = _handlers[type];
 
-                    });
-
-                return priorityHandlers;
-            });
+                    if (!handlersForType.ContainsKey(priority))
+                    {
+                        handlersForType[priority] = new List<TypedHandlerInfo> { handler };
+                    }
+                    else
+                    {
+                        handlersForType[priority].Add(handler);
+                    }
+                }
+            }
         }
 
         private object GetOrAddFromCtorCache(HandlerType type, Type handlerType, bool isContinuation, object ctor)
@@ -427,7 +433,13 @@ namespace AonWeb.FluentHttp.Handlers
             var ctorType = isContinuation ? "C" : "I";
             var key = $"{(int)type}:{handlerType.FormattedTypeName()}:{ctorType}";
 
-            return _contextConstructorCache.GetOrAdd(key, k => ctor);
+            lock (_contextConstructorCache)
+            {
+                if (!_contextConstructorCache.ContainsKey(key))
+                    _contextConstructorCache[key] = ctor;
+
+                return ctor;
+            }
         }
 
         private class TypedHandlerInfo

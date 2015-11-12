@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
 {
@@ -26,6 +27,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public HttpRequestMessage Request => _cacheContext.Request;
         public Uri Uri => _cacheContext.Uri;
         public bool SuppressTypeMismatchExceptions => _cacheContext.SuppressTypeMismatchExceptions;
+        public CancellationToken Token => _cacheContext.Token;
 
         public virtual Modifiable GetHandlerResult()
         {

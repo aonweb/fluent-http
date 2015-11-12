@@ -1,5 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,6 +122,46 @@ namespace AonWeb.FluentHttp.Helpers
             var statusCode = ((int?)response?.StatusCode).ToString() ?? "<Unknown>";
             var reasonPhrase = response?.ReasonPhrase ?? "<Unknown>";
             return new HttpRequestException($"Recieved response {statusCode} - {reasonPhrase}, which did not pass response validation. " + response.DetailsForException());
+        }
+
+        public static async Task<object> Deserialize(HttpResponseMessage response, Type type, MediaTypeFormatterCollection formatters, CancellationToken token)
+        {
+            var typeInfo = type.GetTypeInfo();
+
+            if (typeof(HttpResponseMessage).IsAssignableFrom(typeInfo))
+                return response;
+
+            var content = response.Content;
+
+            if (content == null)
+                return TypeHelpers.GetDefaultValueForType(type);
+
+            if (typeof(Stream).IsAssignableFrom(typeInfo))
+                return await content.ReadAsStreamAsync();
+
+            if (typeof(byte[]).IsAssignableFrom(typeInfo))
+                return await content.ReadAsByteArrayAsync();
+
+            if (typeof(string).IsAssignableFrom(typeInfo))
+                return await content.ReadAsStringAsync();
+
+            var mediaType = content.Headers.ContentType ?? new MediaTypeHeaderValue("application/octet-stream");
+
+            var formatter = formatters.FindReader(type, mediaType);
+
+            if (formatter == null)
+            {
+                if (content.Headers.ContentLength == 0)
+                    return TypeHelpers.GetDefaultValueForType(type);
+
+                throw new UnsupportedMediaTypeException(string.Format(SR.NoReadFormatterForMimeTypeErrorFormat, typeInfo.FormattedTypeName(), mediaType.MediaType, response.DetailsForException()), mediaType);
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            var stream = await content.ReadAsStreamAsync();
+
+            return await formatter.ReadFromStreamAsync(type, stream, content, null, token);
         }
     }
 }

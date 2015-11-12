@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,12 +10,12 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private delegate Task HandlerDelegate(HttpHandlerContext context);
         private readonly ISet<IHttpHandler> _handlerInstances;
-        private readonly ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<HandlerDelegate>>> _handlers;
+        private readonly IDictionary<HandlerType, IDictionary<HandlerPriority, ICollection<HandlerDelegate>>> _handlers;
 
         public HttpHandlerRegister()
         {
             _handlerInstances = new HashSet<IHttpHandler>();
-            _handlers = new ConcurrentDictionary<HandlerType, ConcurrentDictionary<HandlerPriority, ICollection<HandlerDelegate>>>();
+            _handlers = new Dictionary<HandlerType, IDictionary<HandlerPriority, ICollection<HandlerDelegate>>>();
         }
 
         public async Task OnSending(HttpSendingContext context)
@@ -188,23 +187,25 @@ namespace AonWeb.FluentHttp.Handlers
 
         private IEnumerable<HandlerDelegate> GetHandlers(HandlerType type)
         {
-            ConcurrentDictionary<HandlerPriority, ICollection<HandlerDelegate>> handlers;
-
-            if (!_handlers.TryGetValue(type, out handlers))
+            IDictionary<HandlerPriority, ICollection<HandlerDelegate>> handlers;
+            lock (_handlers)
             {
-                return Enumerable.Empty<HandlerDelegate>();
-            }
-
-            return handlers.Keys.OrderBy(k => k).SelectMany(k =>
-            {
-                ICollection<HandlerDelegate> col;
-                if (!handlers.TryGetValue(k, out col))
+                if (!_handlers.TryGetValue(type, out handlers))
                 {
                     return Enumerable.Empty<HandlerDelegate>();
                 }
 
-                return col;
-            });
+                return handlers.Keys.OrderBy(k => k).SelectMany(k =>
+                {
+                    ICollection<HandlerDelegate> col;
+                    if (!handlers.TryGetValue(k, out col))
+                    {
+                        return Enumerable.Empty<HandlerDelegate>();
+                    }
+
+                    return col;
+                });
+            }
         }
 
         private void WithHandler(HandlerType type, HandlerPriority priority, HandlerDelegate handler)
@@ -212,25 +213,29 @@ namespace AonWeb.FluentHttp.Handlers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            _handlers.AddOrUpdate(type, t => // Add dict of priority, handlers by type
+            lock (_handlers)
             {
-                var d = new ConcurrentDictionary<HandlerPriority, ICollection<HandlerDelegate>>();
-                d.TryAdd(priority, new List<HandlerDelegate> { handler});
-                return d;
-
-            }, (t, priorityHandlers) => // Update dict of priority, handlers by type
-            {
-                priorityHandlers.AddOrUpdate(priority,
-                    p => new List<HandlerDelegate> { handler }, // Add
-                    (key, handlers) => // Update
+                if (!_handlers.ContainsKey(type))
+                {
+                    _handlers[type] = new Dictionary<HandlerPriority, ICollection<HandlerDelegate>>()
                     {
-                        handlers.Add(handler);
-                        return handlers;
-                   
-                    });
+                        {priority, new List<HandlerDelegate> {handler}}
+                    };
+                }
+                else
+                {
+                    var handlersForType = _handlers[type];
 
-                return priorityHandlers;
-            });
+                    if (!handlersForType.ContainsKey(priority))
+                    {
+                        handlersForType[priority] = new List<HandlerDelegate> { handler };
+                    }
+                    else
+                    {
+                        handlersForType[priority].Add(handler);
+                    }
+                }
+            }
         }
     }
 }

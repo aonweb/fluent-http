@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,15 +11,15 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     {
         private delegate Task CacheHandlerDelegate(CacheHandlerContext context);
         private readonly ISet<ICacheHandler> _cacheHandlers;
-        private readonly ConcurrentDictionary<CacheHandlerType, ConcurrentDictionary<HandlerPriority, ICollection<CacheHandlerInfo>>> _handlers;
-        private readonly ConcurrentDictionary<string, object> _contextConstructorCache;
+        private readonly IDictionary<CacheHandlerType, IDictionary<HandlerPriority, ICollection<CacheHandlerInfo>>> _handlers;
+        private readonly IDictionary<string, object> _contextConstructorCache;
 
         public CacheHandlerRegister()
         {
             _cacheHandlers = new HashSet<ICacheHandler>();
 
-            _handlers = new ConcurrentDictionary<CacheHandlerType, ConcurrentDictionary<HandlerPriority, ICollection<CacheHandlerInfo>>>();
-            _contextConstructorCache = new ConcurrentDictionary<string, object>();
+            _handlers = new Dictionary<CacheHandlerType, IDictionary<HandlerPriority, ICollection<CacheHandlerInfo>>>();
+            _contextConstructorCache = new Dictionary<string, object>();
         }
 
         public CacheHandlerRegister WithHandler(ICacheHandler handler)
@@ -371,23 +370,26 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         private IEnumerable<CacheHandlerInfo> GetHandlerInfo(CacheHandlerType type)
         {
-            ConcurrentDictionary<HandlerPriority, ICollection<CacheHandlerInfo>> handlers;
+            IDictionary<HandlerPriority, ICollection<CacheHandlerInfo>> handlers;
 
-            if (!_handlers.TryGetValue(type, out handlers))
+            lock (_handlers)
             {
-                return Enumerable.Empty<CacheHandlerInfo>();
-            }
-
-            return handlers.Keys.OrderBy(k => k).SelectMany(k =>
-            {
-                ICollection<CacheHandlerInfo> col;
-                if (!handlers.TryGetValue(k, out col))
+                if (!_handlers.TryGetValue(type, out handlers))
                 {
                     return Enumerable.Empty<CacheHandlerInfo>();
                 }
 
-                return col;
-            });
+                return handlers.Keys.OrderBy(k => k).SelectMany(k =>
+                {
+                    ICollection<CacheHandlerInfo> col;
+                    if (!handlers.TryGetValue(k, out col))
+                    {
+                        return Enumerable.Empty<CacheHandlerInfo>();
+                    }
+
+                    return col;
+                });
+            }
         }
 
         private void WithHandler(CacheHandlerType type, HandlerPriority priority, CacheHandlerInfo handler)
@@ -395,25 +397,29 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            _handlers.AddOrUpdate(type, t => // Add dict of priority, handlers by type
+            lock (_handlers)
             {
-                var d = new ConcurrentDictionary<HandlerPriority, ICollection<CacheHandlerInfo>>();
-                d.TryAdd(priority, new List<CacheHandlerInfo> { handler });
-                return d;
-
-            }, (t, priorityHandlers) => // Update dict of priority, handlers by type
-            {
-                priorityHandlers.AddOrUpdate(priority,
-                    p => new List<CacheHandlerInfo> { handler }, // Add
-                    (key, handlers) => // Update
+                if (!_handlers.ContainsKey(type))
+                {
+                    _handlers[type] = new Dictionary<HandlerPriority, ICollection<CacheHandlerInfo>>()
                     {
-                        handlers.Add(handler);
-                        return handlers;
+                        {priority, new List<CacheHandlerInfo> {handler}}
+                    };
+                }
+                else
+                {
+                    var handlersForType = _handlers[type];
 
-                    });
-
-                return priorityHandlers;
-            });
+                    if (!handlersForType.ContainsKey(priority))
+                    {
+                        handlersForType[priority] = new List<CacheHandlerInfo> {handler};
+                    }
+                    else
+                    {
+                        handlersForType[priority].Add(handler);
+                    }
+                }
+            }
         }
 
         private object GetOrAddFromCtorCache(CacheHandlerType type, Type handlerType, bool isContinuation, object ctor)
@@ -421,7 +427,13 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var ctorType = isContinuation ? "C" : "I";
             var key = $"{(int)type}:{handlerType.FormattedTypeName()}:{ctorType}";
 
-            return _contextConstructorCache.GetOrAdd(key, k => ctor);
+            lock (_contextConstructorCache)
+            {
+                if (!_contextConstructorCache.ContainsKey(key))
+                    _contextConstructorCache[key] = ctor;
+
+                return ctor;
+            }
         }
 
         private class CacheHandlerInfo
