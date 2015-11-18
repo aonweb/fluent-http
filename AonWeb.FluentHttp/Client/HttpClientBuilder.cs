@@ -1,7 +1,6 @@
 using System;
 using System.Net.Http;
 using AonWeb.FluentHttp.Settings;
-using ModernHttpClient;
 
 namespace AonWeb.FluentHttp.Client
 {
