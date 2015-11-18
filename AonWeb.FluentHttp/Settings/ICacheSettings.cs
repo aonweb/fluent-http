@@ -11,7 +11,7 @@ namespace AonWeb.FluentHttp.Settings
         new TimeSpan? DefaultDurationForCacheableResults { get; set; }
         new bool MustRevalidate { get; set; }
         new Action<CacheEntry> ResultInspector { get; set; }
-        new Func<ICacheContext, bool> RequestValidator { get; set; }
+        new Func<ICacheContext, RequestValidationResult> RequestValidator { get; set; }
         new Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; set; }
         new Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; set; }
         new Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; set; }

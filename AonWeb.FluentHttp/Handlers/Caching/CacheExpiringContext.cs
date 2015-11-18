@@ -7,10 +7,11 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     {
         private readonly ModifiableUriList _relatedUris;
 
-        public CacheExpiringContext(ICacheContext context)
+        public CacheExpiringContext(ICacheContext context,  RequestValidationResult reason)
             : base(context)
         {
             _relatedUris = new ModifiableUriList();
+            Reason = reason;
         }
 
         public CacheExpiringContext(CacheExpiringContext context)
@@ -24,6 +25,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             get { return _relatedUris.Value; }
             set { _relatedUris.Value = value; }
         }
+
+        public RequestValidationResult Reason { get; }
 
         public override Modifiable GetHandlerResult()
         {

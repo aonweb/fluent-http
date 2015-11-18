@@ -137,14 +137,14 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
-        public async Task<Modifiable> OnExpiring(ICacheContext context)
+        public async Task<Modifiable> OnExpiring(ICacheContext context, RequestValidationResult reason)
         {
             CacheExpiringContext handlerContext = null;
 
             foreach (var handlerInfo in GetHandlerInfo(CacheHandlerType.Expiring))
             {
                 if (handlerContext == null)
-                    handlerContext = ((Func<ICacheContext, CacheExpiringContext>)handlerInfo.InitialConstructor)(context);
+                    handlerContext = ((Func<ICacheContext, RequestValidationResult, CacheExpiringContext>)handlerInfo.InitialConstructor)(context, reason);
                 else
                     handlerContext = ((Func<CacheExpiringContext, CacheExpiringContext>)handlerInfo.ContinuationConstructor)(handlerContext);
 
@@ -154,14 +154,14 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
         }
 
-        public async Task<Modifiable> OnExpired(ICacheContext context, IReadOnlyCollection<Uri> expiredUris)
+        public async Task<Modifiable> OnExpired(ICacheContext context, RequestValidationResult reason, IReadOnlyCollection<Uri> expiredUris)
         {
             CacheExpiredContext handlerContext = null;
 
             foreach (var handlerInfo in GetHandlerInfo(CacheHandlerType.Expired))
             {
                 if (handlerContext == null)
-                    handlerContext = ((Func<ICacheContext, IReadOnlyCollection<Uri>,  CacheExpiredContext>)handlerInfo.InitialConstructor)(context, expiredUris);
+                    handlerContext = ((Func<ICacheContext, RequestValidationResult, IReadOnlyCollection<Uri>,  CacheExpiredContext>)handlerInfo.InitialConstructor)(context, reason, expiredUris);
                 else
                     handlerContext = ((Func<CacheExpiredContext, CacheExpiredContext>)handlerInfo.ContinuationConstructor)(handlerContext);
 
@@ -318,7 +318,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheExpiringContext)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expiring, handler.GetType(), false, (Func<ICacheContext, CacheExpiringContext>)(ctx => new CacheExpiringContext(ctx))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expiring, handler.GetType(), false, (Func<ICacheContext, RequestValidationResult , CacheExpiringContext>)((ctx, reason) => new CacheExpiringContext(ctx, reason))),
                 ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expiring, handler.GetType(), true, (Func<CacheExpiringContext, CacheExpiringContext>)(ctx => new CacheExpiringContext(ctx))),
             };
 
@@ -357,7 +357,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             var handlerInfo = new CacheHandlerInfo
             {
                 Handler = context => handler((CacheExpiredContext)context),
-                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expired, handler.GetType(), false, (Func<ICacheContext, IReadOnlyCollection<Uri>,  CacheExpiredContext>)((ctx, expiredUris) => new CacheExpiredContext(ctx, expiredUris))),
+                InitialConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expired, handler.GetType(), false, (Func<ICacheContext, RequestValidationResult, IReadOnlyCollection<Uri>,  CacheExpiredContext>)((ctx, reason, expiredUris) => new CacheExpiredContext(ctx, reason, expiredUris))),
                 ContinuationConstructor = GetOrAddFromCtorCache(CacheHandlerType.Expired, handler.GetType(), true, (Func<CacheExpiredContext, CacheExpiredContext>)(ctx => new CacheExpiredContext(ctx))),
             };
 

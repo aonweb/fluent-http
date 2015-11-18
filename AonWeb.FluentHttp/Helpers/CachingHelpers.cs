@@ -19,14 +19,14 @@ namespace AonWeb.FluentHttp.Helpers
 
         private static CacheKey BuildKey(IVaryByProvider varyByProvider, Type resultType, Uri uri, IEnumerable<string> defaultVaryByHeaders, HttpRequestHeaders headers)
         {
-            
+
             var parts = new List<string>
             {
                 typeof (HttpResponseMessage).IsAssignableFrom(resultType) ? "Http" : "Typed",
                 uri.ToString()
             };
 
-            if (typeof (HttpResponseMessage).IsAssignableFrom(resultType))
+            if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))
             {
                 var varyBy = GetVaryByHeaders(varyByProvider, uri, defaultVaryByHeaders);
                 parts.AddRange(headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase)))
@@ -42,32 +42,34 @@ namespace AonWeb.FluentHttp.Helpers
             return defaultVaryByHeaders.ToSet(varyByProvider.Get(uri));
         }
 
-        public static bool CanCacheRequest(ICacheContext context)
+        public static RequestValidationResult CanCacheRequest(ICacheContext context)
         {
             if (context.Uri == null)
-                return false;
+                return RequestValidationResult.NoRequestInfo;
 
-            if (!CanCacheRequest(context.Request, context.CacheableHttpMethods))
-                    return false;
+            var validation = CanCacheRequest(context.Request, context.CacheableHttpMethods);
+
+            if (validation != RequestValidationResult.OK )
+                return validation;
 
             if (typeof(IEmptyResult).IsAssignableFrom(context.ResultType))
-                return false;
+                return RequestValidationResult.ResultIsEmpty;
 
-            return true;
+            return RequestValidationResult.OK;
         }
 
-        public static bool CanCacheRequest(HttpRequestMessage request, ISet<HttpMethod> cacheableHttpMethods)
+        public static RequestValidationResult CanCacheRequest(HttpRequestMessage request, ISet<HttpMethod> cacheableHttpMethods)
         {
             if (request == null)
-                return false;
+                return RequestValidationResult.NoRequestInfo;
 
             if (!cacheableHttpMethods.Contains(request.Method))
-                return false;
-            
-            if (request.Headers.CacheControl?.NoStore ?? false)
-                return false;
+                return RequestValidationResult.MethodNotCacheable;
 
-            return true;
+            if (request.Headers.CacheControl?.NoStore ?? false)
+                return RequestValidationResult.NoStore;
+
+            return RequestValidationResult.OK;
         }
 
         public static bool ShouldRevalidate(HttpRequestMessage request, IResponseMetadata responseMetadata, ISet<HttpMethod> cacheableHttpMethods)
@@ -189,7 +191,7 @@ namespace AonWeb.FluentHttp.Helpers
             if (response.Headers.ETag != null)
             {
                 if (metadata.ETag != null && !response.Headers.ETag.Tag.Equals(metadata.ETag))
-                    metadata.ETag = (metadata.ETag?? string.Empty) + response.Headers.ETag.Tag;
+                    metadata.ETag = (metadata.ETag ?? string.Empty) + response.Headers.ETag.Tag;
                 else
                     metadata.ETag = response.Headers.ETag?.Tag;
             }
@@ -202,7 +204,7 @@ namespace AonWeb.FluentHttp.Helpers
             var expiration = GetExpiration(metadata.LastModified ?? metadata.Date, response, requestedCacheDuration);
 
             metadata.Expiration = metadata.Expiration.GetValue(expiration, useGreater);
-            
+
             var newVary = response.Headers.Vary.Concat(additionalVaryByHeaders ?? Enumerable.Empty<string>()).Distinct(StringComparer.OrdinalIgnoreCase);
 
             metadata.VaryHeaders.Clear();

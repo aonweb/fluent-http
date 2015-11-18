@@ -39,12 +39,12 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         Task ITypedHandler.OnError(TypedErrorContext context)
         {
-            return ExpireResult(context);
+            return ExpireResult(context, RequestValidationResult.ErrorOrException);
         }
 
         Task ITypedHandler.OnException(TypedExceptionContext context)
         {
-            return ExpireResult(context);
+            return ExpireResult(context, RequestValidationResult.ErrorOrException);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using AonWeb.FluentHttp.Settings;
+using ModernHttpClient;
 
 namespace AonWeb.FluentHttp.Client
 {
@@ -29,7 +30,7 @@ namespace AonWeb.FluentHttp.Client
 
         public IHttpClient Build()
         {
-            // TODO: should we pool these client or handler
+            // TODO: should we pool these clients or handlers
             var handler = CreateHandler(Settings);
 
             return GetClientInstance(handler, Settings);
@@ -51,14 +52,14 @@ namespace AonWeb.FluentHttp.Client
         
         protected virtual HttpMessageHandler CreateHandler(IHttpClientSettings settings)
         {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = false, //this will be handled by the consuming code
-            };
+            var handler = new HttpClientHandler();
 
-            if (settings.DecompressionMethods.HasValue)
+            if (handler.SupportsAllowAutoRedirect())
+                handler.AllowAutoRedirect = false; //this will be handled by the consuming code
+
+            if (handler.SupportsAutomaticDecompression && settings.DecompressionMethods.HasValue)
                 handler.AutomaticDecompression = settings.DecompressionMethods.Value;
-
+            
             if (settings.ClientCertificateOptions != null)
                 handler.ClientCertificateOptions = settings.ClientCertificateOptions.Value;
 
@@ -68,7 +69,7 @@ namespace AonWeb.FluentHttp.Client
                 handler.UseCookies = true;
             }
 
-            if (settings.Credentials != null)
+            if (handler.SupportsPreAuthenticate() && settings.Credentials != null)
             {
                 handler.Credentials = settings.Credentials;
                 handler.UseDefaultCredentials = true;
@@ -78,7 +79,7 @@ namespace AonWeb.FluentHttp.Client
             if (settings.MaxRequestContentBufferSize.HasValue)
                 handler.MaxRequestContentBufferSize = settings.MaxRequestContentBufferSize.Value;
 
-            if (settings.Proxy != null)
+            if (handler.SupportsProxy && settings.Proxy != null)
             {
                 handler.UseProxy = true;
                 handler.Proxy = settings.Proxy;

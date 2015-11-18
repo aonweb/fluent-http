@@ -46,7 +46,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         public Uri Uri { get; }
         public CacheHandlerRegister HandlerRegister { get; }
         public Action<CacheEntry> ResultInspector { get; }
-        public Func<ICacheContext, bool> RequestValidator { get; set; }
+        public Func<ICacheContext, RequestValidationResult> RequestValidator { get; set; }
         public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; }
         public Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; }
         public Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; }

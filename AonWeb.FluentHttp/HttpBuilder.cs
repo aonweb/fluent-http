@@ -125,14 +125,12 @@ namespace AonWeb.FluentHttp
             if (context.ContentFactory != null)
                 request.Content = context.ContentFactory?.Invoke(context);
 
-
             _clientBuilder.ApplyRequestHeaders(request);
 
             // if we haven't added an accept header, add a default
             if (!string.IsNullOrWhiteSpace(context.MediaType))
                 request.Headers.Accept.AddDistinct(h => h.MediaType, context.MediaType);
-
-            //if we haven't added a char-set, add a default
+            
             if (context.AutoDecompression)
             {
                 request.Headers.AcceptEncoding.AddDistinct(h => h.Value, "gzip");
@@ -157,41 +155,40 @@ namespace AonWeb.FluentHttp
 
             try
             {
-                using (var client = _clientBuilder.Build())
+                
+                var sendingContext = new HttpSendingContext(context, request);
+
+                token.ThrowIfCancellationRequested();
+
+                await context.HandlerRegister.OnSending(sendingContext);
+
+                if (sendingContext.Result != null)
                 {
-                    var sendingContext = new HttpSendingContext(context, request);
-
-                    token.ThrowIfCancellationRequested();
-
-                    await context.HandlerRegister.OnSending(sendingContext);
-
-                    if (sendingContext.Result != null)
-                    {
-                        response = sendingContext.Result;
-                    }
-                    else
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        response = await client.SendAsync(request, context.CompletionOption, token);
-                    }
-
-                    if (!context.IsSuccessfulResponse(response) && context.ExceptionFactory != null)
-                    {
-                        var ex = context.ExceptionFactory(response);
-
-                        if (ex != null)
-                            throw ex;
-                    }
-
-                    var sentContext = new HttpSentContext(context, request, response);
-
-                    token.ThrowIfCancellationRequested();
-
-                    await context.HandlerRegister.OnSent(sentContext);
-
-                    response = sentContext.Result;
+                    response = sendingContext.Result;
                 }
+                else
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    using (var client = _clientBuilder.Build())
+                        response = await client.SendAsync(request, context.CompletionOption, token);
+                }
+
+                if (!context.IsSuccessfulResponse(response) && context.ExceptionFactory != null)
+                {
+                    var ex = context.ExceptionFactory(response);
+
+                    if (ex != null)
+                        throw ex;
+                }
+
+                var sentContext = new HttpSentContext(context, request, response);
+
+                token.ThrowIfCancellationRequested();
+
+                await context.HandlerRegister.OnSent(sentContext);
+
+                response = sentContext.Result;
             }
             catch (Exception ex)
             {

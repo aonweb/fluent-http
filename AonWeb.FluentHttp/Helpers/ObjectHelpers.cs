@@ -13,7 +13,7 @@ using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Helpers
 {
-    internal static class ObjectHelpers
+    public static class ObjectHelpers
     {
         public static Task ToTask<T>(this Action<T> action, T arg)
         {

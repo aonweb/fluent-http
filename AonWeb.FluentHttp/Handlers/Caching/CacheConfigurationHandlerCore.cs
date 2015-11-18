@@ -32,7 +32,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         #region IHandler<HandlerType> Implementation
 
-        public bool Enabled { get; set; } 
+        public bool Enabled { get; set; }
 
         public HandlerPriority GetPriority(HandlerType type)
         {
@@ -67,26 +67,28 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             var context = GetContext(handlerContext);
 
-            if (!context.RequestValidator(context))
+            var requestValidation = context.RequestValidator(context);
+
+            if (requestValidation != RequestValidationResult.OK)
             {
-                await ExpireResult(context);
-                return ;
+                await ExpireResult(context, requestValidation);
+                return;
             }
 
             var result = await _cacheProvider.Get(context);
-            var validationResult = ResponseValidationResult.NotExist;
+            var responseValidation = ResponseValidationResult.NotExist;
 
             if (!result.IsEmpty)
             {
                 context.ResultInspector?.Invoke(result);
-                validationResult = context.ResponseValidator(context, result.Metadata);
+                responseValidation = context.ResponseValidator(context, result.Metadata);
             }
 
             // TODO: Determine the need for conditional put - if so, that logic would go here
-            if (validationResult == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, result.Metadata))
-                validationResult = ResponseValidationResult.MustRevalidate;
+            if (responseValidation == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, result.Metadata))
+                responseValidation = ResponseValidationResult.MustRevalidate;
 
-            if (validationResult == ResponseValidationResult.MustRevalidate && context.Request != null)
+            if (responseValidation == ResponseValidationResult.MustRevalidate && context.Request != null)
             {
                 if (result.Metadata.ETag != null)
                     context.Request.Headers.Add("If-None-Match", result.Metadata.ETag);
@@ -175,7 +177,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             var cacheEntry = new CacheEntry(result, request, response, context);
 
-            if (context.RequestValidator(context))
+            var requestValidation = context.RequestValidator(context);
+
+            if (requestValidation == RequestValidationResult.OK)
             {
                 var validationResult = context.ResponseValidator(context, cacheEntry.Metadata);
 
@@ -189,18 +193,18 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             }
             else
             {
-                await ExpireResult(context);
+                await ExpireResult(context, requestValidation);
             }
         }
 
-        protected Task ExpireResult(IHandlerContext handlerContext)
+        protected Task ExpireResult(IHandlerContext handlerContext, RequestValidationResult reason)
         {
             var context = GetContext(handlerContext);
 
-            return ExpireResult(context);
+            return ExpireResult(context, reason);
         }
 
-        private async Task ExpireResult(ICacheContext context)
+        private async Task ExpireResult(ICacheContext context, RequestValidationResult reason)
         {
             if (!Enabled)
                 return;
@@ -208,11 +212,11 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             if ((context.Items["CacheHandler_ItemExpired"] as bool?).GetValueOrDefault())
                 return;
 
-            var expiringResult = await context.HandlerRegister.OnExpiring(context);
+            var expiringResult = await context.HandlerRegister.OnExpiring(context, reason);
 
             var uris = _cacheProvider.Remove(context, expiringResult.Value as IEnumerable<Uri>).ToList();
 
-            await context.HandlerRegister.OnExpired(context, uris);
+            await context.HandlerRegister.OnExpired(context, reason, uris);
 
             context.Items["CacheHandler_ItemExpired"] = true;
         }

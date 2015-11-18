@@ -35,7 +35,7 @@ namespace AonWeb.FluentHttp.Settings
         public bool SuppressTypeMismatchExceptions { get; }
         public Action<CacheEntry> ResultInspector { get; set; }
         public Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; set; }
-        public Func<ICacheContext, bool> RequestValidator { get; set; }
+        public Func<ICacheContext, RequestValidationResult> RequestValidator { get; set; }
         public Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; set; }
         public Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; set; }
         public TimeSpan? DefaultDurationForCacheableResults { get; set; }

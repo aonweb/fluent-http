@@ -61,7 +61,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
         Task IHttpHandler.OnException(HttpExceptionContext context)
         {
-            return ExpireResult(context);
+            return ExpireResult(context, RequestValidationResult.ErrorOrException);
         }
 
         #endregion

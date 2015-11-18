@@ -8,7 +8,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     {
         CacheHandlerRegister HandlerRegister { get; }
         Action<CacheEntry> ResultInspector { get; }
-        Func<ICacheContext, bool> RequestValidator { get; }
+        Func<ICacheContext, RequestValidationResult> RequestValidator { get; }
         Func<ICacheContext, IResponseMetadata, ResponseValidationResult> ResponseValidator { get; }
         Func<ICacheContext, IResponseMetadata, bool> RevalidateValidator { get; }
         Func<ICacheContext, IResponseMetadata, bool> AllowStaleResultValidator { get; }
