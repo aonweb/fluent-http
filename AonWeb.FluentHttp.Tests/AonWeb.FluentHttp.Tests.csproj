@@ -105,6 +105,7 @@
     <Compile Include="Caching\InMemoryCacheProviderTests.cs" />
     <Compile Include="EncodingTests.cs" />
     <Compile Include="Hal\HypermediaLinkHelpersTest.cs" />
+    <Compile Include="HelpersTests.cs" />
     <Compile Include="Helpers\RegistrationHelpers.cs" />
     <Compile Include="HttpBuilderCoreExtensionsTests.cs" />
     <Compile Include="AdvancedTypedBuilderExtensionsTests.cs" />
