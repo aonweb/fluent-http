@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
@@ -180,6 +181,51 @@ namespace AonWeb.FluentHttp.HAL
 
         {
             builder.WithConfiguration(b => b.WithAutoFollowConfiguration(configuration));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder WithHttpContentFactory<TContent>(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, object, Task<HttpContent>> contentFactory)
+            where TContent : IHalRequest
+        {
+            builder.WithConfiguration(s => s.WithContentType(typeof(TContent)).HttpContentFactory = async (ctx, content) => await contentFactory(ctx, content));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder WithHttpContentFactory(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, object, Task<HttpContent>> contentFactory)
+        {
+            builder.WithConfiguration(s => s.HttpContentFactory = contentFactory);
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder WithResultFactory<TResult>(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<TResult>> resultFactory)
+            where TResult : IHalResource
+        {
+            builder.WithConfiguration(s => s.WithResultType(typeof(TResult)).ResultFactory = async (ctx, request, response) => await resultFactory(ctx, request, response));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder WithResultFactory(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<object>> resultFactory)
+        {
+            builder.WithConfiguration(s => s.ResultFactory = resultFactory);
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder WithErrorFactory<TError>(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<TError>> errorFactory)
+        
+{
+            builder.WithConfiguration(s => s.WithResultType(typeof(TError)).ErrorFactory = async (ctx, request, response, ex) => await errorFactory(ctx, request, response, ex));
+
+            return builder;
+        }
+
+        public static IAdvancedHalBuilder WithErrorFactory(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> errorFactory)
+        {
+            builder.WithConfiguration(s => s.ErrorFactory = errorFactory);
 
             return builder;
         }

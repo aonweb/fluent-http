@@ -90,6 +90,7 @@
     <Compile Include="MockHttpBuilderSettings.cs" />
     <Compile Include="MockHttpClient.cs" />
     <Compile Include="MockHttpClientBuilder.cs" />
+    <Compile Include="MockHttpClientBuilderFactory.cs" />
     <Compile Include="MockHttpResponseContext.cs" />
     <Compile Include="MockHttpResponseMessage.cs" />
     <Compile Include="MockResponses.cs" />

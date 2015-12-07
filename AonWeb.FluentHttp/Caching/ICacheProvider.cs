@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers.Caching;
 
@@ -12,7 +11,6 @@ namespace AonWeb.FluentHttp.Caching
         /// Gets the <see cref="CacheEntry"/> specified by the <paramref name="context"/> or an Empty <see cref="CacheEntry"/> if none is found.
         /// </summary>
         /// <param name="context">The current cache context</param>
-        /// <param name="token"></param>
         /// <returns>The specified <see cref="CacheEntry"/> or an Empty <see cref="CacheEntry"/> </returns>
         Task<CacheEntry> Get(ICacheContext context);
 
@@ -21,7 +19,6 @@ namespace AonWeb.FluentHttp.Caching
         /// </summary>
         /// <param name="context">The current cache context</param>
         /// <param name="newCacheEntry">The <see cref="CacheEntry"/> to add or update</param>
-        /// <param name="token"></param>
         /// <returns></returns>
         Task Put(ICacheContext context, CacheEntry newCacheEntry);
 

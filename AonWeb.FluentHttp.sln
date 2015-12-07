@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Serializa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.HAL.Serialization", "AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj", "{74BD325D-285E-4E8A-8EC7-BA7C330A404C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Xamarin", "AonWeb.FluentHttp.Xamarin\AonWeb.FluentHttp.Xamarin.csproj", "{482568B4-8362-45F3-9A6C-0D7C0F30EB4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{74BD325D-285E-4E8A-8EC7-BA7C330A404C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74BD325D-285E-4E8A-8EC7-BA7C330A404C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74BD325D-285E-4E8A-8EC7-BA7C330A404C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{482568B4-8362-45F3-9A6C-0D7C0F30EB4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{482568B4-8362-45F3-9A6C-0D7C0F30EB4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{482568B4-8362-45F3-9A6C-0D7C0F30EB4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{482568B4-8362-45F3-9A6C-0D7C0F30EB4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

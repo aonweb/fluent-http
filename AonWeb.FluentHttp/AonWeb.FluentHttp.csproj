@@ -43,7 +43,10 @@
     <Compile Include="Caching\InMemoryCacheProvider.cs" />
     <Compile Include="Caching\InMemoryVaryByProvider.cs" />
     <Compile Include="Caching\ResponseValidationResult.cs" />
+    <Compile Include="ClientProvider.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
+    <Compile Include="Client\HttpClientBuilderFactory.cs" />
+    <Compile Include="Client\IHttpClientBuilderFactory.cs" />
     <Compile Include="DefaultResponseValidator.cs" />
     <Compile Include="BuilderConfiguration.cs" />
     <Compile Include="Extensions\CachingExtensions.cs" />
@@ -56,6 +59,7 @@
     <Compile Include="IBuilderConfiguration.cs" />
     <Compile Include="IBuilderFactory.cs" />
     <Compile Include="IChildIBuilderFactory.cs" />
+    <Compile Include="Initializer.cs" />
     <Compile Include="IResponseValidator.cs" />
     <Compile Include="ResponseValidatorCollection.cs" />
     <Compile Include="ResponseValidatorFunc.cs" />

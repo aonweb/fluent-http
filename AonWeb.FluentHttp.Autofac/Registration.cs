@@ -37,7 +37,7 @@ namespace AonWeb.FluentHttp.Autofac
 
         protected override void Load(ContainerBuilder builder)
         {
-            var assemblyNames = new[] { "AonWeb.FluentHttp", "AonWeb.FluentHttp.HAL" };
+            var assemblyNames = new[] { "AonWeb.FluentHttp.Xamarin", "AonWeb.FluentHttp.Full", "AonWeb.FluentHttp", "AonWeb.FluentHttp.HAL" };
             var myAssemblies = assemblyNames
                 .Select(name =>
                 {
@@ -56,15 +56,21 @@ namespace AonWeb.FluentHttp.Autofac
             var allAssemblies = _additionalAssemblies.Concat(myAssemblies).ToArray();
 
             //factories
+            builder.RegisterType<ProxyHttpClientBuilderFactory>().As<IHttpClientBuilderFactory>().OnActivated(args =>
+            {
+                ClientProvider.SetFactory(() => args.Instance);
+            });
             builder.RegisterType<ProxyHttpBuilderFactory>().As<IHttpBuilderFactory>();
             builder.RegisterType<ProxyTypedBuilderFactory>().As<ITypedBuilderFactory>();
             builder.RegisterType<ProxyHalBuilderFactory>().As<IHalBuilderFactory>();
+            
             builder.RegisterType<HttpClientBuilder>().As<IHttpClientBuilder>()
                 .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
             builder.RegisterType<Formatter>().As<IFormatter>()
                 .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
 
             //builders
+            builder.Register(c => c.Resolve<IHttpClientBuilderFactory>().Create()).As<IHttpClientBuilder>();
             builder.Register(c => c.Resolve<IHttpBuilderFactory>().Create()).As<IHttpBuilder>();
             builder.Register(c => c.Resolve<ITypedBuilderFactory>().Create()).As<ITypedBuilder>();
             builder.Register(c => c.Resolve<IHalBuilderFactory>().Create()).As<IHalBuilder>();

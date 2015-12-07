@@ -9,14 +9,19 @@ namespace AonWeb.FluentHttp
 {
     public class HttpBuilderFactory : IHttpBuilderFactory
     {
-        public HttpBuilderFactory()
+        private readonly IHttpClientBuilderFactory _clientBuilderFactory;
+
+        static HttpBuilderFactory ()
         {
-            Configurations = new List<IBuilderConfiguration<IHttpBuilder>>();
+            Initializer.Initialize();
         }
 
-        protected HttpBuilderFactory(
-            IEnumerable<IBuilderConfiguration<IHttpBuilder>> configurations)
+        public HttpBuilderFactory()
+            :this(ClientProvider.Current, null) { }
+
+        protected HttpBuilderFactory(IHttpClientBuilderFactory clientBuilderFactory, IEnumerable<IBuilderConfiguration<IHttpBuilder>> configurations)
         {
+            _clientBuilderFactory = clientBuilderFactory;
             Configurations = (configurations ?? Enumerable.Empty<IBuilderConfiguration<IHttpBuilder>>()).ToList();
         }
 
@@ -33,17 +38,12 @@ namespace AonWeb.FluentHttp
 
         public virtual IChildHttpBuilder CreateAsChild()
         {
-            var client = GetClientBuilder();
+            var client = _clientBuilderFactory.Create();
             var cacheHandlers = GetCacheHandlers();
             var cacheSettings = GetCacheSettings();
             var handlers = GetHandlers(cacheSettings, cacheHandlers);
             var settings = GetSettings(handlers, cacheSettings);
             return GetBuilder(settings, client);
-        }
-
-        protected virtual IHttpClientBuilder GetClientBuilder()
-        {
-            return new HttpClientBuilder(new HttpClientSettings());
         }
 
         protected virtual IChildHttpBuilder GetBuilder(IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder)

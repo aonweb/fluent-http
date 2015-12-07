@@ -8,12 +8,7 @@ namespace AonWeb.FluentHttp.Mocks
     public class MockHttpBuilderFactory : HttpBuilderFactory, IMockHttpBuilderFactory
     {
         public MockHttpBuilderFactory()
-            :base(null) { }
-
-        protected override IHttpClientBuilder GetClientBuilder()
-        {
-            return new MockHttpClientBuilder(new HttpClientSettings());
-        }
+            :base(new MockHttpClientBuilderFactory(), null) { }
 
         protected override IChildHttpBuilder GetBuilder( IHttpBuilderSettings settings, IHttpClientBuilder clientBuilder)
         {
