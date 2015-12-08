@@ -63,14 +63,16 @@ namespace AonWeb.FluentHttp.Autofac
             builder.RegisterType<ProxyHttpBuilderFactory>().As<IHttpBuilderFactory>();
             builder.RegisterType<ProxyTypedBuilderFactory>().As<ITypedBuilderFactory>();
             builder.RegisterType<ProxyHalBuilderFactory>().As<IHalBuilderFactory>();
-            
-            builder.RegisterType<HttpClientBuilder>().As<IHttpClientBuilder>()
-                .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
+
+            builder.RegisterAssemblyTypes(allAssemblies)
+               .Where(t => !_excludedTypes.Any(x => x.IsAssignableFrom(t)) && t.IsAssignableTo<IHttpClientBuilder>())
+               .As<IHttpClientBuilder>()
+               .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag)
+               .PreserveExistingDefaults();
             builder.RegisterType<Formatter>().As<IFormatter>()
                 .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
 
             //builders
-            builder.Register(c => c.Resolve<IHttpClientBuilderFactory>().Create()).As<IHttpClientBuilder>();
             builder.Register(c => c.Resolve<IHttpBuilderFactory>().Create()).As<IHttpBuilder>();
             builder.Register(c => c.Resolve<ITypedBuilderFactory>().Create()).As<ITypedBuilder>();
             builder.Register(c => c.Resolve<IHalBuilderFactory>().Create()).As<IHalBuilder>();
@@ -78,9 +80,11 @@ namespace AonWeb.FluentHttp.Autofac
             builder.RegisterType<HttpBuilder>().As<IChildHttpBuilder>()
                 .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag)
                 .PreserveExistingDefaults();
+
             builder.RegisterType<TypedBuilder>().As<IChildTypedBuilder>()
                 .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag)
                 .PreserveExistingDefaults();
+
             builder.RegisterType<HalBuilder>().As<IAdvancedHalBuilder>()
                 .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag)
                 .PreserveExistingDefaults();
