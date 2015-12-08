@@ -56,23 +56,15 @@ namespace AonWeb.FluentHttp.Autofac
             var allAssemblies = _additionalAssemblies.Concat(myAssemblies).ToArray();
 
             //factories
-            builder.RegisterType<ProxyHttpClientBuilderFactory>().As<IHttpClientBuilderFactory>().OnActivated(args =>
-            {
-                ClientProvider.SetFactory(() => args.Instance);
-            });
+            builder.RegisterType<HttpClientBuilderFactory>().As<IHttpClientBuilderFactory>();
             builder.RegisterType<ProxyHttpBuilderFactory>().As<IHttpBuilderFactory>();
             builder.RegisterType<ProxyTypedBuilderFactory>().As<ITypedBuilderFactory>();
             builder.RegisterType<ProxyHalBuilderFactory>().As<IHalBuilderFactory>();
-
-            builder.RegisterAssemblyTypes(allAssemblies)
-               .Where(t => !_excludedTypes.Any(x => x.IsAssignableFrom(t)) && t.IsAssignableTo<IHttpClientBuilder>())
-               .As<IHttpClientBuilder>()
-               .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag)
-               .PreserveExistingDefaults();
             builder.RegisterType<Formatter>().As<IFormatter>()
                 .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
 
             //builders
+            builder.Register(c => ClientProvider.Current.Create()).As<IHttpClientBuilder>();
             builder.Register(c => c.Resolve<IHttpBuilderFactory>().Create()).As<IHttpBuilder>();
             builder.Register(c => c.Resolve<ITypedBuilderFactory>().Create()).As<ITypedBuilder>();
             builder.Register(c => c.Resolve<IHalBuilderFactory>().Create()).As<IHalBuilder>();
