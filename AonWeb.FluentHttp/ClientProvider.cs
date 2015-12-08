@@ -17,6 +17,6 @@ namespace AonWeb.FluentHttp
             _factory = new Lazy<IHttpClientBuilderFactory>(factory, true);
         }
 
-        internal static IHttpClientBuilderFactory Current => _factory.Value;
+        public static IHttpClientBuilderFactory Current => _factory.Value;
     }
 }

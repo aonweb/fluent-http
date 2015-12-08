@@ -36,7 +36,20 @@ namespace AonWeb.FluentHttp
                 var currentdomain = typeof(string).GetTypeInfo().Assembly.GetType("System.AppDomain").GetRuntimeProperty("CurrentDomain").GetMethod.Invoke(null, new object[] { });
                 var getassemblies = currentdomain.GetType().GetRuntimeMethod("GetAssemblies", new Type[] { });
                 var assemblies = getassemblies.Invoke(currentdomain, new object[] { }) as Assembly[];
-                types = assemblies.SelectMany(a => a.ExportedTypes).Where(t => initType.IsAssignableFrom(t)).Select(t => t.GetTypeInfo()).ToList();
+                types = assemblies.SelectMany(a =>
+                {
+                    try
+                    {
+                        return a.ExportedTypes;
+                    }
+                    catch (Exception)
+                    {
+                        return Enumerable.Empty<Type>();
+                    }
+                    
+                }).Where(t => initType.IsAssignableFrom(t))
+                .Select(t => t.GetTypeInfo())
+                .ToList();
             }
             catch (Exception)
             {
