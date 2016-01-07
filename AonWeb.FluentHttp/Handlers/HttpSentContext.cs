@@ -1,5 +1,6 @@
 using System.Net.Http;
 using AonWeb.FluentHttp.Exceptions;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
@@ -33,8 +34,7 @@ namespace AonWeb.FluentHttp.Handlers
         {
             set
             {
-                if (!(value is HttpResponseMessage))
-                    throw new TypeMismatchException(typeof(HttpResponseMessage), value?.GetType());
+                TypeHelpers.CheckType<HttpResponseMessage>(value);
 
                 Result = (HttpResponseMessage)value;
             }
