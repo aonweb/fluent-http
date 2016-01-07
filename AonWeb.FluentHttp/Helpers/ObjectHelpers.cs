@@ -8,6 +8,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
+using AonWeb.FluentHttp.Exceptions.Helpers;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Serialization;
 
@@ -121,7 +122,10 @@ namespace AonWeb.FluentHttp.Helpers
         {
             var statusCode = ((int?)response?.StatusCode).ToString() ?? "<Unknown>";
             var reasonPhrase = response?.ReasonPhrase ?? "<Unknown>";
-            return new HttpRequestException($"Recieved response {statusCode} - {reasonPhrase}, which did not pass response validation. " + response.DetailsForException());
+
+            var message = response.GetExceptionMessage();
+
+            return new HttpRequestException(message);
         }
 
         public static async Task<object> Deserialize(HttpResponseMessage response, Type type, MediaTypeFormatterCollection formatters, CancellationToken token)
@@ -154,7 +158,7 @@ namespace AonWeb.FluentHttp.Helpers
                 if (content.Headers.ContentLength == 0)
                     return TypeHelpers.GetDefaultValueForType(type);
 
-                throw new UnsupportedMediaTypeException(string.Format(SR.NoReadFormatterForMimeTypeErrorFormat, typeInfo.FormattedTypeName(), mediaType.MediaType, response.DetailsForException()), mediaType);
+                throw new UnsupportedMediaTypeException(string.Format(SR.NoReadFormatterForMimeTypeErrorFormat, typeInfo.FormattedTypeName(), mediaType.MediaType, response.GetExceptionMessage()), mediaType);
             }
 
             token.ThrowIfCancellationRequested();

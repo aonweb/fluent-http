@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using AonWeb.FluentHttp.Exceptions.Helpers;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
@@ -9,39 +10,35 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class HttpErrorException<TError> : HttpCallException
     {
-        public HttpErrorException(TError error, HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod)
-            : this(error ,statusCode, requestUri, requestMethod, null) { }
+        public HttpErrorException(TError error, HttpResponseMessage response)
+            : this(error, response, null, null)
+        { }
 
-        public HttpErrorException(TError error, HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod, string message)
-            : this(error, statusCode, requestUri, requestMethod, message, null)
+        public HttpErrorException(TError error, HttpResponseMessage response, string message)
+            : this(error, response, message, null)
+        { }
+
+        public HttpErrorException(TError error, HttpResponseMessage response, string message, Exception exception)
+            : base(response, message, exception)
         {
             Error = error;
         }
 
-        public HttpErrorException(TError error, HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod, string message, Exception exception) :
-            base(statusCode, requestUri, requestMethod, GetMessage(error, message,  statusCode,  requestUri,  requestMethod,  exception), exception)
+        public HttpErrorException(TError error, HttpStatusCode statusCode)
+            : this(error ,statusCode, null) { }
+
+        public HttpErrorException(TError error, HttpStatusCode statusCode, string message)
+            : this(error, statusCode, message, null)
+        { }
+
+        public HttpErrorException(TError error, HttpStatusCode statusCode, string message, Exception exception) 
+            : base(statusCode, message, exception)
         {
             Error = error;
         }
 
         public TError Error { get; private set; }
 
-        public static string GetMessage(TError error, string message, HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod, Exception exception)
-        {
-            if (!string.IsNullOrWhiteSpace(message))
-                return message;
-
-            var errMessage = error?.ToString();
-
-            if(!string.IsNullOrWhiteSpace(errMessage))
-                return errMessage;
-
-            var exMsg = exception != null ? " Additional Error Info: " + exception.Message : null;
-
-            var requestMethodString = requestMethod?.Method ?? "<Unknown Method>";
-            var requestUriString = requestUri?.OriginalString ?? "<Unknown Uri>";
-
-            return $"{requestMethodString} - {requestUriString} returned an error response with status code {(int)statusCode} {statusCode}.{exMsg}";
-        }
+        protected override  string MessageReason => "returned an error response with status code";
     }
 }

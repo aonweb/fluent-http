@@ -1,45 +1,118 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using AonWeb.FluentHttp.Exceptions.Helpers;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
     /// <summary>
     /// The exception that is thrown when an unhandled error in the http call.
     /// </summary>
-    public class HttpCallException : Exception
+    public class HttpCallException : Exception, IWriteableExceptionResponseMetadata
     {
-        public HttpCallException(HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod)
-            : this(statusCode, requestUri, requestMethod, null, null)
+        public HttpCallException(HttpResponseMessage response)
+            : this(response, null, null)
         { }
 
-        public HttpCallException(HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod, string message)
-            : this(statusCode, requestUri, requestMethod, message, null)
+        public HttpCallException(HttpResponseMessage response, string message)
+            : this(response, message, null)
         { }
 
-        public HttpCallException(HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod, string message, Exception exception) :
-            base(GetMessage(message, statusCode, requestUri, requestMethod, exception), exception)
+        public HttpCallException(HttpResponseMessage response, string message, Exception exception)
+            : base(message, exception)
+        {
+            this.Apply(response);
+        }
+
+        public HttpCallException(HttpStatusCode statusCode)
+            : this(statusCode, null)
+        { }
+
+        public HttpCallException(HttpStatusCode statusCode, string message)
+            : this(statusCode, message, null)
+        { }
+
+        public HttpCallException(HttpStatusCode statusCode, string message, Exception exception) :
+            base(message, exception)
         {
             StatusCode = statusCode;
-            RequestUri = requestUri;
-            RequestMethod = requestMethod;
         }
 
         public HttpStatusCode StatusCode { get; private set; }
+        public string ReasonPhrase { get; private set; }
+        public long? ResponseContentLength { get; private set; }
+        public string ResponseContentType { get; private set; }
         public Uri RequestUri { get; private set; }
         public HttpMethod RequestMethod { get; private set; }
+        public long? RequestContentLength { get; private set; }
+        public string RequestContentType { get; private set; }
 
-        private static string GetMessage(string message, HttpStatusCode statusCode, Uri requestUri, HttpMethod requestMethod, Exception exception)
+        public override string Message
         {
-            if (!string.IsNullOrWhiteSpace(message))
-                return message;
+            get
+            {
+                var message = base.Message;
 
-            var exMsg = exception != null ? " Additional Error Info: " + exception.Message : null;
+                if (!string.IsNullOrWhiteSpace(message))
+                    return message;
 
-            var requestMethodString = requestMethod?.Method ?? "<Unknown Method>";
-            var requestUriString = requestUri?.OriginalString ?? "<Unknown Uri>";
-
-            return $"{requestMethodString} - {requestUriString} returned response with status code {(int)statusCode} {statusCode}.{exMsg}";
+                return this.GetExceptionMessage(Message, Message, InnerException?.Message);
+            }
         }
+
+        protected virtual string MessagePrefix => null;
+        protected virtual string MessageReason => null;
+
+        #region IWriteableExceptionResponseMetadata
+
+        string IWriteableExceptionResponseMetadata.ReasonPhrase
+        {
+            get { return ReasonPhrase; }
+            set { ReasonPhrase = value; }
+        }
+
+        long? IWriteableExceptionResponseMetadata.ResponseContentLength
+        {
+            get { return ResponseContentLength; }
+            set { ResponseContentLength = value; }
+        }
+
+        string IWriteableExceptionResponseMetadata.ResponseContentType
+        {
+            get { return ResponseContentType; }
+            set { ResponseContentType = value; }
+        }
+
+        Uri IWriteableExceptionResponseMetadata.RequestUri
+        {
+            get { return RequestUri; }
+            set { RequestUri = value; }
+        }
+
+        HttpMethod IWriteableExceptionResponseMetadata.RequestMethod
+        {
+            get { return RequestMethod; }
+            set { RequestMethod = value; }
+        }
+
+        long? IWriteableExceptionResponseMetadata.RequestContentLength
+        {
+            get { return RequestContentLength; }
+            set { RequestContentLength = value; }
+        }
+
+        string IWriteableExceptionResponseMetadata.RequestContentType
+        {
+            get { return RequestContentType; }
+            set { RequestContentType = value; }
+        }
+
+        HttpStatusCode IWriteableExceptionResponseMetadata.StatusCode
+        {
+            get { return StatusCode; }
+            set { StatusCode = value; }
+        }
+
+        #endregion
     }
 }

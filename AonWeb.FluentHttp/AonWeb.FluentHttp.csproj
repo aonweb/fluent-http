@@ -104,7 +104,6 @@
     <Compile Include="Handlers\IHandlerContextWithResult.cs" />
     <Compile Include="Handlers\ITypedHandler.cs" />
     <Compile Include="Helpers\CollectionHelpers.cs" />
-    <Compile Include="Helpers\ExceptionHelpers.cs" />
     <Compile Include="Helpers\ObjectHelpers.cs" />
     <Compile Include="Helpers\TypeHelpers.cs" />
     <Compile Include="Helpers\UriHelpers.cs" />

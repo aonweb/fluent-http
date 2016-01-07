@@ -4,6 +4,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Exceptions.Helpers;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
@@ -218,7 +219,7 @@ namespace AonWeb.FluentHttp
 
                     if (result != null)
                     {
-                        TypeHelpers.ValidateType(result, context.ResultType, context.SuppressTypeMismatchExceptions, () => response.DetailsForException());
+                        TypeHelpers.ValidateType(result, context.ResultType, context.SuppressTypeMismatchExceptions, () => response.GetExceptionMessage());
 
                         return result;
                     }
@@ -232,8 +233,7 @@ namespace AonWeb.FluentHttp
                 {
                     var error = await context.ErrorFactory(context, request, response, capturedException) ?? TypeHelpers.GetDefaultValueForType(context.ErrorType);
 
-                    TypeHelpers.ValidateType(error, context.ErrorType, context.SuppressTypeMismatchExceptions,
-                        () => response.DetailsForException());
+                    TypeHelpers.ValidateType(error, context.ErrorType, context.SuppressTypeMismatchExceptions, () => response.GetExceptionMessage());
 
                     var errorResult = await context.HandlerRegister.OnError(context, request, response, error);
 
@@ -277,7 +277,7 @@ namespace AonWeb.FluentHttp
             var defaultResult = context.DefaultResultFactory?.Invoke(context.ResultType);
 
             TypeHelpers.ValidateType(defaultResult, context.ResultType, context.SuppressTypeMismatchExceptions,
-                        () => response.DetailsForException());
+                        () => response.GetExceptionMessage());
 
             return defaultResult;
         }
