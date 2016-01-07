@@ -84,8 +84,6 @@
     <Compile Include="Helpers\CachingHelpers.cs" />
     <Compile Include="Helpers\DigestHelpers.cs" />
     <Compile Include="HttpBuilderFactory.cs" />
-    <Compile Include="Exceptions\HttpCallException.cs" />
-    <Compile Include="Exceptions\HttpErrorException.cs" />
     <Compile Include="Exceptions\MaximumAutoRedirectsException.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
     <Compile Include="Handlers\Caching\CacheContext.cs" />

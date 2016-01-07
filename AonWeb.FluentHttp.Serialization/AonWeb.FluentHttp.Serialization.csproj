@@ -39,6 +39,8 @@
     <Compile Include="EmptyError.cs" />
     <Compile Include="EmptyRequest.cs" />
     <Compile Include="EmptyResult.cs" />
+    <Compile Include="Exceptions\HttpCallException.cs" />
+    <Compile Include="Exceptions\HttpErrorException.cs" />
     <Compile Include="FormattingHelpers.cs" />
     <Compile Include="HttpUriBuilder.cs" />
     <Compile Include="HttpUriBuilderExtensions.cs" />
