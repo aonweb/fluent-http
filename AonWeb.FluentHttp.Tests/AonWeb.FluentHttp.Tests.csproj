@@ -104,6 +104,7 @@
     <Compile Include="AutofacTests\RegistrationTests.cs" />
     <Compile Include="Caching\InMemoryCacheProviderTests.cs" />
     <Compile Include="EncodingTests.cs" />
+    <Compile Include="ErrorHelperTests.cs" />
     <Compile Include="Hal\HypermediaLinkHelpersTest.cs" />
     <Compile Include="HelpersTests.cs" />
     <Compile Include="Helpers\RegistrationHelpers.cs" />
