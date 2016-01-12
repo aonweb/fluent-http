@@ -5,8 +5,8 @@ namespace AonWeb.FluentHttp.Handlers
 {
     public class TypedSendingContext<TResult, TContent> : TypedSendingContext, IHandlerContextWithResult<TResult>
     {
-        public TypedSendingContext(ITypedBuilderContext context, HttpRequestMessage request, TContent content, bool hasContent)
-            : base(context, request, content, hasContent)
+        public TypedSendingContext(ITypedBuilderContext context, HttpRequestMessage request, TContent content)
+            : base(context, request, content)
         { }
 
         internal TypedSendingContext(TypedSendingContext context)
@@ -29,12 +29,11 @@ namespace AonWeb.FluentHttp.Handlers
     {
         private readonly Modifiable _result;
 
-        protected TypedSendingContext(ITypedBuilderContext context, HttpRequestMessage request, object content, bool hasContent)
+        protected TypedSendingContext(ITypedBuilderContext context, HttpRequestMessage request, object content)
             : base(context, request)
         {
             _result = new Modifiable();
             Content = content;
-            HasContent = hasContent;
         }
 
         protected TypedSendingContext(TypedSendingContext context)
@@ -42,7 +41,6 @@ namespace AonWeb.FluentHttp.Handlers
         {
             _result = context._result;
             Content = context.Content;
-            HasContent = context.HasContent;
         }
 
         public object Result
@@ -52,7 +50,6 @@ namespace AonWeb.FluentHttp.Handlers
         }
 
         public object Content { get; }
-        public bool HasContent { get; }
 
         public override Modifiable GetHandlerResult()
         {

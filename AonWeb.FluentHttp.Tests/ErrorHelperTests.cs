@@ -83,5 +83,37 @@ namespace AonWeb.FluentHttp.Tests
                 _logger.WriteLine(message);
             }
         }
+
+        [Fact]
+        public async Task ErrorMessageWithMaxRedirectLooksPretty()
+        {
+            try
+            {
+                using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+                {
+                    server.WithAllResponses(new MockHttpResponseMessage(HttpStatusCode.Redirect).WithHeader("Location", server.ListeningUri.ToString()));
+
+                    await new TypedBuilderFactory().Create().WithUri(server.ListeningUri).AsPost().WithContent(TestRequest.Default1())
+                        .WithErrorType<TestError>()
+                        //.Advanced
+                        //.WithErrorFactory((context, message, arg3, arg4) => Task.FromResult(new TestError { Result = "TestErrorString" }))
+                        //.WithExceptionFactory(context =>
+                        //{
+                        //    if (context.Response != null && context.Request != null)
+                        //        context.Response.RequestMessage = context.Request;
+
+                        //    return new HttpErrorException<TestError>((TestError)context.Error, context.Response);
+                        //})
+                        .SendAsync();
+
+                }
+            }
+            catch (MaximumAutoRedirectsException ex)
+            {
+                _logger.WriteLine(ex.Message);
+            }
+        }
+
+
     }
 }

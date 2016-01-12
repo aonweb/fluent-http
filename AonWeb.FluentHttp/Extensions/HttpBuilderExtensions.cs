@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp
 {
@@ -81,13 +82,26 @@ namespace AonWeb.FluentHttp
                 var content = contentFactory() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(content))
-                    return new StringContent(content, ctx.ContentEncoding ?? Encoding.UTF8, !string.IsNullOrWhiteSpace( mediaType) ? mediaType : "application/json");
+                    return Task.FromResult<HttpContent>(new StringContent(content, ctx.ContentEncoding ?? Encoding.UTF8, !string.IsNullOrWhiteSpace( mediaType) ? mediaType : "application/json"));
 
-                return null;
+                return Task.FromResult<HttpContent>(null);
             });
         }
 
         public static IHttpBuilder WithContent(this IHttpBuilder builder, Func<IHttpBuilderContext, HttpContent> contentFactory)
+        {
+            if (contentFactory == null)
+                throw new ArgumentNullException(nameof(contentFactory));
+
+            return builder.WithContent(ctx =>
+            {
+                var content = contentFactory(ctx);
+
+                return Task.FromResult(content);
+            });
+        }
+
+        public static IHttpBuilder WithContent(this IHttpBuilder builder, Func<IHttpBuilderContext, Task<HttpContent>> contentFactory)
         {
             if (contentFactory == null)
                 throw new ArgumentNullException(nameof(contentFactory));

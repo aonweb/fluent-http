@@ -3,6 +3,7 @@ using System.Collections;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
@@ -50,7 +51,7 @@ namespace AonWeb.FluentHttp
         public Encoding ContentEncoding { get; }
         public HttpCompletionOption CompletionOption { get; }
         public bool AutoDecompression { get; }
-        public Func<IHttpBuilderContext, HttpContent> ContentFactory { get; }
+        public Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; }
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
         public HttpHandlerRegister HandlerRegister { get; }
         public CancellationToken Token { get; }

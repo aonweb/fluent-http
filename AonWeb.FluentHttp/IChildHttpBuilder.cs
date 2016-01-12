@@ -7,6 +7,6 @@ namespace AonWeb.FluentHttp
     public interface IChildHttpBuilder : IRecursiveHttpBuilder
     {
         Task<HttpResponseMessage> ResultFromRequestAsync(HttpRequestMessage request, CancellationToken token);
-        HttpRequestMessage CreateRequest();
+        Task<HttpRequestMessage> CreateRequest();
     }
 }

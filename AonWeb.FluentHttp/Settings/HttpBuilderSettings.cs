@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Helpers;
@@ -51,7 +52,7 @@ namespace AonWeb.FluentHttp.Settings
         public Encoding ContentEncoding { get; set; }
         public HttpCompletionOption CompletionOption { get; set; }
         public IRecursiveHttpBuilder Builder { get; set; }
-        public Func<IHttpBuilderContext, HttpContent> ContentFactory { get; set; }
+        public Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; set; }
         public HttpHandlerRegister HandlerRegister { get; }
         public ResponseValidatorCollection ResponseValidator { get; }
         public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }

@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Serialization;
 
 namespace AonWeb.FluentHttp.Settings
@@ -15,7 +16,7 @@ namespace AonWeb.FluentHttp.Settings
         new HttpCompletionOption CompletionOption { get; set; }
         new bool SuppressCancellationErrors { get; set; }
         new bool AutoDecompression { get; set; }
-        new Func<IHttpBuilderContext, HttpContent> ContentFactory { get; set; }
+        new Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; set; }
         new Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
         void Reset();
         void ValidateSettings();

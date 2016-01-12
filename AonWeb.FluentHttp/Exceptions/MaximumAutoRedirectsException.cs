@@ -17,8 +17,8 @@ namespace AonWeb.FluentHttp.Exceptions
 
         public int RedirectCount { get; }
 
-        protected override string MessagePrefix => $"The maximum automatic redirection limit ({RedirectCount}) was reached for request";
+        protected override string MessagePrefix => $"The maximum automatic redirection limit ({RedirectCount}) was reached for";
 
-        protected override string MessageReason => "with response";
+        protected override string MessageReason => "with";
     }
 }

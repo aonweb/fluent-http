@@ -471,7 +471,10 @@ namespace AonWeb.FluentHttp.Tests
             var content = new StringContent("Content");
             var builder = CreateBuilder().WithUri(uri).Advanced;
             string actual = null;
-            builder.OnSending(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            builder.OnSending(async ctx =>
+            {
+                actual = await ctx.Request.Content.ReadAsStringAsync();
+            });
 
             //act
             await builder.AsPost().WithContent(ctx => content).ResultAsync();
@@ -488,7 +491,7 @@ namespace AonWeb.FluentHttp.Tests
 
             Should.Throw<ArgumentNullException>(() => 
                 CreateBuilder().WithUri(uri).Advanced.AsPost()
-                    .WithContent((Func<IHttpBuilderContext, HttpContent>)null));
+                    .WithContent((Func<IHttpBuilderContext, Task<HttpContent>>)null));
         }
 
         #endregion

@@ -24,14 +24,14 @@ namespace AonWeb.FluentHttp.Handlers
 
         }
 
-        public async Task<Modifiable> OnSending(ITypedBuilderContext context, HttpRequestMessage request, object content, bool hasContent)
+        public async Task<Modifiable> OnSending(ITypedBuilderContext context, HttpRequestMessage request, object content)
         {
             TypedSendingContext handlerContext = null;
 
             foreach (var handlerInfo in GetHandlerInfo(HandlerType.Sending))
             {
                 if (handlerContext == null)
-                    handlerContext = ((Func<ITypedBuilderContext, HttpRequestMessage, object, bool, TypedSendingContext>)handlerInfo.InitialConstructor)(context, request, content, hasContent);
+                    handlerContext = ((Func<ITypedBuilderContext, HttpRequestMessage, object, TypedSendingContext>)handlerInfo.InitialConstructor)(context, request, content);
                 else
                     handlerContext = ((Func<TypedSendingContext, TypedSendingContext>)handlerInfo.ContinuationConstructor)(handlerContext);
 
@@ -201,9 +201,8 @@ namespace AonWeb.FluentHttp.Handlers
             var handlerInfo = new TypedHandlerInfo
             {
                 Handler = context => handler((TypedSendingContext<TResult, TContent>)context),
-                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Sending, handler.GetType(), false, (Func<ITypedBuilderContext, HttpRequestMessage, object, bool, TypedSendingContext>)(
-                    (ctx, request, content, hasContent) => 
-                        new TypedSendingContext<TResult, TContent>(ctx, request, TypeHelpers.CheckType<TContent>(content, ctx.SuppressTypeMismatchExceptions), hasContent))),
+                InitialConstructor = GetOrAddFromCtorCache(HandlerType.Sending, handler.GetType(), false, (Func<ITypedBuilderContext, HttpRequestMessage, object, TypedSendingContext>)(
+                    (ctx, request, content) => new TypedSendingContext<TResult, TContent>(ctx, request, TypeHelpers.CheckType<TContent>(content, ctx.SuppressTypeMismatchExceptions)))),
                 ContinuationConstructor = GetOrAddFromCtorCache(HandlerType.Sending, handler.GetType(), true, (Func<TypedSendingContext, TypedSendingContext>)(
                     ctx => 
                         new TypedSendingContext<TResult, TContent>(ctx))),

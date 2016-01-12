@@ -10,6 +10,8 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class HttpCallException : Exception, IWriteableExceptionResponseMetadata
     {
+        private string _message;
+
         public HttpCallException(HttpResponseMessage response)
             : this(response, null, null)
         { }
@@ -21,6 +23,8 @@ namespace AonWeb.FluentHttp.Exceptions
         public HttpCallException(HttpResponseMessage response, string message, Exception exception)
             : base(message, exception)
         {
+            _message = message;
+
             this.Apply(response);
         }
 
@@ -35,6 +39,8 @@ namespace AonWeb.FluentHttp.Exceptions
         public HttpCallException(HttpStatusCode statusCode, string message, Exception exception) :
             base(message, exception)
         {
+            _message = message;
+
             StatusCode = statusCode;
         }
 
@@ -51,12 +57,10 @@ namespace AonWeb.FluentHttp.Exceptions
         {
             get
             {
-                var message = base.Message;
+                if (!string.IsNullOrWhiteSpace(_message))
+                    return _message;
 
-                if (!string.IsNullOrWhiteSpace(message))
-                    return message;
-
-                return this.GetExceptionMessage(Message, Message, InnerException?.Message);
+                return this.GetExceptionMessage(MessagePrefix, MessageReason, InnerException?.Message);
             }
         }
 

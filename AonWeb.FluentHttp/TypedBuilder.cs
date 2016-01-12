@@ -158,30 +158,31 @@ namespace AonWeb.FluentHttp
                 try
                 {
                     //build content before creating request
-                    var hasContent = false;
+                    //var hasContent = false;
                     object content = null;
 
                     if (context.ContentFactory != null)
                     {
                         content = context.ContentFactory();
 
-                        token.ThrowIfCancellationRequested();
-
-                        var httpContent = await context.HttpContentFactory(context, content);
-
-                        if (httpContent != null)
+                        if (content != null)
                         {
-                            _innerBuilder.WithContent(ctx => httpContent);
+                            _innerBuilder.WithContent(async ctx =>
+                            {
+                                var httpContent = await context.HttpContentFactory(context, content);
 
-                            hasContent = true;
+                                return httpContent;
+                            });
                         }
                     }
 
-                    request = _innerBuilder.CreateRequest();
+                    token.ThrowIfCancellationRequested();
+
+                    request = await _innerBuilder.CreateRequest();
 
                     token.ThrowIfCancellationRequested();
 
-                    var sendingResult = await context.HandlerRegister.OnSending(context, request, content, hasContent);
+                    var sendingResult = await context.HandlerRegister.OnSending(context, request, content);
 
                     if (sendingResult.IsDirty)
                         return sendingResult.Value;

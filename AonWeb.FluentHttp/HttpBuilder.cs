@@ -103,7 +103,7 @@ namespace AonWeb.FluentHttp
         {
             var context = new HttpBuilderContext(Settings);
 
-            using (var request = CreateRequest(context))
+            using (var request = await CreateRequest(context))
             {
                 token.ThrowIfCancellationRequested();
 
@@ -111,19 +111,19 @@ namespace AonWeb.FluentHttp
             }
         }
 
-        public HttpRequestMessage CreateRequest()
+        public Task<HttpRequestMessage> CreateRequest()
         {
             var context = new HttpBuilderContext(Settings);
 
             return CreateRequest(context);
         }
 
-        private HttpRequestMessage CreateRequest(IHttpBuilderContext context)
+        private async Task<HttpRequestMessage> CreateRequest(IHttpBuilderContext context)
         {
             var request = new HttpRequestMessage(context.Method, context.Uri);
 
             if (context.ContentFactory != null)
-                request.Content = context.ContentFactory?.Invoke(context);
+                request.Content = await context.ContentFactory?.Invoke(context);
 
             _clientBuilder.ApplyRequestHeaders(request);
 

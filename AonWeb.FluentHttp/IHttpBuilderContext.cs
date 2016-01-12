@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers;
 
@@ -15,7 +16,7 @@ namespace AonWeb.FluentHttp
         Encoding ContentEncoding { get;  }
         HttpCompletionOption CompletionOption { get;  }
         bool AutoDecompression { get; }
-        Func<IHttpBuilderContext, HttpContent> ContentFactory { get; }
+        Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; }
         Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
         HttpHandlerRegister HandlerRegister { get; }
         ResponseValidatorCollection ResponseValidator { get; }

@@ -167,6 +167,21 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
+        public async Task WhenPostingComplexTypeThatIsNull_ExpectRequestNoException()
+        {
+            //arrange
+            var builder = CreateBuilder().WithNextResponse(new MockHttpResponseMessage()).WithUri(MockUri).Advanced;
+
+            string actual = null;
+            builder.OnSendingWithContent<TestResult>(async ctx => actual = await ctx.Request.Content.ReadAsStringAsync());
+
+            //act
+            await builder.WithContent((TestRequest)null).AsPost().SendAsync();
+
+            actual.ShouldBeNull();
+        }
+
+        [Fact]
         public async Task WhenPuttingSimpleTyped_ExpectRequestContentSerializedCorrectly()
         {
             //arrange
