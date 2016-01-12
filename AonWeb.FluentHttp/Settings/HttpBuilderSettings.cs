@@ -55,7 +55,7 @@ namespace AonWeb.FluentHttp.Settings
         public Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; set; }
         public HttpHandlerRegister HandlerRegister { get; }
         public ResponseValidatorCollection ResponseValidator { get; }
-        public Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
+        public Func<HttpResponseMessage, HttpRequestMessage, Exception> ExceptionFactory { get; set; }
         public bool SuppressCancellationErrors { get; set; }
         public bool AutoDecompression { get; set; }
         public CancellationToken Token { get; set; }

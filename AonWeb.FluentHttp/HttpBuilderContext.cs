@@ -52,7 +52,7 @@ namespace AonWeb.FluentHttp
         public HttpCompletionOption CompletionOption { get; }
         public bool AutoDecompression { get; }
         public Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; }
-        public Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
+        public Func<HttpResponseMessage, HttpRequestMessage, Exception> ExceptionFactory { get; }
         public HttpHandlerRegister HandlerRegister { get; }
         public CancellationToken Token { get; }
         public ResponseValidatorCollection ResponseValidator { get; }

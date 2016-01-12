@@ -216,33 +216,31 @@ namespace AonWeb.FluentHttp.Tests
         public async Task WhenPostingEmptyStringType_ExpectRequestContentSerializedCorrectly()
         {
             //arrange
-            var expected = "null";
             var builder = CreateBuilder().WithNextResponse(new MockHttpResponseMessage()).WithUri(MockUri).Advanced;
 
             string actual = null;
-            builder.OnSending<EmptyResult, string>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            builder.OnSending<EmptyResult, string>(async ctx => actual = await ctx.Request.Content.ReadAsStringAsync());
 
             //act
             await builder.WithContent<string>(() => null).AsPost().SendAsync();
 
-            actual.ShouldBe(expected);
+            actual.ShouldBeNull();
         }
 
         [Fact]
         public async Task WhenPostingEmptyType_ExpectRequestContentSerializedCorrectly()
         {
             //arrange
-            var expected = "null";
             var builder = CreateBuilder().WithNextResponse(new MockHttpResponseMessage()).WithUri(MockUri).Advanced;
 
             //arrange
             string actual = null;
-            builder.OnSendingWithContent<TestResult>(ctx => actual = ctx.Request.Content.ReadAsStringAsync().Result);
+            builder.OnSendingWithContent<TestResult>(async ctx => actual = await ctx.Request.Content.ReadAsStringAsync());
 
             //act
             await builder.WithContent<TestResult>(() => null).AsPost().SendAsync();
 
-            actual.ShouldBe(expected);
+            actual.ShouldBeNull();
         }
 
         [Fact]

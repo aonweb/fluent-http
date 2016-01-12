@@ -169,7 +169,7 @@ namespace AonWeb.FluentHttp
             return builder;
         }
 
-        public static IAdvancedHttpBuilder WithExceptionFactory(this IAdvancedHttpBuilder builder, Func<HttpResponseMessage, Exception> factory)
+        public static IAdvancedHttpBuilder WithExceptionFactory(this IAdvancedHttpBuilder builder, Func<HttpResponseMessage, HttpRequestMessage, Exception> factory)
         {
             builder.WithConfiguration(s => s.ExceptionFactory = factory);
 

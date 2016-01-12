@@ -118,12 +118,9 @@ namespace AonWeb.FluentHttp.Helpers
             return (Exception)Activator.CreateInstance(exType, context.Error, context.StatusCode, message, context.InnerException);
         }
 
-        public static Exception CreateHttpException(HttpResponseMessage response)
+        public static Exception CreateHttpException(HttpResponseMessage response, HttpRequestMessage request)
         {
-            var statusCode = ((int?)response?.StatusCode).ToString() ?? "<Unknown>";
-            var reasonPhrase = response?.ReasonPhrase ?? "<Unknown>";
-
-            var message = response.GetExceptionMessage();
+            var message = response.GetExceptionMessage(request);
 
             return new HttpRequestException(message);
         }
@@ -158,7 +155,7 @@ namespace AonWeb.FluentHttp.Helpers
                 if (content.Headers.ContentLength == 0)
                     return TypeHelpers.GetDefaultValueForType(type);
 
-                throw new UnsupportedMediaTypeException(string.Format(SR.NoReadFormatterForMimeTypeErrorFormat, typeInfo.FormattedTypeName(), mediaType.MediaType, response.GetExceptionMessage()), mediaType);
+                throw new UnsupportedMediaTypeException(string.Format(SR.NoReadFormatterForMimeTypeErrorFormat, typeInfo.FormattedTypeName(), mediaType.MediaType, response.GetExceptionMessage(response.RequestMessage)), mediaType);
             }
 
             token.ThrowIfCancellationRequested();

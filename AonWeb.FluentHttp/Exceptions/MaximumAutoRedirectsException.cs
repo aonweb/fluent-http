@@ -9,8 +9,8 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class MaximumAutoRedirectsException : HttpCallException
     {
-        public MaximumAutoRedirectsException(HttpResponseMessage response, int redirectCount)
-            : base(response)
+        public MaximumAutoRedirectsException(HttpResponseMessage response, HttpRequestMessage request, int redirectCount)
+            : base(response, request)
         {
             RedirectCount = redirectCount;
         }

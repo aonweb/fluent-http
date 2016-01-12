@@ -17,7 +17,7 @@ namespace AonWeb.FluentHttp
         HttpCompletionOption CompletionOption { get;  }
         bool AutoDecompression { get; }
         Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; }
-        Func<HttpResponseMessage, Exception> ExceptionFactory { get; }
+        Func<HttpResponseMessage, HttpRequestMessage, Exception> ExceptionFactory { get; }
         HttpHandlerRegister HandlerRegister { get; }
         ResponseValidatorCollection ResponseValidator { get; }
         ICacheMetadata CacheMetadata { get; }

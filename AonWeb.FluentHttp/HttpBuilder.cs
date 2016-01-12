@@ -176,7 +176,7 @@ namespace AonWeb.FluentHttp
 
                 if (!context.IsSuccessfulResponse(response) && context.ExceptionFactory != null)
                 {
-                    var ex = context.ExceptionFactory(response);
+                    var ex = context.ExceptionFactory(response, request);
 
                     if (ex != null)
                         throw ex;

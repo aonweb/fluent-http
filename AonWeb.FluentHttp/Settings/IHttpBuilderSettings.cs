@@ -17,7 +17,7 @@ namespace AonWeb.FluentHttp.Settings
         new bool SuppressCancellationErrors { get; set; }
         new bool AutoDecompression { get; set; }
         new Func<IHttpBuilderContext, Task<HttpContent>> ContentFactory { get; set; }
-        new Func<HttpResponseMessage, Exception> ExceptionFactory { get; set; }
+        new Func<HttpResponseMessage, HttpRequestMessage, Exception> ExceptionFactory { get; set; }
         void Reset();
         void ValidateSettings();
         new CancellationToken Token { get; set; }

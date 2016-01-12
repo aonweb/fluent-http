@@ -38,7 +38,7 @@ namespace AonWeb.FluentHttp.Tests
                             if (context.Response != null && context.Request != null)
                                 context.Response.RequestMessage = context.Request;
 
-                            return new HttpErrorException<TestError>((TestError) context.Error, context.Response);
+                            return new HttpErrorException<TestError>((TestError) context.Error, context.Response, context.Request);
                         })
                         .SendAsync();
 
@@ -70,7 +70,7 @@ namespace AonWeb.FluentHttp.Tests
                             if (context.Response != null && context.Request != null)
                                 context.Response.RequestMessage = context.Request;
 
-                            return new HttpErrorException<TestError>((TestError)context.Error, context.Response);
+                            return new HttpErrorException<TestError>((TestError)context.Error, context.Response, context.Request);
                         })
                         .SendAsync();
 

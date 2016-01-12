@@ -192,7 +192,7 @@ namespace AonWeb.FluentHttp
                     response = await GetResponse(context, request, token);
 
                     if (!context.IsSuccessfulResponse(response))
-                        throw ObjectHelpers.CreateHttpException(response);
+                        throw ObjectHelpers.CreateHttpException(response, request);
 
                     var sentResult = await context.HandlerRegister.OnSent(context, request, response);
 
@@ -220,7 +220,7 @@ namespace AonWeb.FluentHttp
 
                     if (result != null)
                     {
-                        TypeHelpers.ValidateType(result, context.ResultType, context.SuppressTypeMismatchExceptions, () => response.GetExceptionMessage());
+                        TypeHelpers.ValidateType(result, context.ResultType, context.SuppressTypeMismatchExceptions, () => response.GetExceptionMessage(request));
 
                         return result;
                     }
@@ -234,7 +234,7 @@ namespace AonWeb.FluentHttp
                 {
                     var error = await context.ErrorFactory(context, request, response, capturedException) ?? TypeHelpers.GetDefaultValueForType(context.ErrorType);
 
-                    TypeHelpers.ValidateType(error, context.ErrorType, context.SuppressTypeMismatchExceptions, () => response.GetExceptionMessage());
+                    TypeHelpers.ValidateType(error, context.ErrorType, context.SuppressTypeMismatchExceptions, () => response.GetExceptionMessage(request));
 
                     var errorResult = await context.HandlerRegister.OnError(context, request, response, error);
 
@@ -278,7 +278,7 @@ namespace AonWeb.FluentHttp
             var defaultResult = context.DefaultResultFactory?.Invoke(context.ResultType);
 
             TypeHelpers.ValidateType(defaultResult, context.ResultType, context.SuppressTypeMismatchExceptions,
-                        () => response.GetExceptionMessage());
+                        () => response.GetExceptionMessage(request));
 
             return defaultResult;
         }

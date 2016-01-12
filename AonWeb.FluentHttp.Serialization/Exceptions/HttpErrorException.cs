@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
-using AonWeb.FluentHttp.Exceptions.Helpers;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
@@ -10,16 +9,16 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class HttpErrorException<TError> : HttpCallException
     {
-        public HttpErrorException(TError error, HttpResponseMessage response)
-            : this(error, response, null, null)
+        public HttpErrorException(TError error, HttpResponseMessage response, HttpRequestMessage request)
+            : this(error, response, request, null, null)
         { }
 
-        public HttpErrorException(TError error, HttpResponseMessage response, string message)
-            : this(error, response, message, null)
+        public HttpErrorException(TError error, HttpResponseMessage response, HttpRequestMessage request, string message)
+            : this(error, response, request, message, null)
         { }
 
-        public HttpErrorException(TError error, HttpResponseMessage response, string message, Exception exception)
-            : base(response, message, exception)
+        public HttpErrorException(TError error, HttpResponseMessage response, HttpRequestMessage request, string message, Exception exception)
+            : base(response, request, message, exception)
         {
             Error = error;
         }

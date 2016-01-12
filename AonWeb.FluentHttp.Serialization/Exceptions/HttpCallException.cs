@@ -10,21 +10,22 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class HttpCallException : Exception, IWriteableExceptionResponseMetadata
     {
-        private string _message;
+        private readonly string _message;
 
-        public HttpCallException(HttpResponseMessage response)
-            : this(response, null, null)
+        public HttpCallException(HttpResponseMessage response, HttpRequestMessage request)
+            : this(response, request, null, null)
         { }
 
-        public HttpCallException(HttpResponseMessage response, string message)
-            : this(response, message, null)
+        public HttpCallException(HttpResponseMessage response, HttpRequestMessage request, string message)
+            : this(response, request, message, null)
         { }
 
-        public HttpCallException(HttpResponseMessage response, string message, Exception exception)
+        public HttpCallException(HttpResponseMessage response, HttpRequestMessage request, string message, Exception exception)
             : base(message, exception)
         {
             _message = message;
 
+            this.Apply(request);
             this.Apply(response);
         }
 

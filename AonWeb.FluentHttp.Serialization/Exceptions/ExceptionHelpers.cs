@@ -17,7 +17,7 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
             return GetExceptionMessage(metadata, prefix, null, exception?.Message);
         }
 
-        public static string GetExceptionMessage(this HttpResponseMessage response, Exception exception = null, string prefix = null, string reason = null)
+        public static string GetExceptionMessage(this HttpResponseMessage response, HttpRequestMessage request, Exception exception = null, string prefix = null, string reason = null)
         {
             if (response == null)
                 return string.Empty;
@@ -25,10 +25,10 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
             var metadata = new ExceptionResponseMetadata();
 
             metadata.Apply(response);
+            metadata.Apply(request);
 
             return GetExceptionMessage(metadata, prefix, reason, exception?.Message);
         }
-
         public static string GetExceptionMessage(this IExceptionResponseMetadata metadata, string prefix = null, string reason = null, string additionalDetails = null, bool includeContentInfo = false)
         {
             if (metadata == null)
@@ -40,7 +40,7 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
                 .Append("equest ")
                 .Append(metadata.RequestMethod?.Method ?? "<Unknown Method>")
                 .Append(" ")
-                .Append(metadata.RequestUri.OriginalString);
+                .Append(metadata.RequestUri?.OriginalString ?? "<Unknown Uri>");
 
 
             if (includeContentInfo && metadata.RequestContentLength > 0)
@@ -95,8 +95,6 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
             exception.ReasonPhrase = response.ReasonPhrase;
             exception.ResponseContentType = response.Content?.Headers?.ContentType?.MediaType;
             exception.ResponseContentLength = response.Content?.Headers?.ContentLength;
-
-            exception.Apply(response.RequestMessage);
         }
 
         internal static void Apply(this IWriteableExceptionResponseMetadata exception, HttpRequestMessage request)
