@@ -1,8 +1,7 @@
 using System;
-using System.Net;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
-using AonWeb.FluentHttp.Exceptions;
 
 namespace AonWeb.FluentHttp.Exceptions.Helpers
 {
@@ -91,10 +90,17 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
             if (response == null)
                 return;
 
-            exception.StatusCode = response.StatusCode;
-            exception.ReasonPhrase = response.ReasonPhrase;
-            exception.ResponseContentType = response.Content?.Headers?.ContentType?.MediaType;
-            exception.ResponseContentLength = response.Content?.Headers?.ContentLength;
+            try
+            {
+                exception.StatusCode = response.StatusCode;
+                exception.ReasonPhrase = response.ReasonPhrase;
+                exception.ResponseContentType = response.Content?.Headers?.ContentType?.MediaType;
+                exception.ResponseContentLength = response.Content?.Headers?.ContentLength;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            } // don't let exception logging info cause exception
         }
 
         internal static void Apply(this IWriteableExceptionResponseMetadata exception, HttpRequestMessage request)
@@ -102,10 +108,17 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
             if (request == null)
                 return;
 
-            exception.RequestUri = request.RequestUri;
-            exception.RequestMethod = request.Method;
-            exception.ResponseContentType = request.Headers?.Accept?.ToString() ?? request.Content?.Headers?.ContentType?.MediaType;
-            exception.RequestContentLength = request.Content?.Headers?.ContentLength;
+            try
+            {
+                exception.RequestUri = request.RequestUri;
+                exception.RequestMethod = request.Method;
+                exception.ResponseContentType = request.Headers?.Accept?.ToString() ?? request.Content?.Headers?.ContentType?.MediaType;
+                exception.RequestContentLength = request.Content?.Headers?.ContentLength;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
     }
 }
