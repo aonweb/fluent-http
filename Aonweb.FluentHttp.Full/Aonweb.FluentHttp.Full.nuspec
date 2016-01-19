@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>Fluent Http Call Builder classes for Full .Net Environments</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/aonweb/fluent-http</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <summary>Additional classes for use in Full .Net environments for http builders and hal builders</summary>
+    <copyright>Copyright 2016</copyright>
+    <language>en-US</language>
+    <tags>fluent, http</tags>
+    <dependencies>
+      <group>
+        <dependency id="AonWeb.FluentHttp" version="3.0.0-rc1-0" />
+        <dependency id="AonWeb.FluentHttp.Serialization" version="3.0.0-rc1-0" />
+      </group>
+    </dependencies>
+  </metadata>
+    <files />
+</package>

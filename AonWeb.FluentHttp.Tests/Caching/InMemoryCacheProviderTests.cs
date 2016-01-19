@@ -15,9 +15,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
 {
     public class InMemoryCacheProviderTests
     {
-        private ICacheProvider CreateProvider()
+        private ICacheManager CreateProvider()
         {
-            return new InMemoryCacheProvider(new InMemoryVaryByProvider());
+            return new CacheManager(new CacheProvider(), new VaryByProvider(new CacheProvider()), new UriInfoProvider(new CacheProvider()), new ResponseSerializer());
         }
 
         private HttpResponseMessage CreateResponse(string result)

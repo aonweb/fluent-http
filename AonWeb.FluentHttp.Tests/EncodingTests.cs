@@ -24,7 +24,7 @@ namespace AonWeb.FluentHttp.Tests
         public EncodingTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         public void CanHandleUtf8Encoding()

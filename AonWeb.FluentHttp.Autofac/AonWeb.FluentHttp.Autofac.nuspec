@@ -3,7 +3,7 @@
   <metadata>
     <id>$id$</id>
     <version>$version$</version>
-    <title>Fluent HAL Call Builder</title>
+    <title>Fluent Http Call Builder Autofac Registrations</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -13,11 +13,11 @@
     <summary>Autofac registration for http builders and hal builders</summary>
     <copyright>Copyright 2014</copyright>
     <language>en-US</language>
-    <tags>fluent, http</tags>
+    <tags>fluent, http, autofac</tags>
     <dependencies>
       <group>
-        <dependency id="AonWeb.FluentHttp" version="3.0.0-beta5-3" />
-        <dependency id="AonWeb.FluentHttp.HAL" version="3.0.0-beta5-3" />
+        <dependency id="AonWeb.FluentHttp" version="3.0.0-rc1-0" />
+        <dependency id="AonWeb.FluentHttp.HAL" version="3.0.0-rc1-0" />
       </group>
     </dependencies>
   </metadata>

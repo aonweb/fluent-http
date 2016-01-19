@@ -36,6 +36,16 @@ namespace AonWeb.FluentHttp.Caching
             return $"Key:{key}";
         }
 
+        public static implicit operator string (CacheKey key)
+        {
+            return key.Key;
+        }
+        //  User-defined conversion from double to Digit
+        public static implicit operator CacheKey(string key)
+        {
+            return new CacheKey(key);
+        }
+
         #region IEquatable<CacheKey>
 
         public bool Equals(CacheKey other)

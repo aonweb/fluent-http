@@ -1,11 +1,25 @@
-﻿namespace AonWeb.FluentHttp.Xamarin
+﻿using System;
+using AonWeb.FluentHttp.Caching;
+
+namespace AonWeb.FluentHttp.Xamarin
 {
-    public class Initializer: IInitializer
+    public class XamarinInitializer: Initializer
     {
-        public void Initialize()
+        public override void Initialize()
         {
-            Cache.SetProvider(() => new SqlLiteCacheProvider());
+            Cache.SetManager(() => new CacheManager(
+                 CreateProvider(),
+                new VaryByProvider( CreateProvider()),
+                new UriInfoProvider( CreateProvider()),
+                new ResponseSerializer()));
             ClientProvider.SetFactory(() => new ModernHttpClientBuilderFactory());
+        }
+
+        private ICacheProvider CreateProvider()
+        {
+            throw new NotImplementedException();
+
+            //return new SqlLiteCacheProvider(new PlatformSettings(), Services.Serialization.ServiceStackV3.JsonSerializer);
         }
     }
 }

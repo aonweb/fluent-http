@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp
 {
-    public class Initializer
+    public class InitializationManager
     {
         private static bool _isInitialized; 
         private static readonly object Lock = new object();
@@ -47,7 +48,7 @@ namespace AonWeb.FluentHttp
                         return Enumerable.Empty<Type>();
                     }
                     
-                }).Where(t => initType.IsAssignableFrom(t))
+                }).Where(t => initType.IsAssignableFrom(t) && !t.GetTypeInfo().IsAbstract)
                 .Select(t => t.GetTypeInfo())
                 .ToList();
             }
@@ -67,15 +68,10 @@ namespace AonWeb.FluentHttp
 
             }).Where(i => i != null);
 
-            foreach (var initializer in initializers)
+            foreach (var initializer in initializers.OrderBy(i => i.Priority))
             {
                 initializer.Initialize();
             }
         }
-    }
-
-    public interface IInitializer
-    {
-        void Initialize();
     }
 }

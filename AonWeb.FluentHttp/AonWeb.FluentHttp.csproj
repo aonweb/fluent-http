@@ -39,9 +39,14 @@
     <Compile Include="Cache.cs" />
     <Compile Include="Caching\CacheEntry.cs" />
     <Compile Include="Caching\CacheKey.cs" />
+    <Compile Include="Caching\CacheProvider.cs" />
+    <Compile Include="Caching\ICacheManager.cs" />
+    <Compile Include="Caching\CacheManager.cs" />
     <Compile Include="Caching\ICacheProvider.cs" />
-    <Compile Include="Caching\InMemoryCacheProvider.cs" />
-    <Compile Include="Caching\InMemoryVaryByProvider.cs" />
+    <Compile Include="Caching\IUriInfoProvider.cs" />
+    <Compile Include="Caching\UriCacheInfo.cs" />
+    <Compile Include="Caching\UriInfoProvider.cs" />
+    <Compile Include="Caching\VaryByProvider.cs" />
     <Compile Include="Caching\ResponseValidationResult.cs" />
     <Compile Include="ClientProvider.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
@@ -59,7 +64,9 @@
     <Compile Include="IBuilderConfiguration.cs" />
     <Compile Include="IBuilderFactory.cs" />
     <Compile Include="IChildIBuilderFactory.cs" />
-    <Compile Include="Initializer.cs" />
+    <Compile Include="IInitializer.cs" />
+    <Compile Include="InitializationManager.cs" />
+    <Compile Include="InitializerPriority.cs" />
     <Compile Include="IResponseValidator.cs" />
     <Compile Include="ResponseValidatorCollection.cs" />
     <Compile Include="ResponseValidatorFunc.cs" />

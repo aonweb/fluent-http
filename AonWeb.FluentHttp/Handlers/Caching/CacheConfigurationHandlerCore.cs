@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,13 +18,13 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     // but the base logic for cache validation / invalidation was based off CacheCow
     public abstract class CacheConfigurationHandlerCore
     {
-        private readonly ICacheProvider _cacheProvider;
+        private readonly ICacheManager _cacheManager;
 
-        protected CacheConfigurationHandlerCore(ICacheSettings settings, ICacheProvider cacheProvider)
+        protected CacheConfigurationHandlerCore(ICacheSettings settings, ICacheManager cacheManager)
         {
             Enabled = true;
 
-            _cacheProvider = cacheProvider;
+            _cacheManager = cacheManager;
 
             Settings = settings;
         }
@@ -75,7 +76,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 return;
             }
 
-            var result = await _cacheProvider.Get(context);
+            var result = await _cacheManager.Get(context);
             var responseValidation = ResponseValidationResult.NotExist;
 
             if (!result.IsEmpty)
@@ -186,7 +187,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 if (validationResult == ResponseValidationResult.OK
                     || validationResult == ResponseValidationResult.MustRevalidate)
                 {
-                    await _cacheProvider.Put(context, cacheEntry);
+                    await _cacheManager.Put(context, cacheEntry);
                 }
 
                 await context.HandlerRegister.OnStore(context, cacheEntry.Value);
@@ -214,9 +215,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             var expiringResult = await context.HandlerRegister.OnExpiring(context, reason);
 
-            var uris = _cacheProvider.Remove(context, expiringResult.Value as IEnumerable<Uri>).ToList();
+            var uris = await _cacheManager.Delete(context, expiringResult.Value as IEnumerable<Uri>);
 
-            await context.HandlerRegister.OnExpired(context, reason, uris);
+            await context.HandlerRegister.OnExpired(context, reason, new ReadOnlyCollection<Uri>(uris));
 
             context.Items["CacheHandler_ItemExpired"] = true;
         }

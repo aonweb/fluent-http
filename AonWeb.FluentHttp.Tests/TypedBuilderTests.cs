@@ -23,7 +23,7 @@ namespace AonWeb.FluentHttp.Tests
         public TypedBuilderTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static IMockTypedBuilder CreateBuilder()

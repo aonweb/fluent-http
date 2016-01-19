@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         public HalCachingTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static IHalBuilder CreateBuilder()

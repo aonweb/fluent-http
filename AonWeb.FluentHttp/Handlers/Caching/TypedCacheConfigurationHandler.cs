@@ -8,8 +8,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public class TypedCacheConfigurationHandler : CacheConfigurationHandlerCore, ITypedHandler, IAdvancedCacheConfigurable<TypedCacheConfigurationHandler>
     {
-        public TypedCacheConfigurationHandler(ICacheSettings settings, ICacheProvider cacheProvider, IEnumerable<ITypedCacheHandler> handlers)
-            : base(settings, cacheProvider)
+        public TypedCacheConfigurationHandler(ICacheSettings settings, ICacheManager cacheManager, IEnumerable<ITypedCacheHandler> handlers)
+            : base(settings, cacheManager)
         {
             if (handlers != null)
             {

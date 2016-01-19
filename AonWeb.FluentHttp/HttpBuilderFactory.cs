@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp
 
         static HttpBuilderFactory ()
         {
-            Initializer.Initialize();
+            InitializationManager.Initialize();
         }
 
         public HttpBuilderFactory()

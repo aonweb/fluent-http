@@ -16,7 +16,7 @@ namespace AonWeb.FluentHttp.Tests
         public HttpBuilderCoreExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static IMockHttpBuilder CreateBuilder()

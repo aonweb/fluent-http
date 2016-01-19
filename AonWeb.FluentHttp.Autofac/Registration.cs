@@ -10,6 +10,7 @@ using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Settings;
 using Autofac;
+using Autofac.Core;
 using Module = Autofac.Module;
 
 namespace AonWeb.FluentHttp.Autofac
@@ -104,23 +105,25 @@ namespace AonWeb.FluentHttp.Autofac
                .AsImplementedInterfaces()
                .PreserveExistingDefaults();
 
-            //providers
             builder.RegisterAssemblyTypes(allAssemblies)
-               .Where(t => !_excludedTypes.Any(x => x.IsAssignableFrom(t)) && t.IsAssignableTo<IVaryByProvider>())
-               .As<IVaryByProvider>()
-               .SingleInstance()
-               .PreserveExistingDefaults();
+              .Where(t => !_excludedTypes.Any(x => x.IsAssignableFrom(t)) && t.IsAssignableTo<ICacheProvider>())
+              .As<ICacheProvider>()
+              .InstancePerDependency()
+              .PreserveExistingDefaults();
 
-            builder.RegisterAssemblyTypes(allAssemblies)
-               .Where(t => !_excludedTypes.Any(x => x.IsAssignableFrom(t)) && t.IsAssignableTo<ICacheProvider>())
-               .As<ICacheProvider>()
-               .SingleInstance()
-               .AutoActivate()
-               .OnActivated(args =>
-               {
-                   Cache.SetProvider(() => (ICacheProvider)args.Instance);
-               })
-               .PreserveExistingDefaults();
+            builder.RegisterType<ResponseSerializer>().AsSelf()
+                .SingleInstance();
+
+            builder.RegisterType<VaryByProvider>().As<IVaryByProvider>()
+                .SingleInstance().PreserveExistingDefaults();
+
+            builder.RegisterType<UriInfoProvider>().As<IUriInfoProvider>()
+                .SingleInstance().PreserveExistingDefaults();
+
+            builder.RegisterType<CacheManager>().As<ICacheManager>()
+                .SingleInstance().PreserveExistingDefaults()
+                .AutoActivate()
+                .OnActivated(args => Cache.SetManager(() => args.Instance));
 
             base.Load(builder);
         }

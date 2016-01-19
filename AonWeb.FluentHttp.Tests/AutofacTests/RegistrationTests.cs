@@ -707,12 +707,11 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
 
     #endregion
 
-    public class CustomCacheProvider : InMemoryCacheProvider
+    public class CustomCacheProvider : CacheProvider
     {
         public static EventHandler Activated;
 
-        public CustomCacheProvider(IVaryByProvider varyBy)
-            : base(varyBy)
+        public CustomCacheProvider()
         {
             var handler = Activated;
 

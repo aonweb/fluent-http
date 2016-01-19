@@ -19,7 +19,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         public HttpCachingTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static IHttpBuilder CreateBuilder(TimeSpan? duration = null)

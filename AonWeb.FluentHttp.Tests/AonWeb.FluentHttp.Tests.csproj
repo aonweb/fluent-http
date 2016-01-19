@@ -150,6 +150,10 @@
       <Project>{88b42254-124b-453d-b1c9-c0e56ae18022}</Project>
       <Name>AonWeb.FluentHttp.Autofac</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Aonweb.FluentHttp.Full\Aonweb.FluentHttp.Full.csproj">
+      <Project>{b3730e8c-5803-47dd-820e-aece20388beb}</Project>
+      <Name>Aonweb.FluentHttp.Full</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj">
       <Project>{74bd325d-285e-4e8a-8ec7-ba7c330a404c}</Project>
       <Name>AonWeb.FluentHttp.HAL.Serialization</Name>

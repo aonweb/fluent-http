@@ -21,7 +21,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         public TypedCachingTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static ITypedBuilder CreateBuilder(TimeSpan? duration = null)

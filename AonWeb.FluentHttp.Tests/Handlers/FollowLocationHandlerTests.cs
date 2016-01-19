@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
         public FollowLocationHandlerTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static IHttpBuilder CreateBuilder()

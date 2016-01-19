@@ -9,8 +9,8 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 {
     public class HttpCacheConfigurationHandler : CacheConfigurationHandlerCore, IHttpHandler, IAdvancedCacheConfigurable<HttpCacheConfigurationHandler>
     {
-        public HttpCacheConfigurationHandler(ICacheSettings settings, ICacheProvider cacheProvider, IEnumerable<IHttpCacheHandler> handlers)
-            : base(settings, cacheProvider)
+        public HttpCacheConfigurationHandler(ICacheSettings settings, ICacheManager cacheManager, IEnumerable<IHttpCacheHandler> handlers)
+            : base(settings, cacheManager)
         {
             if (handlers != null)
             {

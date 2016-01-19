@@ -1,36 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AonWeb.FluentHttp.Caching;
-using AonWeb.FluentHttp.Handlers.Caching;
+﻿using System.Threading.Tasks;
+using SQLite.Net;
+using XLabs.Caching;
+using XLabs.Caching.SQLite;
+using XLabs.Serialization;
+using ICacheProvider = AonWeb.FluentHttp.Caching.ICacheProvider;
 
 namespace AonWeb.FluentHttp.Xamarin
 {
-    public class SqlLiteCacheProvider: ICacheProvider
+    public class SqlLiteCacheProvider : ICacheProvider
     {
-        public Task<CacheEntry> Get(ICacheContext context)
+        private static readonly object _lock = new object();
+
+        private readonly ISimpleCache _cache;
+
+        public SqlLiteCacheProvider(IPlatformSettings settings, IJsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            _cache = new SQLiteSimpleCache(settings.SqLitePlatform, new SQLiteConnectionString(settings.SqlLiteDbPath, true), serializer);
         }
 
-        public Task Put(ICacheContext context, CacheEntry newCacheEntry)
+        public Task<T> Get<T>(string key)
         {
-            throw new NotImplementedException();
+            lock (_lock)
+            {
+                var result = _cache.Get<T>(key);
+
+                return Task.FromResult(result);
+            }
         }
 
-        public IEnumerable<Uri> Remove(ICacheContext context, IEnumerable<Uri> additionalRelatedUris)
+        public Task<bool> Put<T>(string key, T value)
         {
-            throw new NotImplementedException();
+            lock (_lock)
+            {
+                return Task.FromResult(_cache.Set(key, value));
+            }
         }
 
-        public IEnumerable<Uri> Remove(Uri uri)
+        public Task<bool> Delete(string key)
         {
-            throw new NotImplementedException();
+            lock (_lock)
+            {
+                return Task.FromResult(_cache.Remove(key));
+            }
         }
 
-        public void Clear()
+        public Task DeleteAll()
         {
-            throw new NotImplementedException();
+            lock (_lock)
+            {
+                _cache.FlushAll();
+            }
+
+            return Task.FromResult(true);
         }
     }
 }

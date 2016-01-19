@@ -21,7 +21,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public HalDeserializationTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static IHalBuilder CreateBuilder()

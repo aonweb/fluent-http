@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Serialization;
@@ -12,35 +13,7 @@ namespace AonWeb.FluentHttp.Helpers
 {
     public static class CachingHelpers
     {
-        public static CacheKey BuildKey(IVaryByProvider varyByProvider, ICacheContext context)
-        {
-            return BuildKey(varyByProvider, context.ResultType, context.Uri, context.DefaultVaryByHeaders, context.Request.Headers);
-        }
-
-        private static CacheKey BuildKey(IVaryByProvider varyByProvider, Type resultType, Uri uri, IEnumerable<string> defaultVaryByHeaders, HttpRequestHeaders headers)
-        {
-
-            var parts = new List<string>
-            {
-                typeof (HttpResponseMessage).IsAssignableFrom(resultType) ? "Http" : "Typed",
-                uri.ToString()
-            };
-
-            if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))
-            {
-                var varyBy = GetVaryByHeaders(varyByProvider, uri, defaultVaryByHeaders);
-                parts.AddRange(headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase)))
-                    .SelectMany(h => h.Value.Select(v => $"{UriHelpers.NormalizeHeader(h.Key)}:{UriHelpers.NormalizeHeader(v)}"))
-                    .Distinct());
-            }
-
-            return new CacheKey(string.Join("-", parts));
-        }
-
-        private static IEnumerable<string> GetVaryByHeaders(IVaryByProvider varyByProvider, Uri uri, IEnumerable<string> defaultVaryByHeaders)
-        {
-            return defaultVaryByHeaders.ToSet(varyByProvider.Get(uri));
-        }
+        
 
         public static RequestValidationResult CanCacheRequest(ICacheContext context)
         {
@@ -134,7 +107,7 @@ namespace AonWeb.FluentHttp.Helpers
             if (request == null)
                 throw new ArgumentException(SR.CacheContextRequestMessageRequiredError, nameof(request));
 
-            if (responseMetadata.HasContent)
+            if (!responseMetadata.HasContent)
                 return false;
 
             if (responseMetadata.Expiration < DateTimeOffset.UtcNow)

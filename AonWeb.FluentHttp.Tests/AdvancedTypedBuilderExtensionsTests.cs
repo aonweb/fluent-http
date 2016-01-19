@@ -24,7 +24,7 @@ namespace AonWeb.FluentHttp.Tests
         public AdvancedTypedBuilderExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static ITypedBuilder CreateBuilder()

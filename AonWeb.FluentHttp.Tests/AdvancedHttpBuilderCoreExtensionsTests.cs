@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests
         public AdvancedHttpBuilderCoreExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private IContainer CreateContainer()

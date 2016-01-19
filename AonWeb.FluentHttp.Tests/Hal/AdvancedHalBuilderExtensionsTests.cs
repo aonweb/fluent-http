@@ -20,7 +20,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
         public AdvancedHalBuilderExtensionsTests(ITestOutputHelper logger)
         {
             _logger = logger;
-            Cache.Clear();
+            Cache.DeleteAll();
         }
 
         private static IMockHalBuilder CreateBuilder()

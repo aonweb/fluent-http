@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp.Tests.Helpers
             if (singleInstanceCache)
                 builder.RegisterType<CustomCacheProvider>()
                     .As<ICacheProvider>()
-                    .InstancePerMatchingLifetimeScope(Constants.BuilderScopeTag);
+                    .InstancePerDependency();
 
             Registration.Register(builder, new[] { typeof(RegistrationHelpers).Assembly }, new [] {typeof(CustomScopeTypedCacheHandler)});
             return builder.Build();

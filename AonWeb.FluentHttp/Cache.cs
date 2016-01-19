@@ -1,37 +1,42 @@
 ﻿using System;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 
 namespace AonWeb.FluentHttp
 {
     public static class Cache
     {
-        private static Lazy<ICacheProvider> _cacheStore;
+        private static Lazy<ICacheManager> _cacheManagerStore;
 
         static Cache()
         {
-            SetProvider(() => new InMemoryCacheProvider(new InMemoryVaryByProvider()));
+            SetManager(() => new CacheManager(
+                new CacheProvider(), 
+                new VaryByProvider(new CacheProvider()),
+                new UriInfoProvider(new CacheProvider()),
+                new ResponseSerializer()));
         }
 
-        public static void Clear()
+        public static Task DeleteAll()
         {
-            _cacheStore.Value.Clear();
+           return _cacheManagerStore.Value.DeleteAll();
         }
 
-        public static void Remove(string uri)
+        public static Task Delete(string uri)
         {
-           Remove(new Uri(uri));
+           return Delete(new Uri(uri));
         }
 
-        public static void Remove(Uri uri)
+        public static Task Delete(Uri uri)
         {
-            _cacheStore.Value.Remove(uri);
+           return _cacheManagerStore.Value.Delete(uri);
         }
 
-        public static void SetProvider(Func<ICacheProvider> cacheFactory)
+        public static void SetManager(Func<ICacheManager> cacheManagerFactory)
         {
-            _cacheStore = new Lazy<ICacheProvider>(cacheFactory, true);
+            _cacheManagerStore = new Lazy<ICacheManager>(cacheManagerFactory);
         }
 
-        internal static ICacheProvider Current => _cacheStore.Value;
+        internal static ICacheManager Current => _cacheManagerStore.Value;
     }
 }
