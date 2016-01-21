@@ -4,7 +4,7 @@ using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
-    internal interface IWriteableExceptionResponseMetadata : IExceptionResponseMetadata
+    public interface IWriteableExceptionResponseMetadata : IExceptionResponseMetadata
     {
         new HttpStatusCode StatusCode { get; set; }
         new string ReasonPhrase { get; set; }

@@ -85,7 +85,14 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
             return messageBuilder.ToString();
         }
 
-        internal static void Apply(this IWriteableExceptionResponseMetadata exception, HttpResponseMessage response)
+        public static void Apply(this IWriteableExceptionResponseMetadata exception, HttpRequestMessage request,
+            HttpResponseMessage response)
+        {
+            exception.Apply(request);
+            exception.Apply(response);
+        }
+
+        public static void Apply(this IWriteableExceptionResponseMetadata exception, HttpResponseMessage response)
         {
             if (response == null)
                 return;
@@ -103,7 +110,7 @@ namespace AonWeb.FluentHttp.Exceptions.Helpers
             } // don't let exception logging info cause exception
         }
 
-        internal static void Apply(this IWriteableExceptionResponseMetadata exception, HttpRequestMessage request)
+        public static void Apply(this IWriteableExceptionResponseMetadata exception, HttpRequestMessage request)
         {
             if (request == null)
                 return;

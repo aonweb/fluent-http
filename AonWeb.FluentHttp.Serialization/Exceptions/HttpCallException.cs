@@ -25,8 +25,7 @@ namespace AonWeb.FluentHttp.Exceptions
         {
             _message = message;
 
-            this.Apply(request);
-            this.Apply(response);
+            this.Apply(request, response);
         }
 
         public HttpCallException(HttpStatusCode statusCode)
