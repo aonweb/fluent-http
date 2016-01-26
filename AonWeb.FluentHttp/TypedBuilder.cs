@@ -153,6 +153,7 @@ namespace AonWeb.FluentHttp
             HttpRequestMessage request = null;
             HttpResponseMessage response = null;
             ExceptionDispatchInfo capturedException = null;
+            object result = null;
             try
             {
                 try
@@ -195,8 +196,6 @@ namespace AonWeb.FluentHttp
                         throw ObjectHelpers.CreateHttpException(response, request);
 
                     var sentResult = await context.HandlerRegister.OnSent(context, request, response);
-
-                    object result = null;
 
                     if (sentResult.IsDirty)
                     {
@@ -259,8 +258,11 @@ namespace AonWeb.FluentHttp
             }
             finally
             {
-                ObjectHelpers.Dispose(request);
-                ObjectHelpers.Dispose(response);
+                if (result != response) // if the result is of type http response message and equal to the response don't dispose.
+                {
+                    ObjectHelpers.Dispose(request);
+                    ObjectHelpers.Dispose(response);
+                }
             }
 
             if (capturedException != null)

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Mocks;
@@ -788,6 +790,99 @@ namespace AonWeb.FluentHttp.Tests
             result.ShouldBeNull();
             typeof(TestResult).ShouldBe(type);
         }
+        #endregion
+
+        #region Typing Tests
+
+        [Fact]
+        public async Task WhenResultTypeIsHttpResponseMessage_ExpectCorrectResultType()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server.WithNextResponseOk(TestResult.SerializedDefault1);
+
+                var result = await new TypedBuilderFactory().Create()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<HttpResponseMessage>();
+
+                result.ShouldNotBeNull();
+                var contents = await result.Content.ReadAsStringAsync();
+                contents.ShouldNotBeNullOrWhiteSpace();
+
+            }
+        }
+
+        [Fact]
+        public async Task WhenResultTypeIsStream_ExpectCorrectResultType()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server.WithNextResponseOk(TestResult.SerializedDefault1);
+
+                var result = await new TypedBuilderFactory().Create()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<Stream>();
+
+                result.ShouldNotBeNull();
+
+                using (var sr = new StreamReader(result))
+                {
+                    var contents = await sr.ReadToEndAsync();
+                    contents.ShouldNotBeNullOrWhiteSpace();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WhenResultTypeIsBytes_ExpectCorrectResultType()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server.WithNextResponseOk(TestResult.SerializedDefault1);
+
+                var result = await new TypedBuilderFactory().Create()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<byte[]>();
+
+                result.ShouldNotBeNull();
+                result.Length.ShouldBeGreaterThan(0);
+                var contents = Encoding.UTF8.GetString(result);
+                contents.ShouldBe(TestResult.SerializedDefault1);
+            }
+        }
+
+        [Fact]
+        public async Task WhenResultTypeIsStringAndHasFormatter_ExpectCorrectCorrectString()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithContent("\"Result\"").WithHeader("Content-Type", "application/json"));
+
+                var result = await new TypedBuilderFactory().Create()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<string>();
+
+                result.ShouldNotBeNullOrWhiteSpace();
+                result.ShouldBe("Result");
+            }
+        }
+
+        [Fact]
+        public async Task WhenResultTypeIsStringAndDoesNotHaveFormatter_ExpectCorrectCorrectString()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server.WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithContent("\"Result\"").WithContentType("text/html"));
+
+                var result = await new TypedBuilderFactory().Create()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<string>();
+
+                result.ShouldNotBeNullOrWhiteSpace();
+                result.ShouldBe("\"Result\"");
+            }
+        }
+
         #endregion
     }
 }

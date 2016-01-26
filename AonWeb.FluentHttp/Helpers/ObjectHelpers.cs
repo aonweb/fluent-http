@@ -137,14 +137,21 @@ namespace AonWeb.FluentHttp.Helpers
             if (content == null)
                 return TypeHelpers.GetDefaultValueForType(type);
 
-            if (typeof(Stream).IsAssignableFrom(typeInfo))
-                return await content.ReadAsStreamAsync();
+            if (typeof (Stream).IsAssignableFrom(typeInfo))
+            {
+                var s = await content.ReadAsStreamAsync();
+                var copy = new MemoryStream();
+
+                await s.CopyToAsync(copy);
+
+                if (copy.CanSeek)
+                    copy.Position = 0;
+
+                return copy;
+            }
 
             if (typeof(byte[]).IsAssignableFrom(typeInfo))
                 return await content.ReadAsByteArrayAsync();
-
-            if (typeof(string).IsAssignableFrom(typeInfo))
-                return await content.ReadAsStringAsync();
 
             var mediaType = content.Headers.ContentType ?? new MediaTypeHeaderValue("application/octet-stream");
 
@@ -154,6 +161,9 @@ namespace AonWeb.FluentHttp.Helpers
             {
                 if (content.Headers.ContentLength == 0)
                     return TypeHelpers.GetDefaultValueForType(type);
+
+                if (typeof(string).IsAssignableFrom(typeInfo))
+                    return await content.ReadAsStringAsync();
 
                 throw new UnsupportedMediaTypeException(string.Format(SR.NoReadFormatterForMimeTypeErrorFormat, typeInfo.FormattedTypeName(), mediaType.MediaType, response.GetExceptionMessage(response.RequestMessage)), mediaType);
             }
