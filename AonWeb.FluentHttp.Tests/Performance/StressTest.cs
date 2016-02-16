@@ -4,64 +4,72 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
+using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
-using NUnit.Framework;
+using AonWeb.FluentHttp.Tests.Helpers;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Performance
 {
+    [Collection("LocalWebServer Tests")]
     public class StressTest
     {
-        private const string TestUriString = LocalWebServer.DefaultListenerUri;
-        private static Random Rng = new Random();
+        private static readonly Random Rng = new Random();
 
-        [Test]
-        [Ignore]
+        private readonly ITestOutputHelper _logger;
+
+        public StressTest(ITestOutputHelper logger)
+        {
+            _logger = logger;
+        }
+
+        [Fact]
         public void StressStuff()
         {
 
             const int iterations = 1000;
             var tasks = new List<Task>();
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.EnableLogging = false;
-                server.AddResponse(r => GetResponse());
+                server.WithLogging(false);
+                server.WithResponse(ctx=> true, ctx => GetResponse());
                  var watch = new Stopwatch();
                 watch.Start();
-                for (int i = 0; i < iterations; i++)
+                for (var i = 0; i < iterations; i++)
                 {
-                    tasks.Add(CreateBuilderAndCall());
+                    tasks.Add(CreateBuilderAndCall(server.ListeningUri));
                     Thread.Sleep(Rng.Next(0, 50));
                 }
 
                 Task.WaitAll(tasks.ToArray());
-                Console.WriteLine("Completed {0} calls in {1}", iterations, watch.Elapsed);
+                _logger.WriteLine("Completed {0} calls in {1}", iterations, watch.Elapsed);
             }
         }
 
-        private async Task CreateBuilderAndCall()
+        private async Task CreateBuilderAndCall(Uri listeningUri)
         {
             var path = GetPathSuffix();
             var method = GetMethod();
 
-            var builder = HttpCallBuilder.Create(TestUriString);
+            var builder = new HttpBuilderFactory().Create().WithUri(listeningUri);
 
             if (!string.IsNullOrWhiteSpace(path))
-                builder = builder.WithRelativePath(path);
+                builder = builder.WithPath(path);
 
             builder = builder.Advanced.WithMethod(method);
 
             if (method != HttpMethod.Get && method != HttpMethod.Delete)
-                builder = builder.WithContent(ResponseBody());
+                builder = builder.WithContent(ResponseContent());
 
             await builder.ResultAsync().ConfigureAwait(false);
         }
 
-        private LocalWebServerResponseInfo GetResponse()
+        private IMockResponse GetResponse()
         {
-            return new LocalWebServerResponseInfo
+            return new MockHttpResponseMessage
             {
-                Body = ResponseBody()
+                ContentString = ResponseContent()
             };
         }
 
@@ -89,7 +97,7 @@ namespace AonWeb.FluentHttp.Tests.Performance
             return HttpMethod.Get;
         }
 
-        public string ResponseBody()
+        public string ResponseContent()
         {
             var i = Rng.Next(50, 1000);
             var buffer = new byte[i];

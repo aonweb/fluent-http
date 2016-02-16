@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -7,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp.Client
 {
-    [ExcludeFromCodeCoverage]
     public class HttpClientWrapper : IHttpClient
     {
         public void Dispose()
@@ -40,10 +38,7 @@ namespace AonWeb.FluentHttp.Client
             _client.CancelPendingRequests();
         }
 
-        public HttpRequestHeaders DefaultRequestHeaders
-        {
-            get { return _client.DefaultRequestHeaders; }
-        }
+        public HttpRequestHeaders DefaultRequestHeaders => _client.DefaultRequestHeaders;
 
         public long MaxResponseContentBufferSize
         {

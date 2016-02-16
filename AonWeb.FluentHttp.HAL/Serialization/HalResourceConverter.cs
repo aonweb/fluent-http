@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-
-using AonWeb.FluentHttp.HAL.Representations;
+using AonWeb.FluentHttp.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -51,7 +50,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                     if (memberInfo is PropertyInfo && !((PropertyInfo)memberInfo).CanRead)
                         continue;
 
-                    var propertyName = GetPropertyName(value.GetType(), memberInfo, serializer.ContractResolver as CamelCasePropertyNamesContractResolver);
+                    var propertyName = GetPropertyName(memberInfo, serializer.ContractResolver as CamelCasePropertyNamesContractResolver);
                     var propertyValue = GetPropertyValue(value, memberInfo);
 
                     writer.WritePropertyName(propertyName);
@@ -97,7 +96,7 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             }
             catch (Exception ex)
             {
-                throw SerializationErrorHelper.CreateError(reader, string.Format("Could not create HalResource object. Type: {0}", objectType.Name), ex);
+                throw CreateError(reader, $"Could not create HalResource object. Type: {objectType.Name}", ex);
             }
 
             serializer.Populate(json.CreateReader(), resource);
@@ -172,21 +171,25 @@ namespace AonWeb.FluentHttp.HAL.Serialization
 
         private static IEnumerable<MemberInfo> GetMembers(Type type)
         {
-            return type.GetProperties().Cast<MemberInfo>().Concat(type.GetFields());
+            return type.GetRuntimeProperties()
+                .Where(p => p.CanRead)
+                .Cast<MemberInfo>()
+                .Concat(type.GetRuntimeFields().Where(f => f.IsPublic))
+                .Where(m => m.GetCustomAttribute<JsonIgnoreAttribute>(true) == null);
         }
 
-        private static string GetPropertyName(Type declaringType, MemberInfo memberInfo, DefaultContractResolver resolver)
+        private static string GetPropertyName(MemberInfo memberInfo, DefaultContractResolver resolver)
         {
-            var dataContractAttribute = declaringType.GetCustomAttribute<DataContractAttribute>(true);
+            var dataContractAttribute = memberInfo.DeclaringType.GetTypeInfo().GetCustomAttribute<DataContractAttribute>(true);
 
             var dataMemberAttribute = dataContractAttribute != null ? memberInfo.GetCustomAttribute<DataMemberAttribute>(true) : null;
 
             var propertyAttribute = memberInfo.GetCustomAttribute<JsonPropertyAttribute>(true);
 
             string name;
-            if (propertyAttribute != null && propertyAttribute.PropertyName != null)
+            if (propertyAttribute?.PropertyName != null)
                 name = propertyAttribute.PropertyName;
-            else if (dataMemberAttribute != null && dataMemberAttribute.Name != null)
+            else if (dataMemberAttribute?.Name != null)
                 name = dataMemberAttribute.Name;
             else
                 name = memberInfo.Name;
@@ -194,45 +197,44 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             return resolver != null ? resolver.GetResolvedPropertyName(name) : name;
         }
 
-        private static object GetPropertyValue(object value, MemberInfo memberInfo)
+        private static object GetPropertyValue(object parent, MemberInfo memberInfo)
         {
-            switch (memberInfo.MemberType)
-            {
-                case MemberTypes.Field:
-                    return ((FieldInfo)memberInfo).GetValue(value);
-                case MemberTypes.Property:
-                    return ((PropertyInfo)memberInfo).GetValue(value);
-            }
+            var propertyInfo = memberInfo as PropertyInfo;
 
-            return null;
+            if (propertyInfo != null)
+                return propertyInfo.GetValue(parent);
+
+            var fieldInfo = memberInfo as FieldInfo;
+
+            return fieldInfo?.GetValue(parent);
         }
 
         private static void SetValue(object parent, object value, MemberInfo memberInfo)
         {
-            switch (memberInfo.MemberType)
+            var propertyInfo = memberInfo as PropertyInfo;
+
+            if (propertyInfo != null)
+                propertyInfo.SetValue(parent, value);
+            else
             {
-                case MemberTypes.Field:
-                    ((FieldInfo)memberInfo).SetValue(parent, value);
-                    break;
-                case MemberTypes.Property:
-                    ((PropertyInfo)memberInfo).SetValue(parent, value);
-                    break;
+                var fieldInfo = memberInfo as FieldInfo;
+
+                fieldInfo?.SetValue(parent, value);
             }
         }
 
-        public static Type GetUnderlyingType(MemberInfo member)
+        public static Type GetUnderlyingType(MemberInfo memberInfo)
         {
-            switch (member.MemberType)
-            {
-                case MemberTypes.Field:
-                    return ((FieldInfo)member).FieldType;
-                case MemberTypes.Property:
-                    return ((PropertyInfo)member).PropertyType;
-            }
+            var propertyInfo = memberInfo as PropertyInfo;
 
-            return null;
+            if (propertyInfo != null)
+                return propertyInfo.PropertyType;
+
+            var fieldInfo = memberInfo as FieldInfo;
+
+            return fieldInfo?.FieldType;
         }
-        
+
         private static void TryPopulateLinks(
             JsonReader reader,
             Type objectType,
@@ -243,25 +245,31 @@ namespace AonWeb.FluentHttp.HAL.Serialization
             if (links == null)
                 return;
 
-            var linkProperty = objectType.GetProperty("Links");
+            var linkProperty = objectType.GetRuntimeProperty("Links");
 
             if (linkProperty == null)
-                throw SerializationErrorHelper.CreateError(reader, string.Format("Could not create HyperMediaLinks object. Could not find property 'Links' on object of type {0}", objectType.Name));
+                throw CreateError(reader,
+                    $"Could not create HyperMediaLinks object. Could not find property 'Links' on object of type {objectType.Name}");
 
             var linkListType = linkProperty.PropertyType;
 
             if (!typeof(IList<HyperMediaLink>).IsAssignableFrom(linkListType))
-                throw SerializationErrorHelper.CreateError(reader, string.Format("Could not create HyperMediaLinks object. Links property type '{0}' on type '{1}' is not assignable to IList<HyperMediaLink>", linkListType.Name, objectType.Name));
+                throw CreateError(reader, $"Could not create HyperMediaLinks object. Links property type '{linkListType.Name}' on type '{objectType.Name}' is not assignable to IList<HyperMediaLink>");
 
-            IList<HyperMediaLink> list;
+            var list = linkProperty.GetValue(resource) as IList<HyperMediaLink>;
 
-            try
+            if (list == null)
             {
-                list = (IList<HyperMediaLink>)Activator.CreateInstance(linkListType);
-            }
-            catch (Exception ex)
-            {
-                throw SerializationErrorHelper.CreateError(reader, string.Format("Could not create HyperMediaLinks object. Type: {0}", linkListType.Name), ex);
+                try
+                {
+                    list = (IList<HyperMediaLink>)Activator.CreateInstance(linkListType);
+
+                    linkProperty.SetValue(resource, list);
+                }
+                catch (Exception ex)
+                {
+                    throw CreateError(reader, $"Could not create HyperMediaLinks object. Type: {linkListType.Name}", ex);
+                }
             }
 
             var enumerator = ((JObject)links).GetEnumerator();
@@ -272,8 +280,6 @@ namespace AonWeb.FluentHttp.HAL.Serialization
                 serializer.Populate(enumerator.Current.Value.CreateReader(), link);
                 list.Add(link);
             }
-
-            linkProperty.SetValue(resource, list);
         }
 
         private static void TryPopulateEmbedded(JToken embedded, Type objectType, JsonSerializer serializer, object resource)
@@ -315,5 +321,31 @@ namespace AonWeb.FluentHttp.HAL.Serialization
         {
             return typeof(IHalResource).IsAssignableFrom(objectType);
         }
+
+            public static JsonSerializationException CreateError(JsonReader reader, string message, Exception ex = null)
+            {
+                message = FormatMessage(reader as IJsonLineInfo, reader.Path, message);
+
+                return new JsonSerializationException(message, ex);
+            }
+
+            private static string FormatMessage(IJsonLineInfo lineInfo, string path, string message)
+            {
+                if (!message.EndsWith(Environment.NewLine))
+                {
+                    message = message.Trim();
+                    if (!message.EndsWith("."))
+                        message = message + ".";
+                    message = message + " ";
+                }
+
+                message = message + $"Path '{path}'";
+
+                if (lineInfo != null && lineInfo.HasLineInfo())
+                    message = message + $", line {lineInfo.LineNumber}, position {lineInfo.LinePosition}";
+
+                message = message + ".";
+                return message;
+            }
     }
 }

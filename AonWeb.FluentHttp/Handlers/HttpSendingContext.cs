@@ -1,22 +1,20 @@
 ﻿using System.Net.Http;
+using AonWeb.FluentHttp.Exceptions;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class HttpSendingContext : HttpCallContext, IHttpCallHandlerContextWithResult<HttpResponseMessage>
+    public class HttpSendingContext : HttpHandlerContext, IHandlerContextWithResult<HttpResponseMessage>, IHandlerContextWithResult
     {
-        private readonly ModifyTracker<HttpResponseMessage> _result;
+        private readonly Modifiable<HttpResponseMessage> _result;
 
-        public HttpSendingContext(HttpCallContext context, HttpRequestMessage request) 
-            : base(context)
+        public HttpSendingContext(IHttpBuilderContext context, HttpRequestMessage request) 
+            : base(context, request)
         {
-            _result = new ModifyTracker<HttpResponseMessage>();
-
-            Request = request;
+            _result = new Modifiable<HttpResponseMessage>();
         }
 
-        public HttpRequestMessage Request { get; private set; }
-
-        public HttpContent Content { get { return Request.Content; } }
+        public HttpContent Content => Request.Content;
 
         public HttpResponseMessage Result
         {
@@ -24,9 +22,19 @@ namespace AonWeb.FluentHttp.Handlers
             set { _result.Value = value; }
         }
 
-        public ModifyTracker GetHandlerResult()
+        public override Modifiable GetHandlerResult()
         {
             return _result;
+        }
+
+        object IHandlerContextWithResult.Result
+        {
+            set
+            {
+                TypeHelpers.CheckType<HttpResponseMessage>(value);
+
+                Result = (HttpResponseMessage)value;
+            }
         }
     }
 }

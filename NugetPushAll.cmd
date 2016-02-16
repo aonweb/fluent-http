@@ -1,0 +1,7 @@
+call AonWeb.FluentHttp.Serialization\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
+call AonWeb.FluentHttp\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
+call AonWeb.FluentHttp.HAL.Serialization\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
+call AonWeb.FluentHttp.Hal\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
+call AonWeb.FluentHttp.Mocks\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
+call AonWeb.FluentHttp.Autofac\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
+call AonWeb.FluentHttp.Full\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd

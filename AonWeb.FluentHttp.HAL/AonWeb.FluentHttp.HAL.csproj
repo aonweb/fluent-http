@@ -1,19 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1901429B-AB31-45AF-A071-7F9A985C3CBD}</ProjectGuid>
+    <ProjectGuid>{83DE5005-470A-421A-AF25-59DF14D7458B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AonWeb.FluentHttp.HAL</RootNamespace>
     <AssemblyName>AonWeb.FluentHttp.HAL</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <BuildPackage>true</BuildPackage>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,91 +36,88 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Extensions">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.22\lib\net45\System.Net.Http.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.22\lib\net45\System.Net.Http.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Extensions.cs" />
-    <Compile Include="HalCallBuilder.cs" />
-    <Compile Include="HalCallBuilderSettings.cs" />
-    <Compile Include="IAdvancedHalCallBuilder.cs" />
-    <Compile Include="IHalCallBuilder.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="Extensions\AdvancedHalBuilderExtensions.cs" />
+    <Compile Include="Extensions\HalBuilderExtensions.cs" />
+    <Compile Include="HalBuilderFactory.cs" />
+    <Compile Include="HalBuilder.cs" />
+    <Compile Include="IAdvancedHalBuilder.cs" />
+    <Compile Include="IHalBuilder.cs" />
+    <Compile Include="IHalBuilderFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Representations\EmptyHalRequest.cs" />
-    <Compile Include="Representations\EmptyHalResult.cs" />
-    <Compile Include="Representations\EnumerableComparer.cs" />
-    <Compile Include="Representations\HalManifest.cs" />
-    <Compile Include="Representations\HalRequest.cs" />
-    <Compile Include="Representations\HalResource.cs" />
-    <Compile Include="Representations\HyperMediaLink.cs" />
-    <Compile Include="Representations\HyperMediaLinks.cs" />
-    <Compile Include="Representations\IHalManifest.cs" />
-    <Compile Include="Representations\IHalRequest.cs" />
-    <Compile Include="Representations\IHalResource.cs" />
-    <Compile Include="Serialization\HalEmbeddedAttribute.cs" />
     <Compile Include="Serialization\HalResourceConverter.cs" />
-    <Compile Include="Serialization\SerializationErrorHelper.cs" />
-    <Compile Include="SR.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SR.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
-      <Project>{2996f912-482d-42c4-a315-cbaff83c899e}</Project>
-      <Name>AonWeb.FluentHttp</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="AonWeb.FluentHttp.HAL.nuspec" />
     <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="_CreateNewNuGetPackage\Config.ps1" />
+    <None Include="_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1" />
+    <None Include="_CreateNewNuGetPackage\DoNotModify\New-NuGetPackage.ps1" />
+    <None Include="_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1" />
+    <None Include="_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="SR.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>SR.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <ProjectReference Include="..\AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj">
+      <Project>{74bd325d-285e-4e8a-8ec7-ba7c330a404c}</Project>
+      <Name>AonWeb.FluentHttp.HAL.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AonWeb.FluentHttp.Serialization\AonWeb.FluentHttp.Serialization.csproj">
+      <Project>{9dfff77a-14d1-40c7-a78a-2a8b77391d82}</Project>
+      <Name>AonWeb.FluentHttp.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
+      <Project>{930566b9-044b-45ab-b231-87ec4c222a4d}</Project>
+      <Name>AonWeb.FluentHttp</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="_CreateNewNuGetPackage\DoNotModify\NuGet.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions, Version=1.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net45+win8+wpa81\System.Net.Http.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\portable-wp8+netcore45+net45+wp81+wpa81\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net45+win8+wpa81\System.Net.Http.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <Target Name="PublishPackage">
+    <Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="&quot;$(SolutionDir)\.nuget\push-hal.cmd&quot;" />
+  </Target>
+  <PropertyGroup>
+    <PostBuildEvent>REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
+REM If you see this in Visual Studio's Error List window, check the Output window's Build tab for the actual error.
+ECHO Deleting existing NuGet packages in Post-Build event...
+del $(TargetDir)\*.nupkg 
+ECHO Creating NuGet package in Post-Build event...
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "&amp; '$(ProjectDir)_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -BuildConfiguration '$(ConfigurationName)' -BuildPlatform '$(PlatformName)'"</PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
-  -->
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <!-- Make the build depend on publish packages -->
-  <PropertyGroup>
-    <BuildDependsOn Condition=" '$(Configuration)' == 'Release' ">
-		  $(BuildDependsOn);
-		  PublishPackage;
-		</BuildDependsOn>
-  </PropertyGroup>
-  <Target Name="PublishPackage">
-    <Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="$(SolutionDir)\.nuget\push-hal.cmd" />
+  <Target Name="AfterBuild">
   </Target>
+  -->
 </Project>

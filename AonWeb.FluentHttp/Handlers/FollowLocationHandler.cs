@@ -3,22 +3,23 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp.Handlers
 {
-    public class FollowLocationHandler : HttpCallHandler
+    public class FollowLocationHandler : HttpHandler
     {
-
         public FollowLocationHandler()
         {
-            Enabled = HttpCallBuilderDefaults.AutoFollowLocationEnabled;
-            FollowedStatusCodes = new HashSet<HttpStatusCode>(HttpCallBuilderDefaults.DefaultFollowedStatusCodes);
+            FollowedStatusCodes = new HashSet<HttpStatusCode>{
+                HttpStatusCode.Created,
+                HttpStatusCode.SeeOther
+            };
             FollowValidtor = ShouldFollow;
         }
 
         private Func<HttpSentContext, bool> FollowValidtor { get; set; }
-        private Action<HttpFollowLocationContext> OnFollow { get; set; }
+        private Action<FollowLocationContext> OnFollow { get; set; }
         private static ISet<HttpStatusCode> FollowedStatusCodes { get; set; }
 
         public FollowLocationHandler WithAutoFollow(bool enabled = true)
@@ -42,24 +43,24 @@ namespace AonWeb.FluentHttp.Handlers
         public FollowLocationHandler WithFollowValidator(Func<HttpSentContext, bool> validator)
         {
             if (validator == null)
-                throw new ArgumentNullException("validator");
+                throw new ArgumentNullException(nameof(validator));
 
             FollowValidtor = validator;
 
             return this;
         }
 
-        public FollowLocationHandler WithCallback(Action<HttpFollowLocationContext> callback)
+        public FollowLocationHandler WithCallback(Action<FollowLocationContext> callback)
         {
-            OnFollow = Helper.MergeAction(OnFollow, callback);
+            OnFollow = (Action<FollowLocationContext>)Delegate.Combine(OnFollow, callback);
 
             return this;
         }
 
-        public override HttpCallHandlerPriority GetPriority(HttpCallHandlerType type)
+        public override HandlerPriority GetPriority(HandlerType type)
         {
-            if (type == HttpCallHandlerType.Sent)
-                return HttpCallHandlerPriority.High;
+            if (type == HandlerType.Sent)
+                return HandlerPriority.High;
 
             return base.GetPriority(type);
         }
@@ -73,7 +74,7 @@ namespace AonWeb.FluentHttp.Handlers
 
             var locationUri = GetLocationUri(uri, context.Result);
 
-            var ctx = new HttpFollowLocationContext
+            var ctx = new FollowLocationContext
             {
                 StatusCode = context.Result.StatusCode,
                 RequestMessage = context.Result.RequestMessage,
@@ -84,8 +85,7 @@ namespace AonWeb.FluentHttp.Handlers
             if (ctx.LocationUri == null)
                 return;
 
-            if (OnFollow != null)
-                OnFollow(ctx);
+            OnFollow?.Invoke(ctx);
 
             if (!ctx.ShouldFollow) 
                 return;
@@ -93,13 +93,12 @@ namespace AonWeb.FluentHttp.Handlers
             context.Builder.WithUri(ctx.LocationUri).AsGet().WithContent(string.Empty);
 
             // dispose of previous response
-            Helper.DisposeResponse(context.Result);
+            ObjectHelpers.Dispose(context.Result);
 
-            context.Result = await context.Builder.RecursiveResultAsync();
-            
+            context.Result = await context.Builder.RecursiveResultAsync(context.Token);
         }
 
-        private bool ShouldFollow(HttpSentContext context)
+        private static bool ShouldFollow(HttpSentContext context)
         {
             if (!context.IsSuccessfulResponse())
                 return false;
@@ -124,24 +123,10 @@ namespace AonWeb.FluentHttp.Handlers
             if (locationUri.IsAbsoluteUri)
                 return locationUri;
 
-            if (VirtualPathUtility.IsAbsolute(locationUri.OriginalString))
+            if (locationUri.IsRelativeUriWithAbsolutePath())
                 return new Uri(originalUri, locationUri);
 
-            return new Uri(Helper.CombineVirtualPaths(originalUri.GetLeftPart(UriPartial.Path), locationUri.OriginalString));
+            return originalUri.AppendPath(locationUri);
         }   
-    }
-
-    public class HttpFollowLocationContext
-    {
-        public HttpFollowLocationContext()
-        {
-            ShouldFollow = true;
-        }
-
-        public HttpStatusCode StatusCode { get; internal set; }
-        public HttpRequestMessage RequestMessage { get; internal set; }
-        public Uri LocationUri { get; set; }
-        public Uri CurrentUri { get; internal set; }
-        public bool ShouldFollow { get; set; }
     }
 }

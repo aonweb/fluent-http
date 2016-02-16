@@ -1,156 +1,64 @@
 using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Client
 {
     public class HttpClientBuilder : IHttpClientBuilder
     {
-        private readonly HttpClientSettings _settings;
-
-        public HttpClientBuilder()
-            : this(new HttpClientSettings()) { }
-
-        internal HttpClientBuilder(HttpClientSettings settings)
+        public HttpClientBuilder(IHttpClientSettings settings)
         {
-            _settings = settings;
+            Settings = settings;
         }
 
-        public HttpClientSettings Settings { get { return _settings; } }
+        private IHttpClientSettings Settings { get; }
 
-        public IHttpClientBuilder Configure(Action<IHttpClient> configuration)
+        public IHttpClientBuilder WithConfiguration(Action<IHttpClientSettings> configuration)
         {
-            _settings.ClientConfiguration = Helper.MergeAction(_settings.ClientConfiguration, configuration);
+            configuration?.Invoke(Settings);
 
             return this;
         }
 
-        public IHttpClientBuilder WithHeaders(Action<HttpRequestHeaders> configuration)
+        public IHttpClientBuilder WithConfiguration(Action<IHttpClient> configuration)
         {
-            _settings.HeaderConfiguration = Helper.MergeAction(_settings.HeaderConfiguration, configuration);
+            Settings.ClientConfiguration = (Action<IHttpClient>)Delegate.Combine(Settings.ClientConfiguration, configuration);
 
             return this;
         }
 
-        public IHttpClientBuilder WithHeaders(string name, string value)
+        public IHttpClient Build()
         {
-            return WithHeaders(h => h.Add(name, value));
+            // TODO: should we pool these clients or handlers
+            var handler = CreateHandler(Settings);
+
+            return GetClientInstance(handler, Settings);
         }
 
-        public IHttpClientBuilder WithHeaders(string name, IEnumerable<string> values)
+        protected virtual IHttpClient GetClientInstance(HttpMessageHandler handler, IHttpClientSettings settings)
         {
-            return WithHeaders(h => h.Add(name, values));
-        }
+            var client = new HttpClientWrapper(new HttpClient(handler));
 
-        public IHttpClientBuilder WithTimeout(TimeSpan? timeout)
-        {
-            _settings.Timeout = timeout;
+            if (Settings.Timeout.HasValue)
+                client.Timeout = Settings.Timeout.Value;
 
-            return this;
-        }
+            Settings.RequestHeaderConfiguration?.Invoke(client.DefaultRequestHeaders);
 
-        public IHttpClientBuilder WithDecompressionMethods(DecompressionMethods options)
-        {
-            _settings.DecompressionMethods = options;
-
-            return this;
-        }
-
-        public IHttpClientBuilder WithClientCertificateOptions(ClientCertificateOption options)
-        {
-            _settings.ClientCertificateOptions = options;
-
-            return this;
-        }
-
-        public IHttpClientBuilder WithUseCookies()
-        {
-            return WithUseCookies(new CookieContainer());
-        }
-
-        public IHttpClientBuilder WithUseCookies(CookieContainer container)
-        {
-            _settings.CookieContainer = container;
-
-            return this;
-        }
-
-        public IHttpClientBuilder WithCredentials(ICredentials credentials)
-        {
-            _settings.Credentials = credentials;
-
-            return this;
-        }
-
-        public IHttpClientBuilder WithMaxBufferSize(long bufferSize)
-        {
-            _settings.MaxRequestContentBufferSize = bufferSize;
-
-            return this;
-        }
-
-        public IHttpClientBuilder WithProxy(IWebProxy proxy)
-        {
-            _settings.Proxy = proxy;
-
-            return this;
-        }
-
-        public IHttpClientBuilder WithNoCache(bool nocache = true)
-        {
-            return WithHeaders(
-                h =>
-                    {
-                        if (h.CacheControl == null)
-                            h.CacheControl = new CacheControlHeaderValue();
-
-                        h.CacheControl.NoCache = nocache;
-                        h.CacheControl.NoStore = nocache;
-                    });
-        }
-
-        public void ApplyRequestHeaders(HttpRequestMessage request)
-        {
-            if (_settings.HeaderConfiguration != null)
-                _settings.HeaderConfiguration(request.Headers);
-        }
-
-        public IHttpClient Create()
-        {
-            // should we pool these client or handler
-            var handler = CreateHandler(_settings);
-
-            var client = GetClientInstance(handler);
-
-            if (_settings.Timeout.HasValue)
-                client.Timeout = _settings.Timeout.Value;
-
-            if (_settings.HeaderConfiguration != null) 
-                _settings.HeaderConfiguration(client.DefaultRequestHeaders);
-
-            if (_settings.ClientConfiguration != null)
-                _settings.ClientConfiguration(client);
+            Settings.ClientConfiguration?.Invoke(client);
 
             return client;
         }
-
-        protected virtual IHttpClient GetClientInstance(HttpMessageHandler handler)
-        {
-            return new HttpClientWrapper(new HttpClient(handler));
-        }
         
-        protected virtual HttpMessageHandler CreateHandler(HttpClientSettings settings)
+        protected virtual HttpMessageHandler CreateHandler(IHttpClientSettings settings)
         {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = false, //this will be handled by the consuming code
-            };
+            var handler = new HttpClientHandler();
 
-            if (settings.DecompressionMethods.HasValue)
+            if (handler.SupportsAllowAutoRedirect())
+                handler.AllowAutoRedirect = false; //this will be handled by the consuming code
+
+            if (handler.SupportsAutomaticDecompression && settings.DecompressionMethods.HasValue)
                 handler.AutomaticDecompression = settings.DecompressionMethods.Value;
-
+            
             if (settings.ClientCertificateOptions != null)
                 handler.ClientCertificateOptions = settings.ClientCertificateOptions.Value;
 
@@ -160,7 +68,7 @@ namespace AonWeb.FluentHttp.Client
                 handler.UseCookies = true;
             }
 
-            if (settings.Credentials != null)
+            if (handler.SupportsPreAuthenticate() && settings.Credentials != null)
             {
                 handler.Credentials = settings.Credentials;
                 handler.UseDefaultCredentials = true;
@@ -170,13 +78,23 @@ namespace AonWeb.FluentHttp.Client
             if (settings.MaxRequestContentBufferSize.HasValue)
                 handler.MaxRequestContentBufferSize = settings.MaxRequestContentBufferSize.Value;
 
-            if (settings.Proxy != null)
+            if (handler.SupportsProxy && settings.Proxy != null)
             {
-                handler.Proxy = settings.Proxy;
                 handler.UseProxy = true;
+                handler.Proxy = settings.Proxy;
             }
             
             return handler;
+        }
+
+        void IConfigurable<IHttpClientSettings>.WithConfiguration(Action<IHttpClientSettings> configuration)
+        {
+            WithConfiguration(configuration);
+        }
+
+        void IConfigurable<IHttpClient>.WithConfiguration(Action<IHttpClient> configuration)
+        {
+            WithConfiguration(configuration);
         }
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>Fluent Hal Builder Serialization Classes</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/aonweb/fluent-http</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <summary>Interfaces and classes for serializing typed HAL request, responses and errors.</summary>
+    <language>en-US</language>
+    <tags>fluent, http</tags>
+  </metadata>
+    <files />
+</package>

@@ -16,5 +16,6 @@ namespace AonWeb.FluentHttp.Client
         HttpRequestHeaders DefaultRequestHeaders { get; }
         long MaxResponseContentBufferSize { get; set; }
         TimeSpan Timeout { get; set; }
+
     }
 }

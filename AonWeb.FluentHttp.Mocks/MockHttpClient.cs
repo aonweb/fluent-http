@@ -1,5 +1,5 @@
 using System;
-using System.Net;
+using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -9,18 +9,19 @@ using AonWeb.FluentHttp.Client;
 
 namespace AonWeb.FluentHttp.Mocks
 {
-    public class MockHttpClient : IHttpClient, IHttpMocker<MockHttpClient>
+    public class MockHttpClient : IHttpClient, IResponseMocker<MockHttpClient>
     {
         private readonly HttpClient _client = new HttpClient();
 
-        private Func<HttpRequestMessage, HttpResponseMessage> _responseFactory;
+        private readonly MockResponses<IMockRequestContext, IMockResponse> _responses;
+        private static readonly ConcurrentDictionary<string, long> UrlCount = new ConcurrentDictionary<string, long>();
 
         public MockHttpClient()
-            : this(r => new HttpResponseMessage(HttpStatusCode.OK)) { }
+            : this(new MockResponses<IMockRequestContext, IMockResponse>(() => new MockHttpResponseMessage())) { }
 
-        public MockHttpClient(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public MockHttpClient(MockResponses<IMockRequestContext, IMockResponse> responses)
         {
-            WithResponse(responseFactory);
+            _responses = responses;
         }
 
         public long MaxResponseContentBufferSize { get; set; }
@@ -44,28 +45,40 @@ namespace AonWeb.FluentHttp.Mocks
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
-            return Task.FromResult<HttpResponseMessage>(_responseFactory(request));
+            var url = request.RequestUri.ToString();
+            
+            UrlCount.AddOrUpdate(url, 1, (u, c) =>
+            {
+                return c + 1;
+            });
+
+            long urlCount;
+
+            UrlCount.TryGetValue(url, out urlCount);
+
+            var context = new MockHttpRequestMessage(request)
+            {
+                RequestCount = 1,
+                RequestCountForThisUrl = urlCount
+            };
+
+            var response = _responses.GetResponse(context);
+
+
+            return Task.FromResult(response.ToHttpResponseMessage(request));
         }
 
         public void Dispose()
         {
-            if (_client != null)
-                _client.Dispose();
+            _client?.Dispose();
         }
 
-        public HttpRequestHeaders DefaultRequestHeaders
-        {
-            get
-            {
-                return _client.DefaultRequestHeaders;
-            }
-        }
+        public HttpRequestHeaders DefaultRequestHeaders => _client.DefaultRequestHeaders;
 
         public void CancelPendingRequests() { }
-
-        public MockHttpClient WithResponse(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        public MockHttpClient WithResponse(Predicate<IMockRequestContext> predicate, Func<IMockRequestContext, IMockResponse> responseFactory)
         {
-            _responseFactory = responseFactory;
+            _responses.Add(predicate, responseFactory);
 
             return this;
         }

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>Fluent Http Call Builder Autofac Registrations</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/aonweb/fluent-http</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <summary>Autofac registration for http builders and hal builders</summary>
+    <copyright>Copyright 2014</copyright>
+    <language>en-US</language>
+    <tags>fluent, http, autofac</tags>
+    <dependencies>
+      <group>
+        <dependency id="AonWeb.FluentHttp" version="3.0.0" />
+        <dependency id="AonWeb.FluentHttp.HAL" version="3.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+    <files />
+</package>

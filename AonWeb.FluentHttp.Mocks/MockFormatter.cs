@@ -1,56 +1,62 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Threading.Tasks;
-
-using AonWeb.FluentHttp.Handlers;
 
 namespace AonWeb.FluentHttp.Mocks
 {
     public class MockFormatter : IMockFormatter
     {
-        private readonly IHttpCallFormatter _innerFormatter;
-
-        private Func<HttpResponseMessage, TypedHttpCallContext, object> _resultFactory;
-        private Func<HttpResponseMessage, TypedHttpCallContext, object> _errorFactory;
+        private readonly MockResponses<IMockTypedRequestContext, IMockResult> _results;
+        private readonly MockResponses<IMockTypedRequestContext, IMockResult> _errors;
+        private readonly IFormatter _innerFormatter;
 
         public MockFormatter()
         {
-            _innerFormatter = new HttpCallFormatter();
+            _results = new MockResponses<IMockTypedRequestContext, IMockResult>();
+            _errors = new MockResponses<IMockTypedRequestContext, IMockResult>();
+            _innerFormatter = new Formatter();
         }
 
-        public Task<HttpContent> CreateContent(object value, TypedHttpCallContext context)
+        public IMockFormatter WithResult<TResult>(Predicate<IMockTypedRequestContext> predicate, Func<IMockTypedRequestContext, IMockResult<TResult>> resultFactory)
+        {
+            _results.Add(predicate, resultFactory);
+
+            return this;
+        }
+
+        public IMockFormatter WithError<TError>(Predicate<IMockTypedRequestContext> predicate, Func<IMockTypedRequestContext, IMockResult<TError>> errorFactory)
+        {
+            _errors.Add(predicate, errorFactory);
+
+            return this;
+        }
+
+        public MediaTypeFormatterCollection MediaTypeFormatters => _innerFormatter.MediaTypeFormatters;
+
+        public Task<HttpContent> CreateContent(object value, ITypedBuilderContext context)
         {
             return _innerFormatter.CreateContent(value, context);
         }
 
-        public Task<object> DeserializeResult(HttpResponseMessage response, TypedHttpCallContext context)
+        public Task<object> DeserializeResult(HttpResponseMessage response, ITypedBuilderContext context)
         {
-            if (_resultFactory != null)
-                return Task.FromResult(_resultFactory(response, context));
+            var result = _results.GetResponse(new MockTypedRequestContext(context, new MockHttpRequestMessage(response.RequestMessage)));
 
-            return _innerFormatter.DeserializeResult(response, context);
+            if (result == null)
+                return _innerFormatter.DeserializeResult(response, context);
+
+            return Task.FromResult(result.Result);
         }
 
-        public Task<object> DeserializeError(HttpResponseMessage response, TypedHttpCallContext context)
+        public Task<object> DeserializeError(HttpResponseMessage response, ITypedBuilderContext context)
         {
-            if (_errorFactory != null)
-                return Task.FromResult(_errorFactory(response, context));
+            var error = _errors.GetResponse(new MockTypedRequestContext(context, new MockHttpRequestMessage(response.RequestMessage)));
 
-            return _innerFormatter.DeserializeError(response, context);
-        }
+            if (error == null)
+                return _innerFormatter.DeserializeError(response, context);
 
-        public IMockFormatter WithResult<TResult>(Func<HttpResponseMessage, TypedHttpCallContext, TResult> resultFactory)
-        {
-            _resultFactory = (r, c) => resultFactory(r,c);
-
-            return this;
-        }
-
-        public IMockFormatter WithError<TError>(Func<HttpResponseMessage, TypedHttpCallContext, TError> errorFactory)
-        {
-            _errorFactory = (r, c) => errorFactory(r,c);
-
-            return this;
+            return Task.FromResult(error.Result);
         }
     }
 }

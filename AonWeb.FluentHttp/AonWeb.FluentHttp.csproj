@@ -1,19 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2996F912-482D-42C4-A315-CBAFF83C899E}</ProjectGuid>
+    <ProjectGuid>{930566B9-044B-45AB-B231-87EC4C222A4D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AonWeb.FluentHttp</RootNamespace>
     <AssemblyName>AonWeb.FluentHttp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <BuildPackage>true</BuildPackage>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,123 +36,179 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Annotations.cs" />
-    <Compile Include="Caching\CacheContext.cs" />
-    <Compile Include="Caching\CachedItem.cs" />
-    <Compile Include="Caching\CacheExpiredContext.cs" />
-    <Compile Include="Caching\CacheExpiringContext.cs" />
-    <Compile Include="Caching\CacheHandler.cs" />
-    <Compile Include="Caching\CacheHandlerContext.cs" />
-    <Compile Include="Caching\CacheHandlerRegister.cs" />
-    <Compile Include="Caching\CacheHandlerType.cs" />
-    <Compile Include="Caching\CacheHitContext.cs" />
-    <Compile Include="Caching\CacheMissContext.cs" />
-    <Compile Include="Caching\CacheStoreContext.cs" />
-    <Compile Include="Caching\HttpCallCacheHandler.cs" />
-    <Compile Include="Caching\CacheHandlerBase.cs" />
-    <Compile Include="Caching\CacheHandlerDefaults.cs" />
-    <Compile Include="Caching\CacheResult.cs" />
-    <Compile Include="Caching\CacheSettings.cs" />
-    <Compile Include="Caching\ICacheHandler.cs" />
-    <Compile Include="Caching\IVaryByStore.cs" />
-    <Compile Include="Caching\IHttpCacheStore.cs" />
-    <Compile Include="Caching\InMemoryVaryByStore.cs" />
-    <Compile Include="Caching\InMemoryCacheStore.cs" />
-    <Compile Include="Caching\ResponseInfo.cs" />
-    <Compile Include="Caching\ResponseSerializer.cs" />
+    <Compile Include="Cache.cs" />
+    <Compile Include="Caching\CacheEntry.cs" />
+    <Compile Include="Caching\CacheKey.cs" />
+    <Compile Include="Caching\CacheProvider.cs" />
+    <Compile Include="Caching\ICacheManager.cs" />
+    <Compile Include="Caching\CacheManager.cs" />
+    <Compile Include="Caching\ICacheProvider.cs" />
+    <Compile Include="Caching\IUriInfoProvider.cs" />
+    <Compile Include="Caching\UriCacheInfo.cs" />
+    <Compile Include="Caching\UriInfoProvider.cs" />
+    <Compile Include="Caching\VaryByProvider.cs" />
     <Compile Include="Caching\ResponseValidationResult.cs" />
-    <Compile Include="Caching\TypedHttpCallCacheHandler.cs" />
-    <Compile Include="Exceptions\TypeMismatchException.cs" />
-    <Compile Include="Exceptions\HttpCallException.cs" />
-    <Compile Include="Caching\ICacheableHttpResult.cs" />
+    <Compile Include="ClientProvider.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
-    <Compile Include="Client\HttpClientSettings.cs" />
-    <Compile Include="Handlers\HandlerRegistrationHelper.cs" />
-    <Compile Include="Handlers\HttpCallContext.cs" />
-    <Compile Include="Handlers\HttpCallHandler.cs" />
-    <Compile Include="Handlers\HttpCallHandlerPriority.cs" />
-    <Compile Include="Handlers\HttpCallHandlerRegister.cs" />
-    <Compile Include="Handlers\IHttpCallHandlerContextWithResult.cs" />
-    <Compile Include="Handlers\ModifyTracker.cs" />
-    <Compile Include="Handlers\HttpCallHandlerType.cs" />
-    <Compile Include="Handlers\IHttpCallContext.cs" />
-    <Compile Include="Handlers\TypedHttpCallContext.cs" />
-    <Compile Include="Handlers\TypedHttpCallHandlerContext.cs" />
-    <Compile Include="Handlers\TypedHttpCallHandlerRegister.cs" />
-    <Compile Include="Handlers\TypedHttpErrorContext.cs" />
-    <Compile Include="Handlers\HttpExceptionContext.cs" />
-    <Compile Include="Handlers\HttpRedirectContext.cs" />
-    <Compile Include="Exceptions\HttpErrorException.cs" />
-    <Compile Include="Exceptions\MaximumAutoRedirectsException.cs" />
-    <Compile Include="Handlers\TypedHttpResultContext.cs" />
-    <Compile Include="Handlers\HttpSendingContext.cs" />
-    <Compile Include="Handlers\HttpSentContext.cs" />
-    <Compile Include="Handlers\IHttpCallHandler.cs" />
-    <Compile Include="Handlers\FollowLocationHandler.cs" />
-    <Compile Include="Handlers\TypedHttpExceptionContext.cs" />
-    <Compile Include="Handlers\TypedHttpSendingContext.cs" />
-    <Compile Include="Handlers\TypedHttpSentContext.cs" />
-    <Compile Include="HttpCallBuilder.cs" />
-    <Compile Include="HttpErrorContext.cs" />
-    <Compile Include="IAdvancedTypedHttpCallBuilder.cs" />
-    <Compile Include="ITypedHttpCallBuilder.cs" />
-    <Compile Include="TypedHttpCallBuilder.cs" />
+    <Compile Include="Client\HttpClientBuilderFactory.cs" />
+    <Compile Include="Client\IHttpClientBuilderFactory.cs" />
+    <Compile Include="DefaultResponseValidator.cs" />
+    <Compile Include="BuilderConfiguration.cs" />
+    <Compile Include="Extensions\CachingExtensions.cs" />
+    <Compile Include="Extensions\FactoryExtensions.cs" />
+    <Compile Include="Handlers\Caching\CacheMetadata.cs" />
+    <Compile Include="Handlers\Caching\ICacheValidator.cs" />
+    <Compile Include="Handlers\Caching\RequestValidationResult.cs" />
+    <Compile Include="Handlers\FollowLocationContext.cs" />
+    <Compile Include="IAdvancedCacheConfigurable.cs" />
+    <Compile Include="IBuilderConfiguration.cs" />
+    <Compile Include="IBuilderFactory.cs" />
+    <Compile Include="IChildIBuilderFactory.cs" />
+    <Compile Include="IInitializer.cs" />
+    <Compile Include="InitializationManager.cs" />
+    <Compile Include="InitializerPriority.cs" />
+    <Compile Include="IResponseValidator.cs" />
+    <Compile Include="ResponseValidatorCollection.cs" />
+    <Compile Include="ResponseValidatorFunc.cs" />
+    <Compile Include="Settings\HttpClientSettings.cs" />
     <Compile Include="Client\HttpClientWrapper.cs" />
     <Compile Include="Client\IHttpClient.cs" />
     <Compile Include="Client\IHttpClientBuilder.cs" />
-    <Compile Include="Handlers\HttpRetryContext.cs" />
-    <Compile Include="HttpCallBuilderDefaults.cs" />
-    <Compile Include="HttpCallBuilderSettings.cs" />
-    <Compile Include="HttpCallFormatter.cs" />
-    <Compile Include="IAdvancedHttpCallBuilder.cs" />
-    <Compile Include="IHttpCallBuilder.cs" />
-    <Compile Include="IHttpCallFormatter.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Handlers\RetryHandler.cs" />
+    <Compile Include="Settings\IHttpClientSettings.cs" />
+    <Compile Include="Extensions\AdvancedHttpBuilderCoreExtensions.cs" />
+    <Compile Include="Extensions\AdvancedHttpBuilderExtensions.cs" />
+    <Compile Include="Extensions\AdvancedTypedBuilderExtensions.cs" />
+    <Compile Include="Extensions\HttpBuilderCoreExtensions.cs" />
+    <Compile Include="Extensions\TypedBuilderExtensions.cs" />
+    <Compile Include="Handlers\Caching\ICacheContext.cs" />
+    <Compile Include="Caching\ICacheMetadata.cs" />
+    <Compile Include="Settings\ICacheSettings.cs" />
+    <Compile Include="Handlers\Caching\TypedCacheHandler.cs" />
+    <Compile Include="Handlers\Caching\HttpCacheHandler.cs" />
+    <Compile Include="Handlers\HttpHandlerContext.cs" />
+    <Compile Include="Handlers\IHandler.cs" />
+    <Compile Include="Handlers\TypedHandler.cs" />
+    <Compile Include="Helpers\CachingHelpers.cs" />
+    <Compile Include="Helpers\DigestHelpers.cs" />
+    <Compile Include="HttpBuilderFactory.cs" />
+    <Compile Include="Exceptions\MaximumAutoRedirectsException.cs" />
+    <Compile Include="Exceptions\TypeMismatchException.cs" />
+    <Compile Include="Handlers\Caching\CacheContext.cs" />
+    <Compile Include="Handlers\Caching\CacheExpiredContext.cs" />
+    <Compile Include="Handlers\Caching\CacheExpiringContext.cs" />
+    <Compile Include="Handlers\Caching\CacheConfigurationHandlerCore.cs" />
+    <Compile Include="Handlers\Caching\CacheHandlerContext.cs" />
+    <Compile Include="Handlers\Caching\CacheHandlerRegister.cs" />
+    <Compile Include="Handlers\Caching\CacheHandlerType.cs" />
+    <Compile Include="Handlers\Caching\CacheHitContext.cs" />
+    <Compile Include="Handlers\Caching\CacheMissContext.cs" />
+    <Compile Include="Settings\CacheSettings.cs" />
+    <Compile Include="Handlers\Caching\CacheStoreContext.cs" />
+    <Compile Include="Handlers\Caching\HttpCacheConfigurationHandler.cs" />
+    <Compile Include="Handlers\Caching\ICacheHandler.cs" />
+    <Compile Include="Caching\IVaryByProvider.cs" />
+    <Compile Include="Handlers\Caching\TypedCacheConfigurationHandler.cs" />
+    <Compile Include="Handlers\IHandlerContextWithResult.cs" />
+    <Compile Include="Handlers\ITypedHandler.cs" />
+    <Compile Include="Helpers\CollectionHelpers.cs" />
+    <Compile Include="Helpers\ObjectHelpers.cs" />
+    <Compile Include="Helpers\TypeHelpers.cs" />
+    <Compile Include="Helpers\UriHelpers.cs" />
+    <Compile Include="Handlers\FollowLocationHandler.cs" />
+    <Compile Include="Handlers\HttpHandler.cs" />
+    <Compile Include="Handlers\HandlerType.cs" />
+    <Compile Include="Handlers\HandlerPriority.cs" />
+    <Compile Include="Handlers\ExceptionCreationContext.cs" />
+    <Compile Include="Handlers\RedirectContext.cs" />
+    <Compile Include="Handlers\RetryContext.cs" />
     <Compile Include="Handlers\RedirectionHandler.cs" />
-    <Compile Include="Serialization\EmptyError.cs" />
-    <Compile Include="Serialization\EmptyRequest.cs" />
-    <Compile Include="Serialization\EmptyResult.cs" />
-    <Compile Include="Serialization\IEmptyError.cs" />
-    <Compile Include="Serialization\IEmptyRequest.cs" />
-    <Compile Include="Serialization\IEmptyResult.cs" />
-    <Compile Include="Serialization\StringMediaFormatter.cs" />
+    <Compile Include="Handlers\RetryHandler.cs" />
+    <Compile Include="Handlers\TypedErrorContext.cs" />
+    <Compile Include="Handlers\TypedResultContext.cs" />
+    <Compile Include="Handlers\TypedSendingContext.cs" />
+    <Compile Include="Handlers\TypedSentContext.cs" />
+    <Compile Include="HttpBuilderContext.cs" />
+    <Compile Include="Handlers\HttpExceptionContext.cs" />
+    <Compile Include="Handlers\HttpHandlerRegister.cs" />
+    <Compile Include="Handlers\HttpSendingContext.cs" />
+    <Compile Include="Handlers\HttpSentContext.cs" />
+    <Compile Include="Handlers\IHttpHandler.cs" />
+    <Compile Include="Extensions\HttpBuilderExtensions.cs" />
+    <Compile Include="IAdvancedFluentConfigurable.cs" />
+    <Compile Include="IAdvancedHttpBuilder.cs" />
+    <Compile Include="IAdvancedHttpBuilderCore.cs" />
+    <Compile Include="IAdvancedTypedBuilder.cs" />
+    <Compile Include="IBuilderContext.cs" />
+    <Compile Include="IChildHttpBuilder.cs" />
+    <Compile Include="IChildTypedBuilder.cs" />
+    <Compile Include="IConfigurable.cs" />
+    <Compile Include="IFluentConfigurable.cs" />
+    <Compile Include="IFluentConfigurableWithAdvanced.cs" />
+    <Compile Include="IHttpBuilder.cs" />
+    <Compile Include="IHttpBuilderContext.cs" />
+    <Compile Include="IHttpBuilderCore.cs" />
+    <Compile Include="IHttpBuilderFactory.cs" />
+    <Compile Include="Settings\IHttpBuilderSettings.cs" />
+    <Compile Include="IRecursiveHttpBuilder.cs" />
+    <Compile Include="ITypedBuilder.cs" />
+    <Compile Include="ITypedBuilderContext.cs" />
+    <Compile Include="ITypedBuilderFactory.cs" />
+    <Compile Include="Settings\ITypedBuilderSettings.cs" />
+    <Compile Include="Caching\ResponseSerializer.cs" />
+    <Compile Include="Formatter.cs" />
+    <Compile Include="IContext.cs" />
+    <Compile Include="Handlers\Modifiable.cs" />
+    <Compile Include="Handlers\ModifiableUriList.cs" />
+    <Compile Include="TypedBuilderContext.cs" />
+    <Compile Include="Handlers\TypedHandlerRegister.cs" />
+    <Compile Include="Handlers\TypedExceptionContext.cs" />
+    <Compile Include="Extensions\HttpClientBuilderExtensions.cs" />
+    <Compile Include="HttpBuilder.cs" />
+    <Compile Include="Settings\HttpBuilderSettings.cs" />
+    <Compile Include="Handlers\IHandlerContext.cs" />
+    <Compile Include="TypedBuilderFactory.cs" />
+    <Compile Include="Handlers\IModifiableHandlerContext.cs" />
+    <Compile Include="IFormatter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Handlers\TypedHandlerContext.cs" />
+    <Compile Include="StringMediaFormatter.cs" />
     <Compile Include="SR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SR.resx</DependentUpon>
     </Compile>
-    <Compile Include="Helper.cs" />
-    <Compile Include="TypedHttpCallBuilderSettings.cs" />
+    <Compile Include="TypedBuilder.cs" />
+    <Compile Include="Settings\TypedBuilderSettings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions, Version=1.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net45+win8+wpa81\System.Net.Http.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\portable-wp8+netcore45+net45+wp81+wpa81\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net45+win8+wpa81\System.Net.Http.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="AonWeb.FluentHttp.nuspec" />
-    <None Include="app.config">
+    <None Include="app.config" />
+    <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
+    <None Include="_CreateNewNuGetPackage\Config.ps1" />
+    <None Include="_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1" />
+    <None Include="_CreateNewNuGetPackage\DoNotModify\New-NuGetPackage.ps1" />
+    <None Include="_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1" />
+    <None Include="_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SR.resx">
@@ -158,21 +217,39 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="_CreateNewNuGetPackage\DoNotModify\NuGet.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AonWeb.FluentHttp.Serialization\AonWeb.FluentHttp.Serialization.csproj">
+      <Project>{9dfff77a-14d1-40c7-a78a-2a8b77391d82}</Project>
+      <Name>AonWeb.FluentHttp.Serialization</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
+REM If you see this in Visual Studio's Error List window, check the Output window's Build tab for the actual error.
+ECHO Deleting existing NuGet packages in Post-Build event...
+del $(TargetDir)\*.nupkg 
+ECHO Creating NuGet package in Post-Build event...
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "&amp; '$(ProjectDir)_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -BuildConfiguration '$(ConfigurationName)' -BuildPlatform '$(PlatformName)'"</PostBuildEvent>
+  </PropertyGroup>
+  <Target Name="PublishPackage">
+    <Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="&quot;$(SolutionDir)\.nuget\push-http.cmd&quot;" />
+  </Target>
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
-  -->
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <!-- Make the build depend on publish packages -->
-  <PropertyGroup>
-    <BuildDependsOn Condition=" '$(Configuration)' == 'Release' ">
-		  $(BuildDependsOn);
-		  PublishPackage;
-		</BuildDependsOn>
-  </PropertyGroup>
-  <Target Name="PublishPackage">
-    <Exec WorkingDirectory="$(SolutionDir)\.nuget" Command="$(SolutionDir)\.nuget\push-http.cmd" />
+  <Target Name="AfterBuild">
   </Target>
+  -->
 </Project>

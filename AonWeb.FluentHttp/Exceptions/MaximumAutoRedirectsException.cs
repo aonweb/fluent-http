@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Runtime.Serialization;
+using System.Net.Http;
 
 namespace AonWeb.FluentHttp.Exceptions
 {
@@ -10,19 +9,16 @@ namespace AonWeb.FluentHttp.Exceptions
     /// </summary>
     public class MaximumAutoRedirectsException : HttpCallException
     {
-        [ExcludeFromCodeCoverage]
-        public MaximumAutoRedirectsException(HttpStatusCode statusCode)
-            : base(statusCode) { }
+        public MaximumAutoRedirectsException(HttpResponseMessage response, HttpRequestMessage request, int redirectCount)
+            : base(response, request)
+        {
+            RedirectCount = redirectCount;
+        }
 
-        public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message)
-            : base(statusCode, message) { }
+        public int RedirectCount { get; }
 
-        [ExcludeFromCodeCoverage]
-        public MaximumAutoRedirectsException(HttpStatusCode statusCode, string message, Exception exception) :
-            base(statusCode, message, exception) { }
+        protected override string MessagePrefix => $"The maximum automatic redirection limit ({RedirectCount}) was reached for";
 
-        [ExcludeFromCodeCoverage]
-        protected MaximumAutoRedirectsException(SerializationInfo info, StreamingContext context) :
-            base(info, context) { }
+        protected override string MessageReason => "with";
     }
 }

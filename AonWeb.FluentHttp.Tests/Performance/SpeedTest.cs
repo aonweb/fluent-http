@@ -1,47 +1,84 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net.Http;
-
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Mocks.WebServer;
-using NUnit.Framework;
+using AonWeb.FluentHttp.Tests.Helpers;
+using Autofac;
+using Shouldly;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace AonWeb.FluentHttp.Tests.Performance
 {
-    [TestFixture]
+    [Collection("LocalWebServer Tests")]
     public class SpeedTest
     {
-        private const string TestUriString = LocalWebServer.DefaultListenerUri;
+        private readonly ITestOutputHelper _logger;
+        private IContainer _container;
 
-        [Test]
-        public void LessThan15PercentOverhead()
+        public SpeedTest(ITestOutputHelper logger)
         {
-            HttpCallBuilderDefaults.CachingEnabled = false;
+            _logger = logger;
+            _container = RegistrationHelpers.CreateContainer(false);
+        }
 
-            const int iterations = 1000;
+        [Fact]
+        public async Task LessThan15PercentOverhead()
+        {
+            const int iterations = 5000;
 
-            using (var server = LocalWebServer.ListenInBackground(TestUriString))
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.EnableLogging = false;
+                server.WithLogging(false);
 
                 //warm up
-                HttpClientTest(1);
-                HttpCallBuilderTest(1);
+                await HttpClientTest(server.ListeningUri, 1);
+                await HttpCallBuilderTest(server.ListeningUri, 1);
 
-                var clientElapsed = HttpClientTest(iterations);
-                Console.WriteLine("HttpClient Test took {0}", clientElapsed);
+                var clientElapsed = await HttpClientTest(server.ListeningUri, iterations);
+                _logger.WriteLine("HttpClient Test took {0}", clientElapsed);
 
-                var builderElapsed = HttpCallBuilderTest(iterations);
+                var builderElapsed = await HttpCallBuilderTest(server.ListeningUri, iterations);
 
-                Console.WriteLine("HttpCallBuilder Test took {0}", builderElapsed);
+                _logger.WriteLine("HttpCallBuilder Test took {0}", builderElapsed);
 
                 var percentDifference = (decimal)(builderElapsed.Ticks - clientElapsed.Ticks) / (decimal)builderElapsed.Ticks;
-                Console.WriteLine("Percent Overhead is {0:p}", percentDifference);
-                Assert.LessOrEqual(percentDifference, 0.15m, "Expected HttpCallBuilder to be less than 10% overhead");
+                _logger.WriteLine("Percent Overhead is {0:p}", percentDifference);
 
+                percentDifference.ShouldBeLessThanOrEqualTo(0.15m);
             }
         }
 
-        private TimeSpan HttpClientTest(int iterations)
+        [Fact]
+        public async Task LessThan15PercentOverheadInContainer()
+        {
+            const int iterations = 5000;
+
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server.WithLogging(false);
+
+                //warm up
+                await HttpClientTest(server.ListeningUri, 1);
+                await ContainerHttpCallBuilderTest(server.ListeningUri, 1);
+
+                var clientElapsed = await HttpClientTest(server.ListeningUri, iterations);
+                _logger.WriteLine("HttpClient Test took {0}", clientElapsed);
+
+                var builderElapsed = await HttpCallBuilderTest(server.ListeningUri, iterations);
+
+                _logger.WriteLine("HttpCallBuilder Test took {0}", builderElapsed);
+
+                var percentDifference = (decimal)(builderElapsed.Ticks - clientElapsed.Ticks) / (decimal)builderElapsed.Ticks;
+                _logger.WriteLine("Percent Overhead is {0:p}", percentDifference);
+
+                percentDifference.ShouldBeLessThanOrEqualTo(0.15m);
+            }
+        }
+
+
+        private async Task<TimeSpan> HttpClientTest(Uri listeningUri, int iterations)
         {
             var watch = new Stopwatch();
             try
@@ -52,15 +89,15 @@ namespace AonWeb.FluentHttp.Tests.Performance
                     HttpResponseMessage response;
                     using (var client = new HttpClient())
                     {
-                        response = client.GetAsync(TestUriString).Result;
+                        response = await client.GetAsync(listeningUri);
                     }
                     using (var client = new HttpClient())
                     {
-                        response = client.PutAsync(TestUriString, new StringContent("Content")).Result;
+                        response = await client.PutAsync(listeningUri, new StringContent("Content"));
                     }
                     using (var client = new HttpClient())
                     {
-                        response = client.PostAsync(TestUriString, new StringContent("Content")).Result;
+                        response = await client.PostAsync(listeningUri, new StringContent("Content"));
                     }
                 }
                 return watch.Elapsed;
@@ -72,7 +109,7 @@ namespace AonWeb.FluentHttp.Tests.Performance
             }
         }
 
-        private TimeSpan HttpCallBuilderTest(int iterations)
+        private async Task<TimeSpan> HttpCallBuilderTest(Uri listeningUri, int iterations)
         {
             var watch = new Stopwatch();
             try
@@ -81,11 +118,36 @@ namespace AonWeb.FluentHttp.Tests.Performance
                 for (var i = 0; i < iterations; i++)
                 {
 
-                    var result = HttpCallBuilder.Create(TestUriString).ResultAsync().Result;
+                    await new HttpBuilderFactory().Create().WithUri(listeningUri).Advanced.WithCaching(false).ResultAsync();
 
-                    result = HttpCallBuilder.Create(TestUriString).AsPost().WithContent("Content").ResultAsync().Result;
+                    await new HttpBuilderFactory().Create().WithUri(listeningUri).AsPost().WithContent("Content").Advanced.WithCaching(false).ResultAsync();
 
-                    result = HttpCallBuilder.Create(TestUriString).AsPut().WithContent("Content").ResultAsync().Result;
+                    await new HttpBuilderFactory().Create().WithUri(listeningUri).AsPut().WithContent("Content").Advanced.WithCaching(false).ResultAsync();
+                }
+
+                return watch.Elapsed;
+            }
+            finally
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        private async Task<TimeSpan> ContainerHttpCallBuilderTest(Uri listeningUri, int iterations)
+        {
+            var watch = new Stopwatch();
+            try
+            {
+                watch.Start();
+                for (var i = 0; i < iterations; i++)
+                {
+
+                    await _container.Resolve<IHttpBuilder>().WithUri(listeningUri).Advanced.WithCaching(false).ResultAsync();
+
+                    await _container.Resolve<IHttpBuilder>().WithUri(listeningUri).AsPost().WithContent("Content").Advanced.WithCaching(false).ResultAsync();
+
+                    await _container.Resolve<IHttpBuilder>().WithUri(listeningUri).AsPut().WithContent("Content").Advanced.WithCaching(false).ResultAsync();
                 }
 
                 return watch.Elapsed;
