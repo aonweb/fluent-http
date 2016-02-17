@@ -9,6 +9,7 @@ using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.HAL;
+using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
@@ -216,7 +217,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             var container = RegistrationHelpers.CreateContainer();
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponseOk("Typed Result");
+                server.WithNextResponseTextOk("Typed Result");
 
                 var builder = container.Resolve<ITypedBuilder>();
 
@@ -232,7 +233,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             var container = RegistrationHelpers.CreateContainer();
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponseOk("Typed Result");
+                server.WithNextResponseTextOk("Typed Result");
                 var factory = container.Resolve<ITypedBuilderFactory>();
 
                 var builder = factory.Create();
@@ -272,7 +273,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             var container = RegistrationHelpers.CreateContainer();
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponse(new MockHttpResponseMessage().WithContent("Typed Result").WithPrivateCacheHeader());
+                server.WithNextResponseTextOk("Typed Result", r=> r.WithPrivateCacheHeader());
                 var factory = container.Resolve<ITypedBuilderFactory>();
 
                 var builder = factory.Create();
@@ -316,8 +317,8 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                         {
                             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
                             {
-                                server.WithNextResponse(new MockHttpResponseMessage().WithContent("Typed Result").WithNoCacheHeader());
-                                server.WithNextResponse(new MockHttpResponseMessage().WithContent("Typed Result").WithNoCacheHeader());
+                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheHeader());
+                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheHeader());
 
                                 var factory = scope.Resolve<ITypedBuilderFactory>();
                                 Guid? actualGuid1 = null;
@@ -368,7 +369,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             var container = RegistrationHelpers.CreateContainer();
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponseOk("Typed Result");
+                server.WithNextResponseTextOk("Typed Result");
                 var factory = container.Resolve<ITypedBuilderFactory>();
 
                 var builder = factory.Create();
@@ -394,8 +395,8 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponseOk("Response1")
-                    .WithNextResponseOk("Response2");
+                    .WithNextResponseTextOk("Response1")
+                    .WithNextResponseTextOk("Response2");
 
                 var factory = container.Resolve<ITypedBuilderFactory>();
                 var actual1 = 0;

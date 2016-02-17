@@ -74,7 +74,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var expected = server.ListeningUri.AppendPath("redirect");
                 server
                     .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.Created).WithHeader("Location", expected.ToString()))
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent("Success"));
+                    .WithNextResponseTextOk("Success");
 
                 Uri actualUrl = null;
                 HttpMethod actualMethod = null;

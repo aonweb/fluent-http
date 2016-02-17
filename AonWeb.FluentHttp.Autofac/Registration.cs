@@ -10,7 +10,6 @@ using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Settings;
 using Autofac;
-using Autofac.Core;
 using Module = Autofac.Module;
 
 namespace AonWeb.FluentHttp.Autofac

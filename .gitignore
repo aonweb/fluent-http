@@ -20,6 +20,7 @@ build/
 #NuGet
 packages
 !packages/repositories.config
+!_CreateNewNuGetPackage\DoNotModify\Nuget.exe
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -98,10 +99,6 @@ publish/
 # Publish Web Output
 *.Publish.xml
 *.pubxml
-
-# NuGet Packages Directory
-packages
-!packages/repositories.config
 
 # Windows Azure Build Output
 csx

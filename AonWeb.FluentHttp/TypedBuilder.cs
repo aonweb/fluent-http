@@ -26,6 +26,7 @@ namespace AonWeb.FluentHttp
             Settings.Builder = this;
 
             _innerBuilder.WithCaching(false);
+            _innerBuilder.WithExceptionFactory(null);
         }
 
         public ITypedBuilderSettings Settings { get; private set; }
