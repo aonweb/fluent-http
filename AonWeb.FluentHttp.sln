@@ -28,7 +28,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_CreateNewNuGetPackage", "_CreateNewNuGetPackage", "{CF92BC2F-9CF9-4090-8A05-875C0A58503E}"
 	ProjectSection(SolutionItems) = preProject
 		tools\_CreateNewNuGetPackage\Config.ps1 = tools\_CreateNewNuGetPackage\Config.ps1
-		tools\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd = tools\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DoNotModify", "DoNotModify", "{08A61C0F-E883-4D75-87B6-8E5A6BFE348F}"
