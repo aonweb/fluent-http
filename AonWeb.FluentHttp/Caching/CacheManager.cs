@@ -189,7 +189,7 @@ namespace AonWeb.FluentHttp.Caching
         }
         private Task<CacheKey> GetKey(ICacheContext context)
         {
-            return GetKey(context.ResultType, context.Uri, context.DefaultVaryByHeaders, context.Request.Headers);
+            return GetKey(context.ResultType, context.Uri, context.DefaultVaryByHeaders, context.Request?.Headers);
         }
 
         private async Task<CacheKey> GetKey(Type resultType, Uri uri, IEnumerable<string> defaultVaryByHeaders, HttpRequestHeaders headers)
@@ -198,7 +198,7 @@ namespace AonWeb.FluentHttp.Caching
             var parts = new List<string>
             {
                 typeof (HttpResponseMessage).IsAssignableFrom(resultType) ? "Http" : "Typed",
-                uri.ToString()
+                uri?.ToString() ?? string.Empty
             };
 
             if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))

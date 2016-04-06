@@ -1,6 +1,8 @@
 using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Serialization;
 
@@ -8,6 +10,16 @@ namespace AonWeb.FluentHttp
 {
     public static class TypedBuilderExtensions
     {
+        public static  Task<TResult> ResultAsync<TResult>(this ITypedBuilder builder)
+        {
+            return builder.ResultAsync<TResult>(CancellationToken.None);
+        }
+
+        public static Task SendAsync(this ITypedBuilder builder)
+        {
+            return builder.SendAsync(CancellationToken.None);
+        }
+
         public static ITypedBuilder AsGet(this ITypedBuilder builder)
         {
             return builder.Advanced.WithMethod(HttpMethod.Get);

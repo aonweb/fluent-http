@@ -5,7 +5,7 @@ using System.Reflection;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("AonWeb.FluentHttp.HAL")]
-[assembly: AssemblyDescription("An fluent interface for making hypermedia http calls.")]
+[assembly: AssemblyDescription("An fluent interface for making http calls to HAL hypermedia endpoints.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AonWeb")]
 [assembly: AssemblyProduct("AonWeb.FluentHttp.HAL")]
@@ -24,6 +24,6 @@ using System.Reflection;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.0.1")]
-[assembly: AssemblyFileVersion("3.0.1")]
-[assembly: AssemblyInformationalVersion("3.0.1")]
+[assembly: AssemblyVersion("3.0.2")]
+[assembly: AssemblyFileVersion("3.0.2")]
+[assembly: AssemblyInformationalVersion("3.0.2")]

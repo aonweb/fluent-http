@@ -1,12 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
-using AonWeb.FluentHttp.Exceptions;
-using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.HAL.Serialization;
-using AonWeb.FluentHttp.Mocks;
-using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -42,7 +35,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var deserialized = JsonConvert.DeserializeObject<TestResource>(json, _settings);
 
             json.ShouldNotBeNullOrWhiteSpace();
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             original.ShouldBe(deserialized);
         }
 
@@ -65,7 +58,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var deserialized = JsonConvert.DeserializeObject<TestResource>(json, _settings);
 
             json.ShouldNotBeNullOrWhiteSpace();
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             deserialized.Links.ShouldNotBeNull();
             deserialized.Links.Count.ShouldBe(0);
             deserialized.Links = null;
@@ -100,7 +93,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var deserialized = JsonConvert.DeserializeObject<TestResource>(json, _settings);
 
             json.ShouldNotBeNullOrWhiteSpace();
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             original.ShouldBe(deserialized);
         }
 
@@ -115,7 +108,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var deserialized = JsonConvert.DeserializeObject<TestListResource>(json, _settings);
 
             json.ShouldNotBeNullOrWhiteSpace();
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             original.ShouldBe(deserialized);
         }
 
@@ -130,7 +123,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var deserialized = JsonConvert.DeserializeObject<TestListResourceWithLinks>(json, _settings);
 
             json.ShouldNotBeNullOrWhiteSpace();
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             original.ShouldBe(deserialized);
         }
 
@@ -144,7 +137,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var deserialized = JsonConvert.DeserializeObject<TestListEmbeddedPropertyParentsResource>(json, _settings);
 
             json.ShouldNotBeNullOrWhiteSpace();
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             original.ShouldBe(deserialized);
         }
 
@@ -159,7 +152,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             var deserialized = JsonConvert.DeserializeObject<TestListEmbeddedArrayParentResource>(json, _settings);
 
             json.ShouldNotBeNullOrWhiteSpace();
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             original.ShouldBe(deserialized);
         }
 
@@ -176,7 +169,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
 
             json.ShouldNotBeNullOrWhiteSpace();
 
-            json.ShouldBe(expected, Case.Insensitive);
+            json.ShouldBe(expected, StringCompareShould.IgnoreCase);
             original.ShouldBe(deserialized);
         }
     }

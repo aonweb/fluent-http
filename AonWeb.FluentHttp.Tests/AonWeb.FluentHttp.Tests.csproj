@@ -46,12 +46,12 @@
       <HintPath>..\packages\Autofac.WebApi2.3.4.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Shouldly, Version=2.6.0.0, Culture=neutral, PublicKeyToken=6042cbcb05cbc941, processorArchitecture=MSIL">
-      <HintPath>..\packages\Shouldly.2.6.0\lib\net40\Shouldly.dll</HintPath>
+    <Reference Include="Shouldly, Version=2.7.0.0, Culture=neutral, PublicKeyToken=6042cbcb05cbc941, processorArchitecture=MSIL">
+      <HintPath>..\packages\Shouldly.2.7.0\lib\net40\Shouldly.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -105,6 +105,8 @@
     <Compile Include="Caching\InMemoryCacheProviderTests.cs" />
     <Compile Include="EncodingTests.cs" />
     <Compile Include="ErrorHelperTests.cs" />
+    <Compile Include="GraphQL\AdvancedGraphQlBuilderTests.cs" />
+    <Compile Include="GraphQL\GraphQLBuilderTests.cs" />
     <Compile Include="Hal\HypermediaLinkHelpersTest.cs" />
     <Compile Include="HelpersTests.cs" />
     <Compile Include="Helpers\RegistrationHelpers.cs" />
@@ -153,6 +155,10 @@
     <ProjectReference Include="..\Aonweb.FluentHttp.Full\Aonweb.FluentHttp.Full.csproj">
       <Project>{b3730e8c-5803-47dd-820e-aece20388beb}</Project>
       <Name>Aonweb.FluentHttp.Full</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AonWeb.FluentHttp.GraphQL\AonWeb.FluentHttp.GraphQL.csproj">
+      <Project>{a0262638-f646-4918-8ef3-fbd6348a61f3}</Project>
+      <Name>AonWeb.FluentHttp.GraphQL</Name>
     </ProjectReference>
     <ProjectReference Include="..\AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj">
       <Project>{74bd325d-285e-4e8a-8ec7-ba7c330a404c}</Project>

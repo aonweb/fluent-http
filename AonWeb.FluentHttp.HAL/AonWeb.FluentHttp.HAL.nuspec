@@ -13,12 +13,12 @@
     <summary>An fluent interface for making http calls to HAL hypermedia endpoints.</summary>
     <copyright>Copyright 2014</copyright>
     <language>en-US</language>
-    <tags>fluent, http</tags>
+    <tags>fluent, http, hal</tags>
     <dependencies>
       <group>
-        <dependency id="AonWeb.FluentHttp" version="3.0.1" />
-        <dependency id="AonWeb.FluentHttp.Serialization" version="3.0.1" />
-        <dependency id="AonWeb.FluentHttp.HAL.Serialization" version="3.0.1" />
+        <dependency id="AonWeb.FluentHttp" version="3.0.2" />
+        <dependency id="AonWeb.FluentHttp.Serialization" version="3.0.2" />
+        <dependency id="AonWeb.FluentHttp.HAL.Serialization" version="3.0.2" />
       </group>
     </dependencies>
   </metadata>
