@@ -54,4 +54,4 @@ if (!(Test-StringIsNullOrWhitespace $sourceToUploadTo)) { $pushOptions += " -Sou
 if (!(Test-StringIsNullOrWhitespace $apiKey)) { $pushOptions += " -ApiKey ""$apiKey"" " }
 
 # Upload the new NuGet package.
-& "$THIS_SCRIPTS_DIRECTORY_PATH\New-NuGetPackage.ps1" -PushOptions "$pushOptions" -Verbose -ProjectPath "$ProjectPath" -NoPrompt
+& "$THIS_SCRIPTS_DIRECTORY_PATH\New-NuGetPackage.ps1" -PushOptions "$pushOptions" -Verbose -ProjectPath "$ProjectPath" -NoPromptForPushPackageToNuGetGallery -PushPackageToNuGetGallery
