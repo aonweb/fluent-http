@@ -899,7 +899,7 @@ try
 	if ($NoPrompt -or $NoPromptExceptOnError)
 	{
 		if ($NoPrompt) { $NoPromptForInputOnError = $true }
-		$NoPromptForPushPackageToNuGetGallery = $true
+		#$NoPromptForPushPackageToNuGetGallery = $true
 		$NoPromptForReleaseNotes = $true
 		$NoPromptForVersionNumber = $true
 	}
@@ -1252,12 +1252,12 @@ try
 	}
 
 	# If the switch to push the package to the gallery was not provided and we are allowed to prompt, prompt the user if they want to push the package.
-	if (!$PushPackageToNuGetGallery -or ($PushPackageToNuGetGallery -and ($NoPrompt -or $NoPromptForPushPackageToNuGetGallery)))
+	if ((!$PushPackageToNuGetGallery -and !$NoPrompt) -or ($PushPackageToNuGetGallery -and ($NoPromptForPushPackageToNuGetGallery)))
 	{
 		$promptMessage = "Do you want to push this package:`n'$nuGetPackageFilePath'`nto the NuGet Gallery '$sourceToPushPackageTo'?"
 		
 		# If we should prompt directly from PowerShell.
-		if ($NoPrompt -or $NoPromptForPushPackageToNuGetGallery)
+		if ($NoPromptForPushPackageToNuGetGallery)
 		{
 			$answer = "Y"
 		}

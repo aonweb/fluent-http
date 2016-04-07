@@ -38,6 +38,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DoNotModify", "DoNotModify"
 		tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 = tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{4BB1E112-18CF-4620-9DB3-0DC56D8FEC77}"
+	ProjectSection(SolutionItems) = preProject
+		NugetPushAll.cmd = NugetPushAll.cmd
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
