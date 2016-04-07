@@ -145,7 +145,6 @@ namespace AonWeb.FluentHttp
         {
             HttpRequestMessage request = null;
             HttpResponseMessage response = null;
-            ExceptionDispatchInfo capturedException = null;
             object result = null;
             try
             {
@@ -219,12 +218,7 @@ namespace AonWeb.FluentHttp
                 }
                 catch (Exception ex)
                 {
-                    capturedException = ExceptionDispatchInfo.Capture(ex);
-                }
-
-                if (capturedException != null)
-                {
-                    var error = await context.ErrorFactory(context, request, response, capturedException) ?? TypeHelpers.GetDefaultValueForType(context.ErrorType);
+                    var error = await context.ErrorFactory(context, request, response, ex) ?? TypeHelpers.GetDefaultValueForType(context.ErrorType);
 
                     TypeHelpers.ValidateType(error, context.ErrorType, context.SuppressTypeMismatchExceptions, () => response.GetExceptionMessage(request));
 
@@ -234,20 +228,24 @@ namespace AonWeb.FluentHttp
 
                     if (!errorHandled)
                     {
-                        var ex = context.ExceptionFactory?.Invoke(new ExceptionCreationContext(context, request, response, error, capturedException.SourceException));
+                        var newEx = context.ExceptionFactory?.Invoke(new ExceptionCreationContext(context, request, response, error, ex));
 
-                        if (ex != null)
-                            throw ex;
-                    }
-                    else
-                    {
-                        capturedException = null;
+                        if (newEx != null)
+                            throw newEx;
+
+                        throw;
                     }
                 }
             }
             catch (Exception ex)
             {
-                capturedException = ExceptionDispatchInfo.Capture(ex);
+                var exceptionResult = await context.HandlerRegister.OnException(context, request, response, ex);
+
+                if (!(bool)exceptionResult.Value)
+                {
+                    if (!context.SuppressCancellationErrors || !(ex is OperationCanceledException))
+                        throw;
+                }
             }
             finally
             {
@@ -256,18 +254,6 @@ namespace AonWeb.FluentHttp
                     ObjectHelpers.Dispose(request);
                     ObjectHelpers.Dispose(response);
                 }
-            }
-
-            if (capturedException != null)
-            {
-                var exceptionResult = await context.HandlerRegister.OnException(context, request, response, capturedException.SourceException);
-
-                if (!(bool)exceptionResult.Value)
-                {
-                    if (!context.SuppressCancellationErrors || !(capturedException.SourceException is OperationCanceledException))
-                        capturedException.Throw();
-                }
-
             }
 
             var defaultResult = context.DefaultResultFactory?.Invoke(context.ResultType);

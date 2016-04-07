@@ -215,7 +215,7 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
-        public static IAdvancedHalBuilder WithErrorFactory<TError>(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<TError>> errorFactory)
+        public static IAdvancedHalBuilder WithErrorFactory<TError>(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<TError>> errorFactory)
         
 {
             builder.WithConfiguration(s => s.WithResultType(typeof(TError)).ErrorFactory = async (ctx, request, response, ex) => await errorFactory(ctx, request, response, ex));
@@ -223,7 +223,7 @@ namespace AonWeb.FluentHttp.HAL
             return builder;
         }
 
-        public static IAdvancedHalBuilder WithErrorFactory(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> errorFactory)
+        public static IAdvancedHalBuilder WithErrorFactory(this IAdvancedHalBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<object>> errorFactory)
         {
             builder.WithConfiguration(s => s.ErrorFactory = errorFactory);
 

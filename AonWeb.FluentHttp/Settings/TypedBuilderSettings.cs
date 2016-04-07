@@ -151,7 +151,7 @@ namespace AonWeb.FluentHttp.Settings
             return this;
         }
 
-        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> ErrorFactory { get; set; }
+        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<object>> ErrorFactory { get; set; }
 
         public void Reset()
         {
