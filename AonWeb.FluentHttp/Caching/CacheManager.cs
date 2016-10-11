@@ -30,7 +30,17 @@ namespace AonWeb.FluentHttp.Caching
 
             var cacheEntry = await _cache.Get<CacheEntry>(key);
 
-            if (cacheEntry == null || context.ResponseValidator(context, cacheEntry.Metadata) != ResponseValidationResult.OK)
+            if (cacheEntry == null)
+                return CacheEntry.Empty;
+
+            var validation = context.ResponseValidator(context, cacheEntry.Metadata);
+
+            if (validation == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, cacheEntry.Metadata))
+                return CacheEntry.Empty;
+
+            if (validation != ResponseValidationResult.OK
+                && validation != ResponseValidationResult.Stale
+                && validation != ResponseValidationResult.MustRevalidate)
                 return CacheEntry.Empty;
 
             object result;

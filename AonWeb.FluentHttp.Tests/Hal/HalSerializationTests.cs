@@ -36,7 +36,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             {
                 var uri = server.ListeningUri;
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestResource>();
@@ -53,7 +53,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             {
                 var uri = server.ListeningUri;
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResourceWithLinks.SerializedDefault1).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResourceWithLinks.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestResourceWithLinks>();
@@ -69,7 +69,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var uri = server.ListeningUri;
-                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithPrivateCacheHeader());
+                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListResource>();
@@ -86,7 +86,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var uri = server.ListeningUri;
-                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResourceWithLinks.SerializedDefault1).WithPrivateCacheHeader());
+                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResourceWithLinks.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListResourceWithLinks>();
@@ -103,7 +103,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var uri = server.ListeningUri;
-                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListEmbeddedPropertyParentsResource.SerializedDefault1).WithPrivateCacheHeader());
+                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListEmbeddedPropertyParentsResource.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListEmbeddedPropertyParentsResource>();
@@ -120,7 +120,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var uri = server.ListeningUri;
-                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListEmbeddedArrayParentResource.SerializedDefault1).WithPrivateCacheHeader());
+                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestListEmbeddedArrayParentResource.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result = await CreateBuilder()
                     .WithLink(uri).ResultAsync<TestListEmbeddedArrayParentResource>();
@@ -137,7 +137,7 @@ namespace AonWeb.FluentHttp.Tests.Hal
             {
                 var uri = server.ListeningUri;
                 server
-                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotFound).WithContent(TestError.SerializedDefault1).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotFound).WithContent(TestError.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var ex = await Should.ThrowAsync<HttpErrorException<TestError>>(
                     CreateBuilder()

@@ -112,7 +112,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             var container = RegistrationHelpers.CreateContainer();
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponse(new MockHttpResponseMessage().WithPrivateCacheHeader());
+                server.WithNextResponse(new MockHttpResponseMessage().WithPrivateCacheHeader().WithDefaultExpiration().WithDefaultExpiration());
                 var factory = container.Resolve<IHttpBuilderFactory>();
 
                 var builder = factory.Create();
@@ -273,7 +273,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             var container = RegistrationHelpers.CreateContainer();
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponseTextOk("Typed Result", r=> r.WithPrivateCacheHeader());
+                server.WithNextResponseTextOk("Typed Result", r=> r.WithPrivateCacheHeader().WithDefaultExpiration());
                 var factory = container.Resolve<ITypedBuilderFactory>();
 
                 var builder = factory.Create();
@@ -317,8 +317,8 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                         {
                             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
                             {
-                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheHeader());
-                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheHeader());
+                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheNoStoreHeader());
+                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheNoStoreHeader());
 
                                 var factory = scope.Resolve<ITypedBuilderFactory>();
                                 Guid? actualGuid1 = null;
@@ -518,7 +518,7 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             var container = RegistrationHelpers.CreateContainer();
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader());
+                server.WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
                 var factory = container.Resolve<IHalBuilderFactory>();
 
                 var builder = factory.Create();

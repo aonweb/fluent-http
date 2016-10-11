@@ -38,9 +38,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var canonicalUri = server.ListeningUri.AppendPath("/canonical/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResource.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = CreateBuilder()
                     .WithLink(nonCanonicalUri).ResultAsync<TestResource>();
@@ -68,9 +68,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var canonicalUri = server.ListeningUri.AppendPath("/canonical/1");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestListResource.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder().WithLink(listUri).ResultAsync<TestListResource>();
 
