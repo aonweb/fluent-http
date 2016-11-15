@@ -9,6 +9,6 @@ PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Autofac\bin\Release\""
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Full\bin\Release\""
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.GraphQL\bin\Release\""
-REM PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& \"%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1\"  -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Xamarin\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Xamarin\bin\Release\""
 
 pause
