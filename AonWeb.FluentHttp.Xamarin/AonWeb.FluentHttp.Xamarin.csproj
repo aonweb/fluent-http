@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Initializer.cs" />
+    <Compile Include="ModernHttpClientInitializer.cs" />
     <Compile Include="IPlatformSettings.cs" />
     <Compile Include="ModernHttpClientBuilder.cs" />
     <Compile Include="ModernHttpClientBuilderFactory.cs" />
