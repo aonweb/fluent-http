@@ -32,7 +32,8 @@ namespace AonWeb.FluentHttp
                 HttpStatusCode.NonAuthoritativeInformation,
                 HttpStatusCode.NoContent,
                 HttpStatusCode.ResetContent,
-                HttpStatusCode.PartialContent
+                HttpStatusCode.PartialContent,
+                HttpStatusCode.NotModified
             };
     }
 }

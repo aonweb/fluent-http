@@ -32,6 +32,26 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
+        public async Task WhenCachingIsOnAndServerSendsNotModified_ExpectContentsCached()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration());
+
+                var builder = CreateBuilder()
+                    .WithUri(server.ListeningUri);
+
+                var result1 = await builder.ResultAsync<TestResult>();
+
+                var result2 = await builder.ResultAsync<TestResult>();
+
+                result1.ShouldBe(result2);
+            }
+        }
+
+        [Fact]
         public async Task WhenCachingIsOn_ExpectContentsCached()
         {
 
