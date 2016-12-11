@@ -16,8 +16,8 @@
     <tags>fluent, http</tags>
     <dependencies>
       <group>
-        <dependency id="AonWeb.FluentHttp" version="3.1.0" />
-        <dependency id="AonWeb.FluentHttp.Serialization" version="3.1.0" />
+        <dependency id="AonWeb.FluentHttp" version="3.1.2" />
+        <dependency id="AonWeb.FluentHttp.Serialization" version="3.1.2" />
       </group>
     </dependencies>
   </metadata>
