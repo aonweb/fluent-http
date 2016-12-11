@@ -37,7 +37,7 @@ namespace AonWeb.FluentHttp.Autofac
 
         protected override void Load(ContainerBuilder builder)
         {
-            var assemblyNames = new[] { "AonWeb.FluentHttp.Xamarin", "AonWeb.FluentHttp.Full", "AonWeb.FluentHttp", "AonWeb.FluentHttp.HAL" };
+            var assemblyNames = new[] { "AonWeb.FluentHttp.Xamarin", "AonWeb.FluentHttp.Full", "AonWeb.FluentHttp", "AonWeb.FluentHttp.HAL", "AonWeb.FluentHttp.Xamarin.HttpClient" };
             var myAssemblies = assemblyNames
                 .Select(name =>
                 {
