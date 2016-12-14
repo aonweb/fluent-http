@@ -3,13 +3,6 @@ using AonWeb.FluentHttp.Caching;
 
 namespace AonWeb.FluentHttp.Xamarin
 {
-    public class ModernHttpClientInitializer: Initializer
-    {
-        public override void Initialize()
-        {
-            ClientProvider.SetFactory(() => new ModernHttpClientBuilderFactory());
-        }
-    }
 
     //public class SqlLiteCacheProviderInitializer : Initializer
     //{

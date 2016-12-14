@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AonWeb.FluentHttp.Xamarin")]
+[assembly: AssemblyTitle("AonWeb.FluentHttp.Xamarin.HttpClient")]
 [assembly: AssemblyDescription("Xamarin Extensions to Fluent Http Builder")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AonWeb")]
-[assembly: AssemblyProduct("AonWeb.FluentHttp.Xamarin")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyProduct("AonWeb.FluentHttp.Xamarin.HttpClient")]
+[assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]

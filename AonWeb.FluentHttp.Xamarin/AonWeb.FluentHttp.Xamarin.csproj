@@ -36,10 +36,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ModernHttpClientInitializer.cs" />
+    <Compile Include="CacheClientInitializer.cs" />
     <Compile Include="IPlatformSettings.cs" />
-    <Compile Include="ModernHttpClientBuilder.cs" />
-    <Compile Include="ModernHttpClientBuilderFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlLiteCacheProvider.cs" />
   </ItemGroup>

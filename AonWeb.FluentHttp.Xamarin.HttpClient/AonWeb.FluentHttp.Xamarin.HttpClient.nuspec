@@ -1,23 +1,22 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <package >
   <metadata>
     <id>$id$</id>
     <version>$version$</version>
-    <title>Fluent Http Call Builder classes for Full .Net Environments</title>
+    <title>Xamarin Extensions to Fluent Http Builder</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <projectUrl>https://github.com/aonweb/fluent-http</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <summary>Additional classes for use in Full .Net environments for http builders and hal builders</summary>
-    <copyright>Copyright 2016</copyright>
+    <summary>Xamarin extension uses modern http client</summary>
+    <copyright>Copyright 2014</copyright>
     <language>en-US</language>
-    <tags>fluent, http</tags>
+    <tags>fluent, http, xamarin</tags>
     <dependencies>
       <group>
         <dependency id="AonWeb.FluentHttp" version="3.1.3" />
-        <dependency id="AonWeb.FluentHttp.Serialization" version="3.1.3" />
       </group>
     </dependencies>
   </metadata>
