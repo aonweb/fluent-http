@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
@@ -18,7 +19,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     // but the base logic for cache validation / invalidation was based off CacheCow
     public abstract class CacheConfigurationHandlerCore
     {
-        private readonly ICacheManager _cacheManager;
+        protected readonly ICacheManager _cacheManager;
 
         protected CacheConfigurationHandlerCore(ICacheSettings settings, ICacheManager cacheManager)
         {
@@ -123,11 +124,38 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             context.Items["CacheHandlerCachedItem"] = result;
         }
 
-        protected async Task TryGetRevalidatedResult(IHandlerContextWithResult handlerContext, HttpRequestMessage request, HttpResponseMessage response)
+        protected async Task TryGetNotModifiedResult(IHandlerContextWithResult handlerContext,HttpRequestMessage request, HttpResponseMessage response)
         {
             if (!Enabled)
                 return;
 
+            var context = GetContext(handlerContext);
+
+            if (response.StatusCode == HttpStatusCode.NotModified)
+            {
+                var cachedResult = await _cacheManager.Get(context);
+
+                if (!cachedResult.IsEmpty && cachedResult.Value != null)
+                {
+                    context.ResultInspector?.Invoke(cachedResult);
+
+                    handlerContext.Result = cachedResult.Value;
+
+                    ObjectHelpers.Dispose(response);
+                }
+                else
+                {
+                    //throw exception? we shouldnt receive a 304 response unless sent during request.
+                }
+
+            }
+        }
+
+        protected async Task TryGetRevalidatedResult(IHandlerContextWithResult handlerContext, HttpRequestMessage request, HttpResponseMessage response)
+        {
+            if (!Enabled)
+                return;
+            
             var context = GetContext(handlerContext);
 
             var result = (CacheEntry)context.Items["CacheHandlerCachedItem"];
@@ -175,7 +203,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 return;
 
             var context = GetContext(handlerContext);
-
+            
             var cacheEntry = new CacheEntry(result, request, response, context);
 
             var requestValidation = context.RequestValidator(context);
