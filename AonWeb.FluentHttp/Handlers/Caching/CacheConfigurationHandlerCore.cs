@@ -133,21 +133,14 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             if (response.StatusCode == HttpStatusCode.NotModified)
             {
-                var cachedResult = await _cacheManager.Get(context);
-
+                var cachedResult = (CacheEntry)context.Items["CacheHandlerCachedItem"];
+                
                 if (!cachedResult.IsEmpty && cachedResult.Value != null)
                 {
                     context.ResultInspector?.Invoke(cachedResult);
 
                     handlerContext.Result = cachedResult.Value;
-
-                    ObjectHelpers.Dispose(response);
                 }
-                else
-                {
-                    //throw exception? we shouldnt receive a 304 response unless sent during request.
-                }
-
             }
         }
 
