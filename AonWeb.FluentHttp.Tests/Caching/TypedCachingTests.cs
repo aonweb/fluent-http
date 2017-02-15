@@ -37,17 +37,25 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithDefaultExpiration())
-                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration());
+                  .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                    .WithMustRevalidateHeader()
+                    .WithMaxAge(TimeSpan.FromSeconds(1)))
+                  .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration())
+                  .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration());
 
-                var builder = CreateBuilder()
-                    .WithUri(server.ListeningUri);
+                var builder = CreateBuilder().WithUri(server.ListeningUri);
 
                 var result1 = await builder.ResultAsync<TestResult>();
 
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
                 var result2 = await builder.ResultAsync<TestResult>();
 
-                result1.ShouldBe(result2);
+                var result3 = await builder.ResultAsync<TestResult>();
+
+                result1.ShouldBe(TestResult.Default1());
+                result2.ShouldBe(TestResult.Default1());
+                result3.ShouldBe(TestResult.Default1());
             }
         }
 

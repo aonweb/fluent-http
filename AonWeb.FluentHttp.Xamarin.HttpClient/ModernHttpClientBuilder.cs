@@ -13,7 +13,7 @@ namespace AonWeb.FluentHttp.Xamarin.HttpClient
 
         protected override HttpClientHandler GetHttpClientHandler()
         {
-            return new NativeMessageHandler();
+            return new NativeMessageHandlerProper();
         }
         
         protected override IHttpClient GetClientInstance(HttpMessageHandler handler, IHttpClientSettings settings)

@@ -38,11 +38,11 @@
     <Compile Include="ModernHttpClientBuilder.cs" />
     <Compile Include="ModernHttpClientBuilderFactory.cs" />
     <Compile Include="ModernHttpClientInitializer.cs" />
+    <Compile Include="NativeMessageHandlerProper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AonWeb.FluentHttp.Xamarin.HttpClient.nuspec" />
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
