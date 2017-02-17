@@ -19,6 +19,11 @@ namespace AonWeb.FluentHttp
 
         public async Task<HttpContent> CreateContent(object value, ITypedBuilderContext context)
         {
+            var content = value as HttpContent;
+
+            if (content != null)
+                return content;
+
             var type = context.ContentType;
             var mediaType = context.MediaType;
             var header = new MediaTypeHeaderValue(mediaType);
@@ -27,7 +32,6 @@ namespace AonWeb.FluentHttp
             if (formatter == null)
                 throw new UnsupportedMediaTypeException(string.Format(SR.NoWriteFormatterForMimeTypeErrorFormat, type.FormattedTypeName(), mediaType), header);
 
-            HttpContent content;
             using (var stream = new MemoryStream())
             {
                 await formatter.WriteToStreamAsync(type, value, stream, null, null);
