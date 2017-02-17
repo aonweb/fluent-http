@@ -124,26 +124,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             context.Items["CacheHandlerCachedItem"] = result;
         }
 
-        protected async Task TryGetNotModifiedResult(IHandlerContextWithResult handlerContext,HttpRequestMessage request, HttpResponseMessage response)
-        {
-            if (!Enabled)
-                return;
-
-            var context = GetContext(handlerContext);
-
-            if (response.StatusCode == HttpStatusCode.NotModified)
-            {
-                var cachedResult = (CacheEntry)context.Items["CacheHandlerCachedItem"];
-                
-                if (!cachedResult.IsEmpty && cachedResult.Value != null)
-                {
-                    context.ResultInspector?.Invoke(cachedResult);
-
-                    handlerContext.Result = cachedResult.Value;
-                }
-            }
-        }
-
         protected async Task TryGetRevalidatedResult(IHandlerContextWithResult handlerContext, HttpRequestMessage request, HttpResponseMessage response)
         {
             if (!Enabled)
@@ -153,16 +133,16 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             var result = (CacheEntry)context.Items["CacheHandlerCachedItem"];
 
-            if (result == null || !context.RevalidateValidator(context, result.Metadata))
+            var meta = CachingHelpers.CreateResponseMetadata(result, request, response, context);
+
+            if (result == null || !context.RevalidateValidator(context, meta))
                 return;
 
             if (!result.IsEmpty && result.Value != null)
             {
-                result.UpdateResponseInfo(request, response, context);
+                result.UpdateResponseMetadata(request, response, context);
 
                 context.ResultInspector?.Invoke(result);
-
-                ObjectHelpers.Dispose(response);
             }
             else
             {

@@ -31,8 +31,6 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         async Task  ITypedHandler.OnSent(TypedSentContext context)
         {
             await TryGetRevalidatedResult(context, context.Request, context.Response);
-
-            await TryGetNotModifiedResult(context, context.Request, context.Response);
         }
 
         Task ITypedHandler.OnResult(TypedResultContext context)
