@@ -16,7 +16,7 @@
     <tags>fluent, http, xamarin</tags>
     <dependencies>
       <group>
-        <dependency id="AonWeb.FluentHttp" version="3.1.5" />
+        <dependency id="AonWeb.FluentHttp" version="3.1.6" />
       </group>
     </dependencies>
   </metadata>
