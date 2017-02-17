@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Helpers;
@@ -346,6 +348,76 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var result2 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync().ReadContentsAsync();
 
                 result1.ShouldNotBe(result2);
+            }
+        }
+
+        [Fact]
+        public async Task WhenCachingIsOnAndServerSendsEtag_ExpectNextRequestContainsIfNoneMatch()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                var etag = "12345";
+
+                server
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                        .WithEtag(etag).WithMaxAge(TimeSpan.FromSeconds(1)).WithMustRevalidateHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                        .WithEtag("54321").WithMaxAge(TimeSpan.Zero))
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                            .WithEtag("54321").WithMaxAge(TimeSpan.Zero));
+
+                string ifNoneMatch = null;
+
+                var result1 = await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync();
+
+                await Task.Delay(TimeSpan.FromMilliseconds(1002));
+
+                var result2 = await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .Advanced.OnSending(ctx =>
+                    {
+                        ifNoneMatch = ctx.Request.Headers?.IfNoneMatch?.FirstOrDefault()?.Tag;
+                    })
+                    .ResultAsync();
+
+                var result3 = await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync();
+
+                ifNoneMatch.ShouldNotBeNull();
+                ifNoneMatch.ShouldBe("\"" + etag + "\"");
+            }
+        }
+
+        [Fact]
+        public async Task WhenCachingIsOnAndServerSendsNotModified_ExpectContentsCached()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server
+                  .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                    .WithMustRevalidateHeader()
+                    .WithMaxAge(TimeSpan.FromSeconds(1)))
+                  .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration())
+                  .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration());
+
+                var response1 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync();
+
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+                var response2 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync();
+
+                var response3 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync();
+
+                var result1 = await response1.Content.ReadAsStringAsync();
+                var result2 = await response2.Content.ReadAsStringAsync();
+                var result3 = await response3.Content.ReadAsStringAsync();
+
+                result1.ShouldBe(TestResult.SerializedDefault1);
+                result2.ShouldBe(TestResult.SerializedDefault1);
+                result3.ShouldBe(TestResult.SerializedDefault1);
             }
         }
     }

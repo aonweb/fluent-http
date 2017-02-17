@@ -39,19 +39,17 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 server
                   .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
                     .WithMustRevalidateHeader()
-                    .WithMaxAge(TimeSpan.FromSeconds(1)))
+                    .WithMaxAge(TimeSpan.FromSeconds(10)))
                   .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration())
                   .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration());
 
-                var builder = CreateBuilder().WithUri(server.ListeningUri);
-
-                var result1 = await builder.ResultAsync<TestResult>();
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync<TestResult>();
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
-                var result2 = await builder.ResultAsync<TestResult>();
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync<TestResult>();
 
-                var result3 = await builder.ResultAsync<TestResult>();
+                var result3 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync<TestResult>();
 
                 result1.ShouldBe(TestResult.Default1());
                 result2.ShouldBe(TestResult.Default1());
@@ -502,7 +500,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .AsPut()
                     .SendAsync();
                 }
-                catch (HttpCallException)
+                catch (HttpRequestException)
                 {
                     // expected
                 }
@@ -587,17 +585,21 @@ namespace AonWeb.FluentHttp.Tests.Caching
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
-                var etag = "12343";
+                var etag = "12345";
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithEtag(etag).WithMaxAge(TimeSpan.FromSeconds(10)).WithMustRevalidateHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithEtag(etag).WithMaxAge(TimeSpan.Zero));
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                        .WithEtag(etag).WithMaxAge(TimeSpan.FromSeconds(1)).WithMustRevalidateHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                        .WithEtag("54321").WithMaxAge(TimeSpan.Zero));
 
                 string ifNoneMatch = null;
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
+
+                await Task.Delay(TimeSpan.FromMilliseconds(1002));
 
                 var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -608,7 +610,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .ResultAsync<TestResult>();
 
                 ifNoneMatch.ShouldNotBeNull();
-                ifNoneMatch.ShouldBe(etag);
+                ifNoneMatch.ShouldBe("\"" + etag + "\"");
             }
         }
 
