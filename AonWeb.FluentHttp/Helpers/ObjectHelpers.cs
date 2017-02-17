@@ -148,7 +148,11 @@ namespace AonWeb.FluentHttp.Helpers
             }
 
             if (typeof(byte[]).IsAssignableFrom(typeInfo))
-                return await content.ReadAsByteArrayAsync();
+            {
+                token.ThrowIfCancellationRequested();
+
+                return await content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            }
 
             var mediaType = content.Headers.ContentType ?? new MediaTypeHeaderValue("application/octet-stream");
 
@@ -169,7 +173,7 @@ namespace AonWeb.FluentHttp.Helpers
 
             var stream = await content.ReadAsStreamAsync();
 
-            return await formatter.ReadFromStreamAsync(type, stream, content, null, token);
+            return await formatter.ReadFromStreamAsync(type, stream, content, null, token).ConfigureAwait(false);
         }
     }
 }
