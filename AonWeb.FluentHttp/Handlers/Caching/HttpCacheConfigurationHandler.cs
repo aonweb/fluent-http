@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
+using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Handlers.Caching
@@ -54,7 +55,14 @@ namespace AonWeb.FluentHttp.Handlers.Caching
 
             Settings.ResultInspector = cacheEntry => ((HttpResponseMessage)cacheEntry.Value).RequestMessage = context.Result.RequestMessage;
 
+            var response = context.Result;
+
             await TryGetRevalidatedResult(context, context.Request, context.Result);
+
+            // if we just retrieved a response from cache
+            // dispose of the revalidation result
+            if (context.Result != response)
+                ObjectHelpers.Dispose(response);
 
             await TryCacheResult(context, context.Result, context.Request, context.Result);
         }
