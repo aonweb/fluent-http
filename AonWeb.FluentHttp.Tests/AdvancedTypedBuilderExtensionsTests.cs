@@ -868,7 +868,7 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        public async Task WhenResultTypeIsStringAndDoesNotHaveFormatter_ExpectCorrectCorrectString()
+        public async Task WhenResultTypeIsStringAndDoesNotHaveFormatter_ExpectCorrectString()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
