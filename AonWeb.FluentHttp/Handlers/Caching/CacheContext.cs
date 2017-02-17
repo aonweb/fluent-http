@@ -34,7 +34,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             ResultInspector = context.ResultInspector;
             RequestValidator = context.RequestValidator;
             ResponseValidator = context.ResponseValidator;
-            RevalidateValidator = context.AllowStaleResultValidator;
+            RevalidateValidator = context.RevalidateValidator;
             AllowStaleResultValidator = context.AllowStaleResultValidator;
         }
 
