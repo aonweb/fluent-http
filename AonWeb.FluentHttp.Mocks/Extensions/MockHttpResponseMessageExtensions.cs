@@ -119,10 +119,28 @@ namespace AonWeb.FluentHttp.Mocks
         {
             response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
 
-            if (maxAge == TimeSpan.Zero)
+            if (maxAge <= TimeSpan.Zero)
                 response.Headers.CacheControl.MaxAge = null;
             else
                 response.Headers.CacheControl.MaxAge = maxAge;
+
+            return response;
+        }
+        public static MockHttpResponseMessage WithMaxStaleLimit(this MockHttpResponseMessage response, TimeSpan maxStaleLimit)
+        {
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
+
+            if (maxStaleLimit <= TimeSpan.Zero)
+            {
+                response.Headers.CacheControl.MaxStale = false;
+                response.Headers.CacheControl.MaxStaleLimit = null;
+            }  
+            else
+            {
+                response.Headers.CacheControl.MaxStale = true;
+                //response.Headers.CacheControl.MaxStaleLimit = maxStaleLimit;
+            }
+                
 
             return response;
         }

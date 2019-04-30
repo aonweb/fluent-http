@@ -1,121 +1,29 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{83DE5005-470A-421A-AF25-59DF14D7458B}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AonWeb.FluentHttp.HAL</RootNamespace>
-    <AssemblyName>AonWeb.FluentHttp.HAL</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	<Version>4.0.0</Version>
+    <Company>AonWeb</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>aonweb</Authors>
+    <Copyright>Copyright © 2014</Copyright>
+    <PackageLicenseUrl>https://github.com/aonweb/fluent-http/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/aonweb/fluent-http</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aonweb/fluent-http.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>fluent, http</PackageTags>
+	<PackageTags>fluent, http, hal</PackageTags>
+    <Title>Fluent HAL Call Builder</Title>
+    <Description>An fluent interface for making http calls to HAL hypermedia endpoints.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
-    <Compile Include="Extensions\AdvancedHalBuilderExtensions.cs" />
-    <Compile Include="Extensions\HalBuilderExtensions.cs" />
-    <Compile Include="HalBuilderFactory.cs" />
-    <Compile Include="HalBuilder.cs" />
-    <Compile Include="IAdvancedHalBuilder.cs" />
-    <Compile Include="IHalBuilder.cs" />
-    <Compile Include="IHalBuilderFactory.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\HalResourceConverter.cs" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AonWeb.FluentHttp.HAL.nuspec" />
-    <None Include="app.config" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
-    
-    
-    
-    
-    
+    <ProjectReference Include="..\AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj" />
+    <ProjectReference Include="..\AonWeb.FluentHttp.Serialization\AonWeb.FluentHttp.Serialization.csproj" />
+    <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj">
-      <Project>{74bd325d-285e-4e8a-8ec7-ba7c330a404c}</Project>
-      <Name>AonWeb.FluentHttp.HAL.Serialization</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AonWeb.FluentHttp.Serialization\AonWeb.FluentHttp.Serialization.csproj">
-      <Project>{9dfff77a-14d1-40c7-a78a-2a8b77391d82}</Project>
-      <Name>AonWeb.FluentHttp.Serialization</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AonWeb.FluentHttp\AonWeb.FluentHttp.csproj">
-      <Project>{930566b9-044b-45ab-b231-87ec4c222a4d}</Project>
-      <Name>AonWeb.FluentHttp</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Extensions, Version=1.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net45+win8+wpa81\System.Net.Http.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\portable-wp8+netcore45+net45+wp81+wpa81\System.Net.Http.Formatting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net45+win8+wpa81\System.Net.Http.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>REM Create a NuGet package for this project and place the .nupkg file in the project's output directory.
-REM If you see this in Visual Studio's Error List window, check the Output window's Build tab for the actual error.
-ECHO Deleting existing NuGet packages in Post-Build event...
-del $(TargetDir)\*.nupkg 
-ECHO Creating NuGet package in Post-Build event...
-PowerShell -NoProfile -ExecutionPolicy Bypass -Command "&amp; '$(SolutionDir)tools\_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1' -ProjectFilePath '$(ProjectPath)' -OutputDirectory '$(TargetDir)' -BuildConfiguration '$(ConfigurationName)' -BuildPlatform '$(PlatformName)'"
-	</PostBuildEvent>
-  </PropertyGroup>
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using AonWeb.FluentHttp.Settings;
 
 namespace AonWeb.FluentHttp.Client
@@ -58,7 +60,7 @@ namespace AonWeb.FluentHttp.Client
         {
             var handler = httpClientHandler();
 
-            if (handler.SupportsAllowAutoRedirect())
+            if (handler.SupportsRedirectConfiguration)
                 handler.AllowAutoRedirect = false; //this will be handled by the consuming code
 
             if (handler.SupportsAutomaticDecompression && settings.DecompressionMethods.HasValue)
@@ -73,7 +75,15 @@ namespace AonWeb.FluentHttp.Client
                 handler.UseCookies = true;
             }
 
-            if (handler.SupportsPreAuthenticate() && settings.Credentials != null)
+            if (settings.CheckCertificateRevocationList.HasValue)
+                handler.CheckCertificateRevocationList = settings.CheckCertificateRevocationList.Value;
+
+            if (settings.ClientCertificates != null && settings.ClientCertificates.Count > 0)
+            {
+                handler.ClientCertificates.AddRange(settings.ClientCertificates.ToArray());
+            }
+
+            if (settings.Credentials != null)
             {
                 handler.Credentials = settings.Credentials;
                 handler.UseDefaultCredentials = true;

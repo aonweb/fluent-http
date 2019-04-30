@@ -8,7 +8,7 @@ namespace AonWeb.FluentHttp.Caching
     {
         Task<IEnumerable<string>> Get(Uri uri);
 
-        Task<bool> Put(Uri uri, IEnumerable<string> headers);
+        Task<bool> Put(Uri uri, IEnumerable<string> headers, TimeSpan? expiration);
 
         Task<bool> Delete(Uri uri);
         Task DeleteAll();

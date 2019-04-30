@@ -25,7 +25,7 @@ namespace AonWeb.FluentHttp.Caching
             return headers ?? Enumerable.Empty<string>();
         }
 
-        public async Task<bool> Put(Uri uri, IEnumerable<string> newHeaders)
+        public async Task<bool> Put(Uri uri, IEnumerable<string> newHeaders, TimeSpan? expiration)
         {
             var key = GetKey(uri);
 
@@ -36,7 +36,7 @@ namespace AonWeb.FluentHttp.Caching
                 headers.Merge(newHeaders.Select(UriHelpers.NormalizeHeader));
             }
 
-            return await _cache.Put(key, headers);
+            return await _cache.Put(key, headers, expiration);
         }
 
         public Task<bool> Delete(Uri uri)

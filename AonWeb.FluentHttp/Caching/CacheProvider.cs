@@ -1,55 +1,70 @@
-using System.Collections.Generic;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Helpers;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace AonWeb.FluentHttp.Caching
 {
     public class CacheProvider : ICacheProvider
     {
-        private static object _lock = new object();
+        private readonly IMemoryCache _cache;
+        private CancellationTokenSource _resetCacheToken;
 
-        private readonly IDictionary<string, object> _cache = new Dictionary<string, object>();
+        // TODO: this should use IOptions
+        public CacheProvider(MemoryCacheOptions options)
+        {
+            _cache = new MemoryCache(options);
+            _resetCacheToken = new CancellationTokenSource();
+        }
 
         public Task<T> Get<T>(string key)
         {
-            lock (_lock)
-            {
-                object value;
+            _cache.TryGetValue(key, out var value);
 
-                _cache.TryGetValue(key, out value);
+            TypeHelpers.CheckType<T>(value);
 
-                TypeHelpers.CheckType<T>(value);
-
-                return Task.FromResult((T)value);
-            }
+            return Task.FromResult((T)value);
         }
 
-        public Task<bool> Put<T>(string key, T value)
+        public Task<bool> Put<T>(string key, T value, TimeSpan? expiration)
         {
-            lock (_lock)
+            var changeToken = new CancellationChangeToken(_resetCacheToken.Token);
+
+            // TODO: should be handled higher up and not cached at all?
+            // if not, should this have a configurable, brief duration?
+            expiration = expiration > TimeSpan.Zero ? expiration : null;
+
+            var options = new MemoryCacheEntryOptions
             {
-                _cache[key] = value;
-            }
+                AbsoluteExpirationRelativeToNow = expiration,
+                ExpirationTokens = {changeToken},
+            };
+
+            _cache.Set(key, value, options);
 
             return Task.FromResult(true);
         }
 
         public Task<bool> Delete(string key)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_cache.Remove(key));
-            }
+            _cache.Remove(key);
+
+            return Task.FromResult(true);
         }
 
         public Task DeleteAll()
         {
-            lock (_lock)
+            if (_resetCacheToken != null && !_resetCacheToken.IsCancellationRequested && _resetCacheToken.Token.CanBeCanceled)
             {
-                _cache.Clear();
+                _resetCacheToken.Cancel();
+                _resetCacheToken.Dispose();
             }
 
-            return Task.FromResult(true);
+            _resetCacheToken = new CancellationTokenSource();
+
+            return Task.CompletedTask;
         }
     }
 }
