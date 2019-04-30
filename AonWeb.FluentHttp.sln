@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp", "AonWeb
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp.HAL", "AonWeb.FluentHttp.HAL\AonWeb.FluentHttp.HAL.csproj", "{83DE5005-470A-421A-AF25-59DF14D7458B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Autofac", "AonWeb.FluentHttp.Autofac\AonWeb.FluentHttp.Autofac.csproj", "{88B42254-124B-453D-B1C9-C0E56AE18022}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp.Autofac", "AonWeb.FluentHttp.Autofac\AonWeb.FluentHttp.Autofac.csproj", "{88B42254-124B-453D-B1C9-C0E56AE18022}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp.Mocks", "AonWeb.FluentHttp.Mocks\AonWeb.FluentHttp.Mocks.csproj", "{819F270C-4105-4380-8EA5-310832A54B7F}"
 EndProject
@@ -18,6 +18,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aonweb.FluentHttp.Full", "Aonweb.FluentHttp.Full\Aonweb.FluentHttp.Full.csproj", "{B3730E8C-5803-47DD-820E-AECE20388BEB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp.Tests", "AonWeb.FluentHttp.Tests\AonWeb.FluentHttp.Tests.csproj", "{68F35EC7-14CB-4F47-98A8-53F70CEC495C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{C63B15E6-CED0-44C6-B909-9481E11207F2}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
+		PublishNuget.ps1 = PublishNuget.ps1
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
