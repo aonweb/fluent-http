@@ -65,11 +65,6 @@ namespace AonWeb.FluentHttp
             WithConfiguration(configuration);
         }
 
-        public virtual Task<HttpResponseMessage> ResultAsync()
-        {
-            return ResultAsync(CancellationToken.None);
-        }
-
         public virtual async Task<HttpResponseMessage> ResultAsync(CancellationToken token)
         {
             HttpResponseMessage response = null;

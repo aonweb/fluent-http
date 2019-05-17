@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Helpers;
@@ -30,14 +32,40 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
+        public async Task WhenCachingIsOnAndServerSendsNotModified_ExpectContentsCached()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                server
+                  .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                    .WithMustRevalidateHeader()
+                    .WithMaxAge(TimeSpan.FromSeconds(10)))
+                  .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration())
+                  .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration());
+
+                var result1 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync<TestResult>();
+
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                var result2 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync<TestResult>();
+
+                var result3 = await CreateBuilder().WithUri(server.ListeningUri).ResultAsync<TestResult>();
+
+                result1.ShouldBe(TestResult.Default1());
+                result2.ShouldBe(TestResult.Default1());
+                result3.ShouldBe(TestResult.Default1());
+            }
+        }
+
+        [Fact]
         public async Task WhenCachingIsOn_ExpectContentsCached()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var builder = CreateBuilder()
                     .WithUri(server.ListeningUri);
@@ -61,8 +89,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 var secondUri = baseUri.AppendPath("second");
 
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder().WithUri(firstUri).ResultAsync<TestResult>();
 
@@ -80,8 +108,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -102,8 +130,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
                 var uri = server.ListeningUri;
                 var result1 = await Task.Factory.StartNew(() =>
                     CreateBuilder()
@@ -238,8 +266,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheNoStoreHeader());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -261,8 +289,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -285,9 +313,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -315,8 +343,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheNoStoreHeader());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -337,8 +365,8 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithNoCacheNoStoreHeader());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -359,9 +387,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
@@ -383,9 +411,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
@@ -407,9 +435,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder().WithUri(server.ListeningUri)
                         .ResultAsync<TestResult>();
@@ -430,9 +458,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithNoCacheNoStoreHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -457,9 +485,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.InternalServerError).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.InternalServerError).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -472,7 +500,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .AsPut()
                     .SendAsync();
                 }
-                catch (HttpCallException)
+                catch (HttpRequestException)
                 {
                     // expected
                 }
@@ -491,9 +519,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -527,9 +555,9 @@ namespace AonWeb.FluentHttp.Tests.Caching
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 server
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithPrivateCacheHeader())
-                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader());
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.OK).WithPrivateCacheHeader().WithDefaultExpiration())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault2).WithPrivateCacheHeader().WithDefaultExpiration());
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -551,6 +579,40 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 result1.ShouldBe(result2);
             }
         }
- 
+
+        [Fact]
+        public async Task WhenCachingIsOnAndServerSendsEtag_ExpectNextRequestContainsIfNoneMatch()
+        {
+            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+            {
+                var etag = "12345";
+
+                server
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                        .WithEtag(etag).WithMaxAge(TimeSpan.FromSeconds(1)).WithMustRevalidateHeader())
+                    .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
+                        .WithEtag("54321").WithMaxAge(TimeSpan.Zero));
+
+                string ifNoneMatch = null;
+
+                var result1 = await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .ResultAsync<TestResult>();
+
+                await Task.Delay(TimeSpan.FromMilliseconds(1002));
+
+                var result2 = await CreateBuilder()
+                    .WithUri(server.ListeningUri)
+                    .Advanced.OnSending(ctx =>
+                    {
+                        ifNoneMatch = ctx.Request.Headers?.IfNoneMatch?.FirstOrDefault()?.Tag;
+                    })
+                    .ResultAsync<TestResult>();
+
+                ifNoneMatch.ShouldNotBeNull();
+                ifNoneMatch.ShouldBe("\"" + etag + "\"");
+            }
+        }
+
     }
 }

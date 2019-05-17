@@ -9,9 +9,7 @@ namespace AonWeb.FluentHttp
         IHttpBuilderCore<ITypedBuilder>,
         IFluentConfigurable<ITypedBuilder, ITypedBuilderSettings>
     {
-        Task<TResult> ResultAsync<TResult>();
         Task<TResult> ResultAsync<TResult>(CancellationToken token);
-        Task SendAsync();
         Task SendAsync(CancellationToken token);
         void CancelRequest();
     }

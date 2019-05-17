@@ -12,7 +12,7 @@
     <description>$description$</description>
     <summary>Interfaces and classes for serializing typed HAL request, responses and errors.</summary>
     <language>en-US</language>
-    <tags>fluent, http</tags>
+    <tags>fluent, http, hal</tags>
   </metadata>
     <files />
 </package>

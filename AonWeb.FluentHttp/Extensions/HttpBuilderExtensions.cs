@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AonWeb.FluentHttp
 {
     public static class HttpBuilderExtensions
     {
+        public static Task<HttpResponseMessage> ResultAsync(this IHttpBuilder builder)
+        {
+            return builder.ResultAsync(CancellationToken.None);
+        }
+
         public static IHttpBuilder AsGet(this IHttpBuilder builder)
         {
             builder.Advanced.WithMethod(HttpMethod.Get);

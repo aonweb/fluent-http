@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Settings;
@@ -68,11 +69,11 @@ namespace AonWeb.FluentHttp.Mocks
             return this;
         }
 
-        public override async Task<HttpResponseMessage> ResultAsync()
+        public override async Task<HttpResponseMessage> ResultAsync(CancellationToken token)
         {
             try
             {
-                return await base.ResultAsync();
+                return await base.ResultAsync(token);
             }
             finally
             {

@@ -31,7 +31,7 @@ namespace AonWeb.FluentHttp.Caching
         public bool IsHttpResponseMessage { get; set; }
         public bool IsEmpty { get; }
 
-        public void UpdateResponseInfo(HttpRequestMessage request, HttpResponseMessage response, ICacheMetadata metadata)
+        public void UpdateResponseMetadata(HttpRequestMessage request, HttpResponseMessage response, ICacheMetadata metadata)
         {
             Metadata = CachingHelpers.CreateResponseMetadata(Value, request, response, metadata);
         }

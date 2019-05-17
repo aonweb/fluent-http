@@ -14,7 +14,7 @@ namespace AonWeb.FluentHttp
         Func<object> ContentFactory { get; }
         Func<ITypedBuilderContext, object, Task<HttpContent>> HttpContentFactory { get; }
         Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<object>> ResultFactory { get; }
-        Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> ErrorFactory { get; }
+        Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<object>> ErrorFactory { get; }
         Type ContentType { get; }
         Type ErrorType { get; }
         string MediaType { get; }

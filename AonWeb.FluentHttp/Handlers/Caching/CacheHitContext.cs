@@ -26,7 +26,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         protected CacheHitContext(ICacheContext context, object result)
             : base(context)
         {
-            _ignore = new Modifiable<bool>();
+            _ignore = new Modifiable<bool>(false);
             Result = result;
         }
 

@@ -8,7 +8,6 @@ namespace AonWeb.FluentHttp
         IFluentConfigurableWithAdvanced<IHttpBuilder, IAdvancedHttpBuilder>,
         IHttpBuilderCore<IHttpBuilder>
     {
-        Task<HttpResponseMessage> ResultAsync();
         Task<HttpResponseMessage> ResultAsync(CancellationToken token);
         void CancelRequest();
     }

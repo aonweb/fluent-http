@@ -25,7 +25,7 @@ namespace AonWeb.FluentHttp.Client
             return builder;
         }
 
-        private static void ApplyConfigurations(IEnumerable<IBuilderConfiguration<IHttpClientBuilder>> configurations, IHttpClientBuilder builder)
+        protected static void ApplyConfigurations(IEnumerable<IBuilderConfiguration<IHttpClientBuilder>> configurations, IHttpClientBuilder builder)
         {
             if (configurations == null)
                 return;

@@ -83,7 +83,7 @@ namespace AonWeb.FluentHttp.Tests
                     .WithContentEncoding(Encoding.UTF8)
                     .WithContentType("application/json")
                     .WithStatusCode(HttpStatusCode.OK)
-                    .WithContent(expected))
+                    .WithContent("\"some string data\""))
                 .WithUri(MockUri);
 
             //act
@@ -316,7 +316,7 @@ namespace AonWeb.FluentHttp.Tests
                 .WithContentEncoding(Encoding.UTF8)
                 .WithContentType("application/json")
                 .WithStatusCode(HttpStatusCode.BadRequest)
-                .WithContent(expected))
+                .WithContent("\"some string data\""))
             .WithUri(MockUri)
             .WithErrorType<string>();
 
@@ -328,7 +328,7 @@ namespace AonWeb.FluentHttp.Tests
         }
 
         [Fact]
-        public async Task WhenCallFailsAndErrorIsEmptyStringType_ExpectExceptionWithCorrectlyDeserializedError()
+        public async Task WhenCallFailsAndErrorIsEmptyStringType_ExpectExceptionUnderlyingRequestException()
         {
             //arrange
             var builder = CreateBuilder()
@@ -342,10 +342,10 @@ namespace AonWeb.FluentHttp.Tests
                 .WithErrorType<string>();
 
             // act
-            var ex = await Should.ThrowAsync<HttpErrorException<string>>(builder.ResultAsync<EmptyResult>());
+            var ex = await Should.ThrowAsync<HttpRequestException>(builder.ResultAsync<EmptyResult>());
 
             //assert
-            ex.Error.ShouldBeNullOrWhiteSpace();
+            //ex.Error.ShouldBeNullOrWhiteSpace();
         }
 
         [Fact]

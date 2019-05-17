@@ -83,6 +83,22 @@ namespace AonWeb.FluentHttp.Mocks
             return mock.WithNextResponse(HttpStatusCode.OK, content);
         }
 
+        public static TMocker WithNextResponseTextOk<TMocker>(this IResponseMocker<TMocker> mock, string content)
+            where TMocker : IResponseMocker<TMocker>
+        {
+            return mock.WithNextResponseTextOk(content, null);
+        }
+
+        public static TMocker WithNextResponseTextOk<TMocker>(this IResponseMocker<TMocker> mock, string content, Action<MockHttpResponseMessage> config)
+            where TMocker : IResponseMocker<TMocker>
+        {
+            var response = new MockHttpResponseMessage(HttpStatusCode.OK).WithContentType("text/plain").WithContent(content);
+
+            config?.Invoke(response);
+
+            return mock.WithNextResponse(response);
+        }
+
         #endregion
 
         #region WithAllResponses

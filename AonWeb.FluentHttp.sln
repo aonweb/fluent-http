@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp", "AonWeb.FluentHttp\AonWeb.FluentHttp.csproj", "{930566B9-044B-45AB-B231-87EC4C222A4D}"
 EndProject
@@ -13,11 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Mocks", "AonWeb.FluentHttp.Mocks\AonWeb.FluentHttp.Mocks.csproj", "{819F270C-4105-4380-8EA5-310832A54B7F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{3079726C-4ADF-4F95-884A-2BFA8D351551}"
-	ProjectSection(SolutionItems) = preProject
-		NugetPushAll.cmd = NugetPushAll.cmd
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Serialization", "AonWeb.FluentHttp.Serialization\AonWeb.FluentHttp.Serialization.csproj", "{9DFFF77A-14D1-40C7-A78A-2A8B77391D82}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.HAL.Serialization", "AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj", "{74BD325D-285E-4E8A-8EC7-BA7C330A404C}"
@@ -25,6 +20,30 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Xamarin", "AonWeb.FluentHttp.Xamarin\AonWeb.FluentHttp.Xamarin.csproj", "{482568B4-8362-45F3-9A6C-0D7C0F30EB4E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aonweb.FluentHttp.Full", "Aonweb.FluentHttp.Full\Aonweb.FluentHttp.Full.csproj", "{B3730E8C-5803-47DD-820E-AECE20388BEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.GraphQL", "AonWeb.FluentHttp.GraphQL\AonWeb.FluentHttp.GraphQL.csproj", "{A0262638-F646-4918-8EF3-FBD6348A61F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{1FE603B5-1218-4181-8D06-8A7BF4BB2FA6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_CreateNewNuGetPackage", "_CreateNewNuGetPackage", "{CF92BC2F-9CF9-4090-8A05-875C0A58503E}"
+	ProjectSection(SolutionItems) = preProject
+		tools\_CreateNewNuGetPackage\Config.ps1 = tools\_CreateNewNuGetPackage\Config.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DoNotModify", "DoNotModify", "{08A61C0F-E883-4D75-87B6-8E5A6BFE348F}"
+	ProjectSection(SolutionItems) = preProject
+		tools\_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1 = tools\_CreateNewNuGetPackage\DoNotModify\CreateNuGetPackage.ps1
+		tools\_CreateNewNuGetPackage\DoNotModify\New-NuGetPackage.ps1 = tools\_CreateNewNuGetPackage\DoNotModify\New-NuGetPackage.ps1
+		tools\_CreateNewNuGetPackage\DoNotModify\NuGet.exe = tools\_CreateNewNuGetPackage\DoNotModify\NuGet.exe
+		tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 = tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{4BB1E112-18CF-4620-9DB3-0DC56D8FEC77}"
+	ProjectSection(SolutionItems) = preProject
+		NugetPushAll.cmd = NugetPushAll.cmd
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AonWeb.FluentHttp.Xamarin.HttpClient", "AonWeb.FluentHttp.Xamarin.HttpClient\AonWeb.FluentHttp.Xamarin.HttpClient.csproj", "{BE4FA80D-DB53-4DC9-89F1-F074E5020F95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,8 +87,20 @@ Global
 		{B3730E8C-5803-47DD-820E-AECE20388BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3730E8C-5803-47DD-820E-AECE20388BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3730E8C-5803-47DD-820E-AECE20388BEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0262638-F646-4918-8EF3-FBD6348A61F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0262638-F646-4918-8EF3-FBD6348A61F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0262638-F646-4918-8EF3-FBD6348A61F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0262638-F646-4918-8EF3-FBD6348A61F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE4FA80D-DB53-4DC9-89F1-F074E5020F95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE4FA80D-DB53-4DC9-89F1-F074E5020F95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE4FA80D-DB53-4DC9-89F1-F074E5020F95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE4FA80D-DB53-4DC9-89F1-F074E5020F95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CF92BC2F-9CF9-4090-8A05-875C0A58503E} = {1FE603B5-1218-4181-8D06-8A7BF4BB2FA6}
+		{08A61C0F-E883-4D75-87B6-8E5A6BFE348F} = {CF92BC2F-9CF9-4090-8A05-875C0A58503E}
 	EndGlobalSection
 EndGlobal

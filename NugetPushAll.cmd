@@ -1,7 +1,15 @@
-call AonWeb.FluentHttp.Serialization\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
-call AonWeb.FluentHttp\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
-call AonWeb.FluentHttp.HAL.Serialization\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
-call AonWeb.FluentHttp.Hal\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
-call AonWeb.FluentHttp.Mocks\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
-call AonWeb.FluentHttp.Autofac\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
-call AonWeb.FluentHttp.Full\_CreateNewNuGetPackage\RunMeToUploadNuGetPackage.cmd
+@ECHO OFF
+SET THIS_SCRIPTS_DIRECTORY=%~dp0
+
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Serialization\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.HAL.Serialization\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Hal\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Mocks\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Autofac\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Full\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.GraphQL\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Xamarin\bin\Release\""
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "%THIS_SCRIPTS_DIRECTORY%tools\_CreateNewNuGetPackage\DoNotModify\UploadNuGetPackage.ps1 -ProjectPath \"%THIS_SCRIPTS_DIRECTORY%AonWeb.FluentHttp.Xamarin.HttpClient\bin\Release\""
+
+pause

@@ -166,14 +166,14 @@ namespace AonWeb.FluentHttp
             return builder;
         }
 
-        public static IAdvancedTypedBuilder WithErrorFactory<TError>(this IAdvancedTypedBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<TError>> errorFactory)
+        public static IAdvancedTypedBuilder WithErrorFactory<TError>(this IAdvancedTypedBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<TError>> errorFactory)
         {
             builder.WithConfiguration(s => s.WithResultType(typeof(TError)).ErrorFactory = async (ctx, request, response, ex) => await errorFactory(ctx, request, response, ex));
 
             return builder;
         }
 
-        public static IAdvancedTypedBuilder WithErrorFactory(this IAdvancedTypedBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> errorFactory)
+        public static IAdvancedTypedBuilder WithErrorFactory(this IAdvancedTypedBuilder builder, Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<object>> errorFactory)
         {
             builder.WithConfiguration(s => s.ErrorFactory = errorFactory);
 

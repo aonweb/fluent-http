@@ -44,51 +44,128 @@ namespace AonWeb.FluentHttp.Mocks
             return response;
         }
 
+        public static MockHttpResponseMessage WithNoCacheNoStoreHeader(this MockHttpResponseMessage response)
+        {
+            return response.WithNoCacheHeader().WithNoStoreHeader();
+        }
+
         public static MockHttpResponseMessage WithNoCacheHeader(this MockHttpResponseMessage response)
         {
-            if (response.Headers.CacheControl == null)
-                response.Headers.CacheControl = new CacheControlHeaderValue();
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
 
             response.Headers.CacheControl.NoCache = true;
+
+            return response;
+        }
+
+        public static MockHttpResponseMessage WithNoStoreHeader(this MockHttpResponseMessage response)
+        {
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
+
             response.Headers.CacheControl.NoStore = true;
 
             return response;
         }
 
-        public static MockHttpResponseMessage WithPublicCacheHeader(this MockHttpResponseMessage response, DateTimeOffset? expires = null)
+        public static MockHttpResponseMessage WithMustRevalidateHeader(this MockHttpResponseMessage response)
         {
-            return response.WithCacheHeader("public", expires);
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
+
+            response.Headers.CacheControl.MustRevalidate = true;
+
+            return response;
         }
 
-        public static MockHttpResponseMessage WithPrivateCacheHeader(this MockHttpResponseMessage response, DateTimeOffset? expires = null)
+        public static MockHttpResponseMessage WithPublicCacheHeader(this MockHttpResponseMessage response)
         {
-            return response.WithCacheHeader("private", expires);
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
+
+            response.Headers.CacheControl.Public = true;
+            response.Headers.CacheControl.Private = false;
+
+            return response;
         }
 
-        public static MockHttpResponseMessage WithCacheHeader(this MockHttpResponseMessage response, string publicity = "public", DateTimeOffset? expires = null)
+        public static MockHttpResponseMessage WithPrivateCacheHeader(this MockHttpResponseMessage response)
         {
-            if (response.Headers.CacheControl == null)
-                response.Headers.CacheControl = new CacheControlHeaderValue();
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
 
-            if (publicity == "public")
+            response.Headers.CacheControl.Public = false;
+            response.Headers.CacheControl.Private = true;
+
+            return response;
+        }
+
+        public static MockHttpResponseMessage WithEtag(this MockHttpResponseMessage response, string etag)
+        {
+
+            if (!string.IsNullOrWhiteSpace(etag))
             {
-                response.Headers.CacheControl.Public = true;
-                response.Headers.CacheControl.Private = false;
+                if (!etag.StartsWith("\""))
+                    etag = $"\"{etag}\"";
+
+                response.Headers.ETag = EntityTagHeaderValue.Parse(etag);
             }
             else
             {
-                response.Headers.CacheControl.Public = false;
-                response.Headers.CacheControl.Private = true;
+                response.Headers.ETag = null;
             }
 
-            var exp = expires.GetValueOrDefault(DateTimeOffset.UtcNow.AddMinutes(15)).ToUniversalTime();
-            response.Headers.CacheControl.MaxAge = exp - DateTimeOffset.UtcNow;
 
-            if (response.Content == null)
-                response.Content = new StringContent("");
+            return response;
+        }
 
-            response.Content.Headers.Expires = exp;
-            response.Content.Headers.LastModified = DateTimeOffset.UtcNow;
+        public static MockHttpResponseMessage WithMaxAge(this MockHttpResponseMessage response, TimeSpan maxAge)
+        {
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
+
+            if (maxAge == TimeSpan.Zero)
+                response.Headers.CacheControl.MaxAge = null;
+            else
+                response.Headers.CacheControl.MaxAge = maxAge;
+
+            return response;
+        }
+
+        public static MockHttpResponseMessage WithDefaultExpiration(this MockHttpResponseMessage response)
+        {
+            return response.WithExpirationOrDefault();
+        }
+
+        public static MockHttpResponseMessage WithExpirationOrDefault(this MockHttpResponseMessage response, DateTimeOffset? expiration = null)
+        {
+            return response.WithExpiration(expiration ?? DateTimeOffset.UtcNow.AddMinutes(15));
+        }
+
+        public static MockHttpResponseMessage WithExpiration(this MockHttpResponseMessage response, DateTimeOffset expiration)
+        {
+            var exp = expiration.ToUniversalTime();
+            response.WithMaxAge(exp - DateTimeOffset.UtcNow);
+
+            if (response.Content != null)
+                response.Content.Headers.Expires = exp;
+
+            return response;
+        }
+
+        public static MockHttpResponseMessage WithCacheHeader(this MockHttpResponseMessage response, string publicity = "public", DateTimeOffset? expires = null, DateTimeOffset? lastModified = null, string etag = null, TimeSpan? maxAge = null)
+        {
+            response.Headers.CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
+
+            if (publicity == "public")
+                response.WithPublicCacheHeader();
+            else
+                response.WithPrivateCacheHeader();
+
+
+            if (maxAge != null)
+                response.WithMaxAge(maxAge.Value);
+
+
+            if (response.Content != null)
+                response.Content.Headers.LastModified = lastModified ?? DateTimeOffset.UtcNow;
+
+            response.WithEtag(etag);
 
             return response;
         }

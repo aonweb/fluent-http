@@ -12,7 +12,7 @@ namespace AonWeb.FluentHttp.Settings
         new Func<object> ContentFactory { get; set; }
         new Func<ITypedBuilderContext, object, Task<HttpContent>> HttpContentFactory { get; set; }
         new Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<object>> ResultFactory { get; set; }
-        new Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> ErrorFactory { get; set; }
+        new Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<object>> ErrorFactory { get; set; }
         ITypedBuilderSettings WithContentType(Type type);
         ITypedBuilderSettings WithDefiniteContentType(Type type);
         ITypedBuilderSettings WithResultType(Type type);

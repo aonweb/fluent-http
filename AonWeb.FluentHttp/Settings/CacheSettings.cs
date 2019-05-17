@@ -17,7 +17,7 @@ namespace AonWeb.FluentHttp.Settings
             MustRevalidate = false;
             SuppressTypeMismatchExceptions = false;
             CacheableHttpMethods = new HashSet<HttpMethod> { HttpMethod.Get };
-            CacheableHttpStatusCodes = new HashSet<HttpStatusCode> { HttpStatusCode.OK };
+            CacheableHttpStatusCodes = new HashSet<HttpStatusCode> { HttpStatusCode.OK, HttpStatusCode.NotModified };
             DefaultVaryByHeaders = new HashSet<string> { "Accept", "Accept-Encoding" };
             DefaultDurationForCacheableResults = TimeSpan.FromMinutes(15);
             ResponseValidator = (ctx, res) => CachingHelpers.ValidateResponse(res, ctx.CacheableHttpStatusCodes);

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>$id$</id>
     <version>$version$</version>
@@ -13,6 +13,8 @@
     <summary>Interfaces and classes for serializing typed responses.</summary>
     <language>en-US</language>
     <tags>fluent, http</tags>
+    <releaseNotes>
+    </releaseNotes>
   </metadata>
-    <files />
+  <files />
 </package>

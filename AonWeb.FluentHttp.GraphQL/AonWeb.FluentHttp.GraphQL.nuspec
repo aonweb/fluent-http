@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>Fluent GraphQL Query and Mutation Builder</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/aonweb/fluent-http</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <summary>An fluent interface for making http calls to GraphQL server.</summary>
+    <copyright>Copyright 2014</copyright>
+    <language>en-US</language>
+    <tags>fluent, http, graphql</tags>
+    <dependencies>
+      <group>
+        <dependency id="AonWeb.FluentHttp" version="3.1.6" />
+        <dependency id="AonWeb.FluentHttp.Serialization" version="3.1.6" />
+      </group>
+    </dependencies>
+  </metadata>
+    <files />
+</package>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Settings;
@@ -27,9 +28,9 @@ namespace AonWeb.FluentHttp.Handlers.Caching
             return TryGetFromCache(context);
         }
 
-        Task ITypedHandler.OnSent(TypedSentContext context)
+        async Task  ITypedHandler.OnSent(TypedSentContext context)
         {
-            return TryGetRevalidatedResult(context, context.Request, context.Response);
+            await TryGetRevalidatedResult(context, context.Request, context.Response);
         }
 
         Task ITypedHandler.OnResult(TypedResultContext context)

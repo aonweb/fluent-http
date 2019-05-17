@@ -100,7 +100,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
+            return (handlerContext ?? new CacheHitContext<object>(context, null)).GetHandlerResult();
         }
 
         public async Task<Modifiable> OnMiss(ICacheContext context)
@@ -117,7 +117,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
+            return (handlerContext ?? new CacheMissContext<object>(context)).GetHandlerResult();
         }
 
         public async Task<Modifiable> OnStore(ICacheContext context, object result)
@@ -134,7 +134,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
+            return (handlerContext ?? new CacheStoreContext<object>(context, null)).GetHandlerResult();
         }
 
         public async Task<Modifiable> OnExpiring(ICacheContext context, RequestValidationResult reason)
@@ -151,7 +151,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
+            return (handlerContext ?? new CacheExpiringContext(context, 0)).GetHandlerResult();
         }
 
         public async Task<Modifiable> OnExpired(ICacheContext context, RequestValidationResult reason, IReadOnlyCollection<Uri> expiredUris)
@@ -168,7 +168,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 await handlerInfo.Handler(handlerContext);
             }
 
-            return handlerContext != null ? handlerContext.GetHandlerResult() : new Modifiable();
+            return (handlerContext ?? new CacheExpiredContext(context, 0, null)).GetHandlerResult();
         }
 
         #region Hit

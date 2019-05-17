@@ -53,7 +53,7 @@ namespace AonWeb.FluentHttp
         public Func<object> ContentFactory { get; }
         public Func<ITypedBuilderContext, object, Task<HttpContent>> HttpContentFactory { get; }
         public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Task<object>> ResultFactory { get; }
-        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, ExceptionDispatchInfo, Task<object>> ErrorFactory { get; }
+        public Func<ITypedBuilderContext, HttpRequestMessage, HttpResponseMessage, Exception, Task<object>> ErrorFactory { get; }
         public Type ContentType { get; }
         public Type ErrorType { get; }
         public string MediaType { get; }

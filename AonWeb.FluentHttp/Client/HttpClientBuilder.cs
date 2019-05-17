@@ -30,8 +30,8 @@ namespace AonWeb.FluentHttp.Client
         public IHttpClient Build()
         {
             // TODO: should we pool these clients or handlers
-            var handler = CreateHandler(Settings);
-
+            var handler = CreateHandler(GetHttpClientHandler, Settings);
+            
             return GetClientInstance(handler, Settings);
         }
 
@@ -48,10 +48,15 @@ namespace AonWeb.FluentHttp.Client
 
             return client;
         }
-        
-        protected virtual HttpMessageHandler CreateHandler(IHttpClientSettings settings)
+
+        protected virtual HttpClientHandler GetHttpClientHandler()
         {
-            var handler = new HttpClientHandler();
+            return new HttpClientHandler();
+        }
+
+        protected virtual HttpMessageHandler CreateHandler(Func<HttpClientHandler> httpClientHandler, IHttpClientSettings settings)
+        {
+            var handler = httpClientHandler();
 
             if (handler.SupportsAllowAutoRedirect())
                 handler.AllowAutoRedirect = false; //this will be handled by the consuming code

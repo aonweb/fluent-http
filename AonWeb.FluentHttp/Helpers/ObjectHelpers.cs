@@ -58,6 +58,7 @@ namespace AonWeb.FluentHttp.Helpers
             }
 
             var resultWithMeta = result as IResultWithWritableMetadata;
+
             if (resultWithMeta != null)
             {
                 resultWithMeta.Metadata = CachingHelpers.CreateResponseMetadata(result, request, response, context.CacheMetadata);
@@ -66,9 +67,7 @@ namespace AonWeb.FluentHttp.Helpers
             return result;
         }
 
-        public static async Task<object> CreateError(
-            ITypedBuilderContext context, HttpRequestMessage request,
-            HttpResponseMessage response, ExceptionDispatchInfo capturedException)
+        public static async Task<object> CreateError(ITypedBuilderContext context, HttpRequestMessage request, HttpResponseMessage response, Exception exception)
         {
             var allowNullError = typeof (IEmptyError).IsAssignableFrom(context.ErrorType);
 
@@ -81,21 +80,19 @@ namespace AonWeb.FluentHttp.Helpers
                 }
                 catch (Exception ex)
                 {
-                    var newException = capturedException != null ? new AggregateException(ex, capturedException.SourceException) : ex;
-
-                    capturedException =  ExceptionDispatchInfo.Capture(newException);
+                    exception = exception != null ? new AggregateException(ex, exception) : ex;
                 }
             }
 
             if (error == null)
             {
-                error = capturedException != null 
-                    ?  context.DefaultErrorFactory?.Invoke(context.ErrorType, capturedException.SourceException) 
+                error = exception != null 
+                    ?  context.DefaultErrorFactory?.Invoke(context.ErrorType, exception) 
                     : TypeHelpers.GetDefaultValueForType(context.ErrorType);
             }
 
-            if(error == null && !allowNullError)
-                capturedException?.Throw();
+            if(error == null && !allowNullError && exception != null)
+                throw exception;
 
             var errorWithMeta = error as IResultWithWritableMetadata;
 
@@ -151,7 +148,11 @@ namespace AonWeb.FluentHttp.Helpers
             }
 
             if (typeof(byte[]).IsAssignableFrom(typeInfo))
-                return await content.ReadAsByteArrayAsync();
+            {
+                token.ThrowIfCancellationRequested();
+
+                return await content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            }
 
             var mediaType = content.Headers.ContentType ?? new MediaTypeHeaderValue("application/octet-stream");
 
@@ -172,7 +173,7 @@ namespace AonWeb.FluentHttp.Helpers
 
             var stream = await content.ReadAsStreamAsync();
 
-            return await formatter.ReadFromStreamAsync(type, stream, content, null, token);
+            return await formatter.ReadFromStreamAsync(type, stream, content, null, token).ConfigureAwait(false);
         }
     }
 }

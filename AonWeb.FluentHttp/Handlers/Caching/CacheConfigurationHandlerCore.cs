@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
@@ -18,7 +19,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
     // but the base logic for cache validation / invalidation was based off CacheCow
     public abstract class CacheConfigurationHandlerCore
     {
-        private readonly ICacheManager _cacheManager;
+        protected readonly ICacheManager _cacheManager;
 
         protected CacheConfigurationHandlerCore(ICacheSettings settings, ICacheManager cacheManager)
         {
@@ -127,21 +128,21 @@ namespace AonWeb.FluentHttp.Handlers.Caching
         {
             if (!Enabled)
                 return;
-
+            
             var context = GetContext(handlerContext);
 
             var result = (CacheEntry)context.Items["CacheHandlerCachedItem"];
 
-            if (result == null || !context.RevalidateValidator(context, result.Metadata))
+            var meta = CachingHelpers.CreateResponseMetadata(result, request, response, context);
+
+            if (result == null || !context.RevalidateValidator(context, meta))
                 return;
 
             if (!result.IsEmpty && result.Value != null)
             {
-                result.UpdateResponseInfo(request, response, context);
+                result.UpdateResponseMetadata(request, response, context);
 
                 context.ResultInspector?.Invoke(result);
-
-                ObjectHelpers.Dispose(response);
             }
             else
             {
@@ -175,7 +176,7 @@ namespace AonWeb.FluentHttp.Handlers.Caching
                 return;
 
             var context = GetContext(handlerContext);
-
+            
             var cacheEntry = new CacheEntry(result, request, response, context);
 
             var requestValidation = context.RequestValidator(context);

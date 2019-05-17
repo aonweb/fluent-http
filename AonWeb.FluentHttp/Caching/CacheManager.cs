@@ -30,7 +30,17 @@ namespace AonWeb.FluentHttp.Caching
 
             var cacheEntry = await _cache.Get<CacheEntry>(key);
 
-            if (cacheEntry == null || context.ResponseValidator(context, cacheEntry.Metadata) != ResponseValidationResult.OK)
+            if (cacheEntry == null)
+                return CacheEntry.Empty;
+
+            var validation = context.ResponseValidator(context, cacheEntry.Metadata);
+
+            if (validation == ResponseValidationResult.Stale && !context.AllowStaleResultValidator(context, cacheEntry.Metadata))
+                return CacheEntry.Empty;
+
+            if (validation != ResponseValidationResult.OK
+                && validation != ResponseValidationResult.Stale
+                && validation != ResponseValidationResult.MustRevalidate)
                 return CacheEntry.Empty;
 
             object result;
@@ -189,7 +199,7 @@ namespace AonWeb.FluentHttp.Caching
         }
         private Task<CacheKey> GetKey(ICacheContext context)
         {
-            return GetKey(context.ResultType, context.Uri, context.DefaultVaryByHeaders, context.Request.Headers);
+            return GetKey(context.ResultType, context.Uri, context.DefaultVaryByHeaders, context.Request?.Headers);
         }
 
         private async Task<CacheKey> GetKey(Type resultType, Uri uri, IEnumerable<string> defaultVaryByHeaders, HttpRequestHeaders headers)
@@ -198,7 +208,7 @@ namespace AonWeb.FluentHttp.Caching
             var parts = new List<string>
             {
                 typeof (HttpResponseMessage).IsAssignableFrom(resultType) ? "Http" : "Typed",
-                uri.ToString()
+                uri?.ToString() ?? string.Empty
             };
 
             if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))

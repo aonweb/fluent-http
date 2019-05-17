@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Exceptions;
@@ -318,7 +319,7 @@ namespace AonWeb.FluentHttp.Tests.Handlers
                 var calledBack = false;
 
                 //act
-                await Should.ThrowAsync<HttpErrorException<string>>(
+                await Should.ThrowAsync<HttpRequestException>(
                       new TypedBuilderFactory().Create().WithUri(server.ListeningUri).Advanced
                          .WithRedirectConfiguration(h => h.WithAutoRedirect(false).WithCallback(ctx => calledBack = true))
                          .SendAsync());
