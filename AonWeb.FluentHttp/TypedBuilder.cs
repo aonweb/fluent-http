@@ -91,6 +91,11 @@ namespace AonWeb.FluentHttp
             WithConfiguration(configuration);
         }
 
+        public Task<TResult> ResultAsync<TResult>()
+        {
+            return ResultAsync<TResult>(CancellationToken.None);
+        }
+
         public virtual async Task<TResult> ResultAsync<TResult>(CancellationToken token)
         {
             if (typeof(IEmptyResult).IsAssignableFrom(typeof(TResult)))
@@ -109,7 +114,10 @@ namespace AonWeb.FluentHttp
             return result;
         }
 
-        
+        public Task SendAsync()
+        {
+            return SendAsync(CancellationToken.None);
+        }
 
         public async Task SendAsync(CancellationToken token)
         {

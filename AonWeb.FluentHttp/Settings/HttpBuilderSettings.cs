@@ -26,6 +26,7 @@ namespace AonWeb.FluentHttp.Settings
             MediaType = "application/json";
             ContentEncoding = Encoding.UTF8;
             ExceptionFactory = ObjectHelpers.CreateHttpException;
+            AutoDecompression = true;
         }
 
         public HttpBuilderSettings(ICacheSettings cacheSettings, IEnumerable<IHttpHandler> handlers, IEnumerable<IHttpResponseValidator> responseValidators)

@@ -10,6 +10,7 @@ using AonWeb.FluentHttp.HAL;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Settings;
 using Autofac;
+using Microsoft.Extensions.Caching.Memory;
 using Module = Autofac.Module;
 
 namespace AonWeb.FluentHttp.Autofac
@@ -112,6 +113,8 @@ namespace AonWeb.FluentHttp.Autofac
 
             builder.RegisterType<ResponseSerializer>().AsSelf()
                 .SingleInstance();
+
+            builder.RegisterInstance(new MemoryCacheOptions());
 
             builder.RegisterType<VaryByProvider>().As<IVaryByProvider>()
                 .SingleInstance().PreserveExistingDefaults();

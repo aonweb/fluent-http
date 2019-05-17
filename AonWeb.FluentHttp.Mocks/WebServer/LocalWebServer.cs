@@ -11,6 +11,7 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
 {
     public class LocalWebServer : IDisposable, IResponseMocker<LocalWebServer>
     {
+        private static readonly object _lock = new object();
         private static readonly ISet<int> PortsInUse = new HashSet<int>();
         private static int _minPort = 9000;
         private static int _maxPort = 10000;
@@ -25,7 +26,7 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
         private long _totalCount;
         private readonly ConcurrentDictionary<string, long> _urlCount;
         private bool _loggingEnabled;
-        private IMockLogger _logger;
+        private readonly IMockLogger _logger;
 
         public int Port { get; private set; }
         private UriBuilder ListeningUriBuilder { get; }
@@ -63,7 +64,7 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
 
         private void GenerateUniquePort()
         {
-            lock (PortsInUse)
+            lock (_lock)
             {
                 for (var port = _minPort; port <= _maxPort; port++)
                 {
@@ -128,7 +129,7 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
                 _listener.Close();
             }
 
-            lock (PortsInUse)
+            lock (_lock)
             {
                 PortsInUse.Remove(Port);
             }
@@ -184,14 +185,9 @@ namespace AonWeb.FluentHttp.Mocks.WebServer
                 var url = listenerRequest.Url.ToString();
 
                 Interlocked.Increment(ref _totalCount);
-                _urlCount.AddOrUpdate(url, 1, (u, c) =>
-                {
-                    return c + 1;
-                });
+                _urlCount.AddOrUpdate(url, 1, (u, c) => c + 1);
 
-                long urlCount;
-
-                _urlCount.TryGetValue(url, out urlCount);
+                _urlCount.TryGetValue(url, out var urlCount);
 
                 var request = new MockHttpRequestMessage(listenerRequest)
                 {

@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using AonWeb.FluentHttp.Client;
 
 namespace AonWeb.FluentHttp.Settings
@@ -17,5 +19,7 @@ namespace AonWeb.FluentHttp.Settings
         TimeSpan? Timeout { get; set; }
         Action<HttpRequestHeaders> RequestHeaderConfiguration { get; set; }
         Action<IHttpClient> ClientConfiguration { get; set; }
+        bool? CheckCertificateRevocationList { get; set; }
+        IList<X509Certificate> ClientCertificates { get; }
     }
 }

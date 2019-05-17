@@ -32,11 +32,17 @@ namespace AonWeb.FluentHttp.Helpers
 
         public static ISet<T> ToSet<T>(this IEnumerable<T> primary, params IEnumerable<T>[] additional)
         {
+            if (primary is ISet<T> set && (additional == null || additional.Length == 0))
+                return set;
+
             return primary.ToSet(EqualityComparer<T>.Default, additional);
         }
 
         public static ISet<T> ToSet<T>(this IEnumerable<T> primary, IEqualityComparer<T> comparer, params IEnumerable<T>[] additional)
         {
+            if (primary is ISet<T> set && (additional == null || additional.Length == 0))
+                return set;
+
             var allItems = primary.Concat((additional ?? Enumerable.Empty<IEnumerable<T>>()).SelectMany(x => x));
 
             var distinct = allItems.Distinct();
@@ -55,6 +61,17 @@ namespace AonWeb.FluentHttp.Helpers
             }
 
             return primary;
+        }
+
+        public static IList<T> AddRange<T>(this IList<T> list, IEnumerable<T> collection)
+        {
+            if (collection == null)
+                return list;
+
+            foreach (var item in collection)
+                list.Add(item);
+
+            return list;
         }
     }
 }

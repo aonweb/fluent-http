@@ -20,13 +20,13 @@ namespace AonWeb.FluentHttp.Tests.Performance
         public SpeedTest(ITestOutputHelper logger)
         {
             _logger = logger;
-            _container = RegistrationHelpers.CreateContainer(false);
+            _container = RegistrationHelpers.CreateContainer();
         }
 
         [Fact]
         public async Task LessThan15PercentOverhead()
         {
-            const int iterations = 5000;
+            const int iterations = 1000;
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
@@ -53,7 +53,7 @@ namespace AonWeb.FluentHttp.Tests.Performance
         [Fact]
         public async Task LessThan15PercentOverheadInContainer()
         {
-            const int iterations = 5000;
+            const int iterations = 1000;
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {

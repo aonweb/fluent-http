@@ -24,7 +24,7 @@ namespace AonWeb.FluentHttp.Caching
             return await _cache.Get<UriCacheInfo>(key);
         }
 
-        public async Task<bool> Put(Uri uri, CacheKey cacheKey)
+        public async Task<bool> Put(Uri uri, CacheKey cacheKey, TimeSpan? expiration)
         {
             if (uri == null || cacheKey == CacheKey.Empty)
                 return false;
@@ -33,13 +33,15 @@ namespace AonWeb.FluentHttp.Caching
 
             var cacheInfo = await _cache.Get<UriCacheInfo>(key) ?? new UriCacheInfo();
 
+            cacheInfo.Expiration = DateTimeOffset.UtcNow + expiration;
+
             lock (cacheInfo)
             {
                 if (!cacheInfo.CacheKeys.Contains(cacheKey))
                     cacheInfo.CacheKeys.Add(cacheKey);
             }
 
-            return await _cache.Put(key, cacheInfo).ConfigureAwait(false);
+            return await _cache.Put(key, cacheInfo, expiration).ConfigureAwait(false);
         }
 
         public async Task<bool> DeleteKey(Uri uri, CacheKey cacheKey)
@@ -62,7 +64,9 @@ namespace AonWeb.FluentHttp.Caching
                 cacheInfo.CacheKeys.Remove(cacheKey);
             }
 
-            return await _cache.Put(key, cacheInfo).ConfigureAwait(false); ;
+            var expiration = cacheInfo.Expiration - DateTimeOffset.UtcNow;
+
+            return await _cache.Put(key, cacheInfo, expiration).ConfigureAwait(false); ;
         }
 
         public async Task<bool> Delete(Uri uri)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Helpers;
@@ -56,13 +57,13 @@ namespace AonWeb.FluentHttp.Caching
                 result = cacheEntry.Value;
             }
 
-            return new CacheEntry(result, cacheEntry.Metadata);
+            return new CacheEntry(result, cacheEntry.Metadata) { IsHttpResponseMessage = cacheEntry.IsHttpResponseMessage };
         }
 
         public async Task Put(ICacheContext context, CacheEntry newCacheEntry)
         {
             var key = await GetKey(context);
-            var isResponseMessage = false;
+            var isHttpResponseMessage = newCacheEntry.IsHttpResponseMessage;
             CacheEntry cacheEntry = null;
             var temp = await _cache.Get<CacheEntry>(key);
 
@@ -77,7 +78,7 @@ namespace AonWeb.FluentHttp.Caching
                 if (response != null)
                 {
                     value = await _serializer.Serialize(response, context.Token);
-                    isResponseMessage = true;
+                    isHttpResponseMessage = true;
                 }
                 else
                 {
@@ -87,7 +88,7 @@ namespace AonWeb.FluentHttp.Caching
                 cacheEntry = new CacheEntry(newCacheEntry.Metadata)
                 {
                     Value = value,
-                    IsHttpResponseMessage = isResponseMessage
+                    IsHttpResponseMessage = isHttpResponseMessage
                 };
             }
             else
@@ -95,10 +96,13 @@ namespace AonWeb.FluentHttp.Caching
                 cacheEntry.Metadata.Merge(newCacheEntry.Metadata);
             }
 
+            // TODO: this may not be the place for this, I'd like to provide some ability to control jitter
+            var duration = CachingHelpers.GetCacheDuration(cacheEntry.Metadata);
+
             await Task.WhenAll(
-                _cache.Put(key, cacheEntry),
-                 _varyBy.Put(context.Uri, newCacheEntry.Metadata.VaryHeaders),
-                 _uriInfo.Put(context.Uri, key)
+                _cache.Put(key, cacheEntry, duration),
+                 _varyBy.Put(context.Uri, newCacheEntry.Metadata.VaryHeaders, duration),
+                 _uriInfo.Put(context.Uri, key, duration)
             );
         }
 
@@ -205,21 +209,27 @@ namespace AonWeb.FluentHttp.Caching
         private async Task<CacheKey> GetKey(Type resultType, Uri uri, IEnumerable<string> defaultVaryByHeaders, HttpRequestHeaders headers)
         {
 
-            var parts = new List<string>
-            {
-                typeof (HttpResponseMessage).IsAssignableFrom(resultType) ? "Http" : "Typed",
-                uri?.ToString() ?? string.Empty
-            };
+            var builder = new StringBuilder();
+            var isHttpResponseMessage = typeof(HttpResponseMessage).IsAssignableFrom(resultType);
 
-            if (typeof(HttpResponseMessage).IsAssignableFrom(resultType))
+
+            builder.Append(isHttpResponseMessage ? "Http" : "Typed")
+                .Append("-")
+                .Append(uri?.ToString() ?? "uri://unknown");
+
+            if (!isHttpResponseMessage)
+                return builder.ToString();
+
+            var varyBy = await GetVaryByHeaders(uri, defaultVaryByHeaders);
+
+            foreach (var header in headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase))).OrderBy(h => h.Key))
             {
-                var varyBy = await GetVaryByHeaders(uri, defaultVaryByHeaders);
-                parts.AddRange(headers.Where(h => varyBy.Any(v => v.Equals(h.Key, StringComparison.OrdinalIgnoreCase)))
-                    .SelectMany(h => h.Value.Select(v => $"{UriHelpers.NormalizeHeader(h.Key)}:{UriHelpers.NormalizeHeader(v)}"))
-                    .Distinct());
+                builder.Append(";");
+                builder.Append(UriHelpers.NormalizeHeader(header.Key)).Append(":");
+                builder.Append(string.Join(",", header.Value.OrderBy(v => v).Select(UriHelpers.NormalizeHeader).Distinct()));
             }
 
-            return new CacheKey(string.Join("-", parts));
+            return builder.ToString();
         }
 
         private  async Task<IEnumerable<string>> GetVaryByHeaders(Uri uri, IEnumerable<string> defaultVaryByHeaders)

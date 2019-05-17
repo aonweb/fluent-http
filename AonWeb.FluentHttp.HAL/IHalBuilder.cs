@@ -9,14 +9,12 @@ namespace AonWeb.FluentHttp.HAL
         IFluentConfigurableWithAdvanced<IHalBuilder, IAdvancedHalBuilder>,
         IFluentConfigurable<IHalBuilder, ITypedBuilderSettings>
     {
-        Task<TResult> ResultAsync<TResult>() 
-            where TResult : IHalResource;
-
         Task<TResult> ResultAsync<TResult>(CancellationToken token)
             where TResult : IHalResource;
-
-        Task SendAsync();
+        Task<TResult> ResultAsync<TResult>()
+            where TResult : IHalResource;
         Task SendAsync(CancellationToken token);
+        Task SendAsync();
         void CancelRequest();
     }
 }

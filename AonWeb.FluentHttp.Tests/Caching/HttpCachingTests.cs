@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
@@ -31,7 +32,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
 
         [Fact]
-        public async Task WhenCachingIsOn_ExpectContentsCachedAccrossCallBuilders()
+        public async Task WhenCachingIsOn_ExpectContentsCachedAcrossCallBuilders()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
@@ -73,7 +74,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
         }
 
         [Fact]
-        public async Task WhenCachingIsOn_ExpectContentsCachedAccrossCallBuildersOnDifferentThreads()
+        public async Task WhenCachingIsOn_ExpectContentsCachedAcrossCallBuildersOnDifferentThreads()
         {
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
@@ -173,7 +174,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
 
         [Fact]
-        public async Task WithDependendUrls_ExpectPostInvalidatesDependents()
+        public async Task WithDependentUrls_ExpectPostInvalidatesDependents()
         {
 
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
@@ -217,8 +218,6 @@ namespace AonWeb.FluentHttp.Tests.Caching
         [Fact]
         public async Task WithDependendUrlsThatAreSelfReferential_ExpectPostNoException()
         {
-
-
             using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
             {
                 var parentUri = server.ListeningUri;
@@ -360,27 +359,33 @@ namespace AonWeb.FluentHttp.Tests.Caching
 
                 server
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
-                        .WithEtag(etag).WithMaxAge(TimeSpan.FromSeconds(1)).WithMustRevalidateHeader())
+                        .WithEtag(etag).WithMustRevalidateHeader().WithMaxAge(TimeSpan.FromSeconds(1)))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
-                        .WithEtag("54321").WithMaxAge(TimeSpan.Zero))
+                        .WithEtag("54321").WithMaxAge(TimeSpan.FromSeconds(1)))
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
-                            .WithEtag("54321").WithMaxAge(TimeSpan.Zero));
+                            .WithEtag("54321").WithMaxAge(TimeSpan.FromSeconds(1)));
 
                 string ifNoneMatch = null;
+                object cachedResult = null;
 
                 var result1 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
                     .ResultAsync();
 
-                await Task.Delay(TimeSpan.FromMilliseconds(1002));
+                await Task.Delay(TimeSpan.FromMilliseconds(1100));
 
                 var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
-                    .Advanced.OnSending(ctx =>
+                    .Advanced.OnSending(HandlerPriority.Last, ctx =>
                     {
                         ifNoneMatch = ctx.Request.Headers?.IfNoneMatch?.FirstOrDefault()?.Tag;
+                        cachedResult = ctx.Result;
+                        _logger.WriteLine("If-None-Match: {0}", ifNoneMatch);
+                        _logger.WriteLine("Cached result is null: {0}", cachedResult == null);
                     })
                     .ResultAsync();
+
+                await Task.Delay(TimeSpan.FromMilliseconds(1100));
 
                 var result3 = await CreateBuilder()
                     .WithUri(server.ListeningUri)
@@ -399,7 +404,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                 server
                   .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
                     .WithMustRevalidateHeader()
-                    .WithMaxAge(TimeSpan.FromSeconds(1)))
+                    .WithMaxAge(TimeSpan.FromSeconds(10)))
                   .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration())
                   .WithNextResponse(new MockHttpResponseMessage(HttpStatusCode.NotModified).WithDefaultExpiration());
 

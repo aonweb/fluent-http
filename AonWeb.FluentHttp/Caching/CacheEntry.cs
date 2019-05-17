@@ -12,13 +12,14 @@ namespace AonWeb.FluentHttp.Caching
             IsEmpty = true;
         }
 
-        public CacheEntry(object result, HttpRequestMessage request, HttpResponseMessage response, ICacheMetadata metadata)
-            : this(result, CachingHelpers.CreateResponseMetadata(result, request, response, metadata)) { }
+        public CacheEntry(object value, HttpRequestMessage request, HttpResponseMessage response, ICacheMetadata metadata)
+            : this(value, CachingHelpers.CreateResponseMetadata(value, request, response, metadata)) { }
 
         public CacheEntry(object value, IResponseMetadata metadata)
             :this(metadata)
         {
             Value = value;
+            IsHttpResponseMessage = value is HttpResponseMessage;
         }
 
         public CacheEntry(IResponseMetadata metadata)

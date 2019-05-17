@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using AonWeb.FluentHttp.Client;
+using AonWeb.FluentHttp.Helpers;
 
 namespace AonWeb.FluentHttp
 {
@@ -65,12 +67,26 @@ namespace AonWeb.FluentHttp
             return builder.WithConfiguration(s => s.ClientCertificateOptions = options);
         }
 
+        public static IHttpClientBuilder WithCheckCertificateRevocationList(this IHttpClientBuilder builder, bool check)
+        {
+            return builder.WithConfiguration(s => s.CheckCertificateRevocationList = check);
+        }
+        public static IHttpClientBuilder WithClientCertificates(this IHttpClientBuilder builder, IEnumerable<X509Certificate> certificates)
+        {
+            return builder.WithConfiguration(s => s.ClientCertificates.AddRange(certificates));
+        }
+
+        public static IHttpClientBuilder WithClientCertificates(this IHttpClientBuilder builder, X509Certificate certificate)
+        {
+            return builder.WithConfiguration(s => s.ClientCertificates.Add(certificate));
+        }
+
         public static IHttpClientBuilder WithUseCookies(this IHttpClientBuilder builder)
         {
             return builder.WithUseCookies(new CookieContainer());
         }
 
-        public static IHttpClientBuilder WithUseCookies(this IHttpClientBuilder builder,CookieContainer container)
+        public static IHttpClientBuilder WithUseCookies(this IHttpClientBuilder builder, CookieContainer container)
         {
             return builder.WithConfiguration(s => s.CookieContainer = container);
         }
