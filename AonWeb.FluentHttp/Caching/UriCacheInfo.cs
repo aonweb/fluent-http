@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace AonWeb.FluentHttp.Caching
@@ -10,5 +11,6 @@ namespace AonWeb.FluentHttp.Caching
         }
 
         public ISet<CacheKey> CacheKeys { get; }
+        public DateTimeOffset? Expiration { get; set; }
     }
 }

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.Serialization;
@@ -13,8 +11,6 @@ namespace AonWeb.FluentHttp.Helpers
 {
     public static class CachingHelpers
     {
-        
-
         public static RequestValidationResult CanCacheRequest(ICacheContext context)
         {
             if (context.Uri == null)
@@ -134,6 +130,22 @@ namespace AonWeb.FluentHttp.Helpers
             return false;
         }
 
+        public static TimeSpan? GetCacheDuration(IResponseMetadata metadata)
+        {
+            var span = (metadata?.Expiration - DateTimeOffset.UtcNow);
+
+            if (span.HasValue)
+            {
+                //if (span <= TimeSpan.Zero)
+                //{
+                //    span = DefaultCacheDuration;
+                //} else
+                span = TimeSpan.FromMilliseconds(span.Value.TotalMilliseconds * 1.5);
+            }
+
+            return span;
+        }
+
         public static IResponseMetadata CreateResponseMetadata(object result, HttpRequestMessage request, HttpResponseMessage response, ICacheMetadata context)
         {
 
@@ -222,26 +234,27 @@ namespace AonWeb.FluentHttp.Helpers
             }
         }
 
-        private static DateTimeOffset? GetExpiration(DateTimeOffset lastModified, HttpResponseMessage response, TimeSpan? duration)
+        private static DateTimeOffset? GetExpiration(DateTimeOffset initialDate, HttpResponseMessage response, TimeSpan? overrideDuration)
         {
-            DateTimeOffset updatedLastModified;
-
-            if (TryUpdateLastModified(duration, lastModified, out updatedLastModified))
-                return updatedLastModified;
+            if (TryApplyDuration(initialDate, overrideDuration, out var expiration))
+                return expiration;
 
             if (response.Headers.CacheControl != null)
             {
-                if (TryUpdateLastModified(response.Headers.CacheControl.MaxAge, lastModified, out updatedLastModified))
-                    return updatedLastModified;
+                if (TryApplyDuration(initialDate, response.Headers.CacheControl.MaxStaleLimit, out expiration))
+                    return expiration;
 
-                if (TryUpdateLastModified(response.Headers.CacheControl.SharedMaxAge, lastModified, out updatedLastModified))
-                    return updatedLastModified;
+                if (TryApplyDuration(initialDate, response.Headers.CacheControl.MaxAge,  out expiration))
+                    return expiration;
+
+                if (TryApplyDuration(initialDate, response.Headers.CacheControl.SharedMaxAge,  out expiration))
+                    return expiration;
             }
 
             return response.Content?.Headers.Expires;
         }
 
-        private static bool TryUpdateLastModified(TimeSpan? duration, DateTimeOffset originalLastModified, out DateTimeOffset lastModified)
+        private static bool TryApplyDuration(DateTimeOffset originalLastModified, TimeSpan? duration, out DateTimeOffset lastModified)
         {
             lastModified = originalLastModified;
 

@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Runtime.ExceptionServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
@@ -71,7 +72,51 @@ namespace AonWeb.FluentHttp
         public static IAdvancedTypedBuilder WithAutoDecompression(this IAdvancedTypedBuilder builder, bool enabled = true)
 
         {
-            return builder.Advanced.WithConfiguration(b => b.WithAutoDecompression(enabled));
+            builder.WithConfiguration(s => s.AutoDecompression = enabled);
+
+            return builder.WithDecompressionMethods(enabled
+                ? DecompressionMethods.GZip | DecompressionMethods.Deflate
+                : DecompressionMethods.None);
+        }
+
+        public static IAdvancedTypedBuilder WithDecompressionMethods(this IAdvancedTypedBuilder builder, DecompressionMethods options)
+        {
+            return builder.WithClientConfiguration(c => c.WithDecompressionMethods(options));
+        }
+
+        public static IAdvancedTypedBuilder WithClientCertificateOptions(this IAdvancedTypedBuilder builder, ClientCertificateOption options)
+        {
+            return builder.WithClientConfiguration(c => c.WithClientCertificateOptions(options));
+        }
+
+        public static IAdvancedTypedBuilder WithCheckCertificateRevocationList(this IAdvancedTypedBuilder builder, bool check)
+        {
+            return builder.WithClientConfiguration(c => c.WithCheckCertificateRevocationList(check));
+        }
+
+        public static IAdvancedTypedBuilder WithClientCertificates(this IAdvancedTypedBuilder builder, IEnumerable<X509Certificate> certificates)
+        {
+            return builder.WithClientConfiguration(c => c.WithClientCertificates(certificates));
+        }
+
+        public static IAdvancedTypedBuilder WithClientCertificates(this IAdvancedTypedBuilder builder, X509Certificate certificate)
+        {
+            return builder.WithClientConfiguration(c => c.WithClientCertificates(certificate));
+        }
+
+        public static IAdvancedTypedBuilder WithUseCookies(this IAdvancedTypedBuilder builder)
+        {
+            return builder.WithClientConfiguration(c => c.WithUseCookies());
+        }
+
+        public static IAdvancedTypedBuilder WithUseCookies(this IAdvancedTypedBuilder builder, CookieContainer container)
+        {
+            return builder.WithClientConfiguration(c => c.WithUseCookies(container));
+        }
+
+        public static IAdvancedTypedBuilder WithCredentials(this IAdvancedTypedBuilder builder, ICredentials credentials)
+        {
+            return builder.WithClientConfiguration(c => c.WithCredentials(credentials));
         }
 
         public static IAdvancedTypedBuilder WithSuppressCancellationExceptions(this IAdvancedTypedBuilder builder, bool suppress = true)

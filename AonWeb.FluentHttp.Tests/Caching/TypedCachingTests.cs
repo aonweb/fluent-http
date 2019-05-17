@@ -591,7 +591,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
                         .WithEtag(etag).WithMaxAge(TimeSpan.FromSeconds(1)).WithMustRevalidateHeader())
                     .WithNextResponse(new MockHttpResponseMessage().WithContent(TestResult.SerializedDefault1)
-                        .WithEtag("54321").WithMaxAge(TimeSpan.Zero));
+                        .WithEtag("54321").WithMaxAge(TimeSpan.FromSeconds(1)));
 
                 string ifNoneMatch = null;
 
@@ -599,7 +599,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
                     .WithUri(server.ListeningUri)
                     .ResultAsync<TestResult>();
 
-                await Task.Delay(TimeSpan.FromMilliseconds(1002));
+                await Task.Delay(TimeSpan.FromMilliseconds(1100));
 
                 var result2 = await CreateBuilder()
                     .WithUri(server.ListeningUri)

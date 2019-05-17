@@ -2,20 +2,17 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http;
 using AonWeb.FluentHttp.Autofac;
 using AonWeb.FluentHttp.Caching;
-using AonWeb.FluentHttp.Exceptions;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
 using AonWeb.FluentHttp.HAL;
-using AonWeb.FluentHttp.HAL.Serialization;
 using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Mocks.WebServer;
 using AonWeb.FluentHttp.Tests.Helpers;
 using Autofac;
-using Autofac.Integration.WebApi;
+using Microsoft.Extensions.Caching.Memory;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -291,77 +288,77 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
             }
         }
 
-        [Fact]
-        public async Task TypedBuilderFactory_ResolvesCustomCacheHandlersWithDifferentScope()
-        {
-            var containerBuilder = new ContainerBuilder();
+        //[Fact]
+        //public async Task TypedBuilderFactory_ResolvesCustomCacheHandlersWithDifferentScope()
+        //{
+        //    var containerBuilder = new ContainerBuilder();
 
-            containerBuilder.RegisterType<CustomScopeTypedCacheHandler>()
-                .As<ITypedCacheHandler>()
-                .InstancePerRequest();
+        //    containerBuilder.RegisterType<CustomScopeTypedCacheHandler>()
+        //        .As<ITypedCacheHandler>()
+        //        .InstancePerRequest();
 
-            Registration.Register(containerBuilder, new[] { typeof(RegistrationHelpers).Assembly }, new[] { typeof(CustomScopeTypedCacheHandler) });
+        //    Registration.Register(containerBuilder, new[] { typeof(RegistrationHelpers).Assembly }, new[] { typeof(CustomScopeTypedCacheHandler) });
 
-            using (var container = containerBuilder.Build())
-            {
-                using (var configuration = new HttpConfiguration
-                {
-                    DependencyResolver = new AutofacWebApiDependencyResolver(container)
-                })
-                {
-                    using (var message = new HttpRequestMessage())
-                    {
-                        message.SetConfiguration(configuration);
+        //    using (var container = containerBuilder.Build())
+        //    {
+        //        using (var configuration = new HttpConfiguration
+        //        {
+        //            DependencyResolver = new AutofacWebApiDependencyResolver(container)
+        //        })
+        //        {
+        //            using (var message = new HttpRequestMessage())
+        //            {
+        //                message.SetConfiguration(configuration);
 
-                        using (var scope = message.GetDependencyScope().GetRequestLifetimeScope())
-                        {
-                            using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
-                            {
-                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheNoStoreHeader());
-                                server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheNoStoreHeader());
+        //                using (var scope = message.GetDependencyScope().GetRequestLifetimeScope())
+        //                {
+        //                    using (var server = LocalWebServer.ListenInBackground(new XUnitMockLogger(_logger)))
+        //                    {
+        //                        server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheNoStoreHeader());
+        //                        server.WithNextResponseTextOk("Typed Result", r => r.WithNoCacheNoStoreHeader());
 
-                                var factory = scope.Resolve<ITypedBuilderFactory>();
-                                Guid? actualGuid1 = null;
-                                Guid? actualGuid2 = null;
-                                int? actualInt1 = null;
-                                int? actualInt2 = null;
-                                var uri1 = server.ListeningUri.AppendPath("first");
-                                var uri2 = server.ListeningUri.AppendPath("second");
+        //                        var factory = scope.Resolve<ITypedBuilderFactory>();
+        //                        Guid? actualGuid1 = null;
+        //                        Guid? actualGuid2 = null;
+        //                        int? actualInt1 = null;
+        //                        int? actualInt2 = null;
+        //                        var uri1 = server.ListeningUri.AppendPath("first");
+        //                        var uri2 = server.ListeningUri.AppendPath("second");
 
-                                var builder1 = factory.Create().WithUri(uri1)
-                                    .Advanced.WithContextItem("CustomValue", 1).WithCaching()
-                                    .OnCacheMiss(HandlerPriority.Last, context =>
-                                    {
-                                        actualInt1 = context.Items["CustomValue"] as int?;
-                                        actualGuid1 = context.Items["CustomScopeTypedCacheHandler"] as Guid?;
-                                    });
+        //                        var builder1 = factory.Create().WithUri(uri1)
+        //                            .Advanced.WithContextItem("CustomValue", 1).WithCaching()
+        //                            .OnCacheMiss(HandlerPriority.Last, context =>
+        //                            {
+        //                                actualInt1 = context.Items["CustomValue"] as int?;
+        //                                actualGuid1 = context.Items["CustomScopeTypedCacheHandler"] as Guid?;
+        //                            });
 
-                                var builder2 = factory.Create().WithUri(uri2)
-                                    .Advanced.WithContextItem("CustomValue", 2).WithCaching()
-                                    .OnCacheMiss(HandlerPriority.Last, context =>
-                                    {
-                                        actualInt2 = context.Items["CustomValue"] as int?;
-                                        actualGuid2 = context.Items["CustomScopeTypedCacheHandler"] as Guid?;
-                                    });
+        //                        var builder2 = factory.Create().WithUri(uri2)
+        //                            .Advanced.WithContextItem("CustomValue", 2).WithCaching()
+        //                            .OnCacheMiss(HandlerPriority.Last, context =>
+        //                            {
+        //                                actualInt2 = context.Items["CustomValue"] as int?;
+        //                                actualGuid2 = context.Items["CustomScopeTypedCacheHandler"] as Guid?;
+        //                            });
 
-                                var result1 = await builder1.ResultAsync<string>();
-                                var result2 = await builder2.ResultAsync<string>();
+        //                        var result1 = await builder1.ResultAsync<string>();
+        //                        var result2 = await builder2.ResultAsync<string>();
 
 
-                                actualInt1.ShouldNotBeNull();
-                                actualInt2.ShouldNotBeNull();
-                                actualGuid1.ShouldNotBeNull();
-                                actualGuid2.ShouldNotBeNull();
+        //                        actualInt1.ShouldNotBeNull();
+        //                        actualInt2.ShouldNotBeNull();
+        //                        actualGuid1.ShouldNotBeNull();
+        //                        actualGuid2.ShouldNotBeNull();
 
-                                actualInt1.ShouldNotBe(actualInt2);
-                                actualGuid1.ShouldBe(actualGuid2);
-                            }
-                        }
+        //                        actualInt1.ShouldNotBe(actualInt2);
+        //                        actualGuid1.ShouldBe(actualGuid2);
+        //                    }
+        //                }
 
-                    }
-                }
-            }
-        }
+        //            }
+        //        }
+        //    }
+        //}
 
         [Fact]
         public async Task TypedBuilderFactory_ResolvesCustomHandlers()
@@ -573,7 +570,13 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
                 activated = true;
             };
 
-            var container = RegistrationHelpers.CreateContainer(false);
+            var container = RegistrationHelpers.CreateContainer(builder =>
+            {
+                builder.RegisterType<CustomCacheProvider>()
+                    .As<ICacheProvider>();
+            });
+
+            var b = container.Resolve<IHttpBuilderFactory>().Create();
 
             activated.ShouldBeTrue();
         }
@@ -712,7 +715,10 @@ namespace AonWeb.FluentHttp.Tests.AutofacTests
     {
         public static EventHandler Activated;
 
+        public static readonly Guid Id = Guid.NewGuid();
+
         public CustomCacheProvider()
+            : base(new MemoryCacheOptions())
         {
             var handler = Activated;
 

@@ -1,5 +1,5 @@
-﻿using AonWeb.FluentHttp.Autofac;
-using AonWeb.FluentHttp.Caching;
+﻿using System;
+using AonWeb.FluentHttp.Autofac;
 using AonWeb.FluentHttp.Tests.AutofacTests;
 using Autofac;
 
@@ -7,16 +7,13 @@ namespace AonWeb.FluentHttp.Tests.Helpers
 {
     public static class RegistrationHelpers
     {
-        public static IContainer CreateContainer(bool singleInstanceCache = true)
+        public static IContainer CreateContainer(Action<ContainerBuilder> configure = null)
         {
             var builder = new ContainerBuilder();
 
-            if (singleInstanceCache)
-                builder.RegisterType<CustomCacheProvider>()
-                    .As<ICacheProvider>()
-                    .InstancePerDependency();
+            configure?.Invoke(builder);
 
-            Registration.Register(builder, new[] { typeof(RegistrationHelpers).Assembly }, new [] {typeof(CustomScopeTypedCacheHandler)});
+            Registration.Register(builder, new [] { typeof(RegistrationHelpers).Assembly }, new [] {typeof(CustomScopeTypedCacheHandler)});
             return builder.Build();
         }
     }

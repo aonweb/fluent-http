@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AonWeb.FluentHttp
 {
@@ -10,10 +11,11 @@ namespace AonWeb.FluentHttp
 
         static Cache()
         {
+            // TODO: MemoryCacheOptions should be configurable
             SetManager(() => new CacheManager(
-                new CacheProvider(), 
-                new VaryByProvider(new CacheProvider()),
-                new UriInfoProvider(new CacheProvider()),
+                new CacheProvider(new MemoryCacheOptions()), 
+                new VaryByProvider(new CacheProvider(new MemoryCacheOptions())),
+                new UriInfoProvider(new CacheProvider(new MemoryCacheOptions())),
                 new ResponseSerializer()));
         }
 

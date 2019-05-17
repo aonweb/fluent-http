@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using AonWeb.FluentHttp.Handlers;
@@ -86,11 +87,51 @@ namespace AonWeb.FluentHttp
         public static IAdvancedHttpBuilder WithAutoDecompression(this IAdvancedHttpBuilder builder, bool enabled = true)
 
         {
-            builder.WithConfiguration(s => s.AutoDecompression = true);
+            builder.WithConfiguration(s => s.AutoDecompression = enabled);
 
-            return builder.WithClientConfiguration(c => c.WithDecompressionMethods(enabled
+            return builder.WithDecompressionMethods(enabled
                     ? DecompressionMethods.GZip | DecompressionMethods.Deflate
-                    : DecompressionMethods.None));
+                    : DecompressionMethods.None);
+        }
+
+        public static IAdvancedHttpBuilder WithDecompressionMethods(this IAdvancedHttpBuilder builder, DecompressionMethods options)
+        {
+            return builder.WithClientConfiguration(c => c.WithDecompressionMethods(options));
+        }
+
+        public static IAdvancedHttpBuilder WithClientCertificateOptions(this IAdvancedHttpBuilder builder, ClientCertificateOption options)
+        {
+            return builder.WithClientConfiguration(c => c.WithClientCertificateOptions(options));
+        }
+
+        public static IAdvancedHttpBuilder WithCheckCertificateRevocationList(this IAdvancedHttpBuilder builder, bool check)
+        {
+            return builder.WithClientConfiguration(c => c.WithCheckCertificateRevocationList(check));
+        }
+
+        public static IAdvancedHttpBuilder WithClientCertificates(this IAdvancedHttpBuilder builder, IEnumerable<X509Certificate> certificates)
+        {
+            return builder.WithClientConfiguration(c => c.WithClientCertificates(certificates));
+        }
+
+        public static IAdvancedHttpBuilder WithClientCertificates(this IAdvancedHttpBuilder builder, X509Certificate certificate)
+        {
+            return builder.WithClientConfiguration(c => c.WithClientCertificates(certificate));
+        }
+
+        public static IAdvancedHttpBuilder WithUseCookies(this IAdvancedHttpBuilder builder)
+        {
+            return builder.WithClientConfiguration(c => c.WithUseCookies());
+        }
+
+        public static IAdvancedHttpBuilder WithUseCookies(this IAdvancedHttpBuilder builder, CookieContainer container)
+        {
+            return builder.WithClientConfiguration(c => c.WithUseCookies(container));
+        }
+
+        public static IAdvancedHttpBuilder WithCredentials(this IAdvancedHttpBuilder builder, ICredentials credentials)
+        {
+            return builder.WithClientConfiguration(c => c.WithCredentials(credentials));
         }
 
         public static IAdvancedHttpBuilder WithTimeout(this IAdvancedHttpBuilder builder, TimeSpan? timeout)

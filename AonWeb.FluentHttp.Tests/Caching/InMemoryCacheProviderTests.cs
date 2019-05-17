@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using AonWeb.FluentHttp.Caching;
 using AonWeb.FluentHttp.Handlers;
 using AonWeb.FluentHttp.Handlers.Caching;
-using AonWeb.FluentHttp.Helpers;
 using AonWeb.FluentHttp.Mocks;
 using AonWeb.FluentHttp.Settings;
+using Microsoft.Extensions.Caching.Memory;
 using Shouldly;
 using Xunit;
 
@@ -17,7 +17,7 @@ namespace AonWeb.FluentHttp.Tests.Caching
     {
         private ICacheManager CreateProvider()
         {
-            return new CacheManager(new CacheProvider(), new VaryByProvider(new CacheProvider()), new UriInfoProvider(new CacheProvider()), new ResponseSerializer());
+            return new CacheManager(new CacheProvider(new MemoryCacheOptions()), new VaryByProvider(new CacheProvider(new MemoryCacheOptions())), new UriInfoProvider(new CacheProvider(new MemoryCacheOptions())), new ResponseSerializer());
         }
 
         private HttpResponseMessage CreateResponse(string result)
