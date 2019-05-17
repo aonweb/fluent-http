@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp.Serializa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp.HAL.Serialization", "AonWeb.FluentHttp.HAL.Serialization\AonWeb.FluentHttp.HAL.Serialization.csproj", "{74BD325D-285E-4E8A-8EC7-BA7C330A404C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aonweb.FluentHttp.Full", "Aonweb.FluentHttp.Full\Aonweb.FluentHttp.Full.csproj", "{B3730E8C-5803-47DD-820E-AECE20388BEB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AonWeb.FluentHttp.Tests", "AonWeb.FluentHttp.Tests\AonWeb.FluentHttp.Tests.csproj", "{68F35EC7-14CB-4F47-98A8-53F70CEC495C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{C63B15E6-CED0-44C6-B909-9481E11207F2}"
@@ -56,10 +54,6 @@ Global
 		{74BD325D-285E-4E8A-8EC7-BA7C330A404C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74BD325D-285E-4E8A-8EC7-BA7C330A404C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74BD325D-285E-4E8A-8EC7-BA7C330A404C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3730E8C-5803-47DD-820E-AECE20388BEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3730E8C-5803-47DD-820E-AECE20388BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3730E8C-5803-47DD-820E-AECE20388BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3730E8C-5803-47DD-820E-AECE20388BEB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{68F35EC7-14CB-4F47-98A8-53F70CEC495C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{68F35EC7-14CB-4F47-98A8-53F70CEC495C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68F35EC7-14CB-4F47-98A8-53F70CEC495C}.Release|Any CPU.ActiveCfg = Release|Any CPU
