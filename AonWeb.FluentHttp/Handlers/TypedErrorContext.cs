@@ -38,12 +38,12 @@ namespace AonWeb.FluentHttp.Handlers
         }
 
         public HttpResponseMessage Response { get; }
-        public HttpStatusCode StatusCode => Response.StatusCode;
+        public HttpStatusCode? StatusCode => Response?.StatusCode;
 
         public bool ErrorHandled
         {
-            get { return _errorHandled.Value; }
-            set {  _errorHandled.Value = value; }
+            get => _errorHandled.Value;
+            set => _errorHandled.Value = value;
         }
 
         public object Error { get; }

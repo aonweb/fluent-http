@@ -29,8 +29,8 @@ namespace AonWeb.FluentHttp.Handlers
 
         public bool ExceptionHandled
         {
-            get { return _exceptionHandled.Value; }
-            set { _exceptionHandled.Value = value; }
+            get => _exceptionHandled.Value;
+            set => _exceptionHandled.Value = value;
         }
 
         public override Modifiable GetHandlerResult()
